@@ -85,7 +85,26 @@ function observePageHealth(page) {
 }
 
 async function assertResponsiveViewport(page, testInfo) {
-  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const pageOverflow = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+    offenders: [...document.querySelectorAll('body *')]
+      .filter((element) => {
+        const bounds = element.getBoundingClientRect();
+        return bounds.width > 0 && (bounds.right > window.innerWidth + 1 || bounds.left < -1);
+      })
+      .slice(0, 12)
+      .map((element) => ({
+        element: `${element.tagName.toLowerCase()}${element.className ? `.${String(element.className).trim().replaceAll(' ', '.')}` : ''}`,
+        left: Math.round(element.getBoundingClientRect().left),
+        right: Math.round(element.getBoundingClientRect().right),
+        width: Math.round(element.getBoundingClientRect().width)
+      }))
+  }));
+  expect(
+    pageOverflow.scrollWidth,
+    `the page itself must not scroll horizontally; inspect: ${JSON.stringify(pageOverflow.offenders)}`
+  ).toBe(pageOverflow.viewportWidth);
   if (!testInfo.project.name.endsWith('-mobile')) return;
 
   const undersizedControls = await page.locator('button, select, input:not([type="checkbox"])').evaluateAll((elements) => elements
@@ -112,6 +131,10 @@ test('completes the production visitor journey without browser-health or respons
   await page.goto('.');
   await expect(page.getByRole('heading', { name: fixtureDataset.title })).toBeVisible();
   await expect(page.getByText('Rodomi 1–50 iš 60')).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('link', { name: 'dažniausi žodžiai' })).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('link', { name: '// dago' })).toHaveAttribute('href', 'https://dago.lt');
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', 'https://dago.lt/assets/img/dago-icon.png');
+  await expect(page.locator('link[rel="stylesheet"][href^="https://dago.lt/assets/styles/"]')).toHaveCount(2);
 
   await page.getByRole('button', { name: 'Kitas' }).click();
   await expect(page.getByText('2 puslapis iš 2')).toBeVisible();
@@ -127,6 +150,7 @@ test('completes the production visitor journey without browser-health or respons
 
   await page.getByLabel('Ieškoti žodžių').fill('bandomas-01');
   await expect(page.getByRole('heading', { name: 'Žodžiai (10)' })).toBeVisible();
+  await page.locator('details.type-filter > summary').click();
   await page.getByRole('checkbox', { name: 'Daiktavardis (dkt)' }).check();
   await expect(page.getByRole('heading', { name: 'Žodžiai (5)' })).toBeVisible();
   await page.getByRole('button', { name: 'Išvalyti filtrus' }).click();
@@ -134,9 +158,10 @@ test('completes the production visitor journey without browser-health or respons
   await expect(page.getByLabel('Ieškoti žodžių')).toHaveValue('');
   await expect(page.getByRole('checkbox', { name: 'Daiktavardis (dkt)' })).not.toBeChecked();
 
+  await page.locator('details.advanced-analysis > summary').click();
   await page.getByLabel('Rodyti pirmus').selectOption('20');
   await expect(page.getByRole('img', { name: /Dažniausi žodžiai:/ })).toHaveAttribute('aria-label', expect.stringContaining('bandomas-020'));
-  const tableEquivalent = page.locator('details').filter({ has: page.getByText('Duomenys lentelėje') }).first();
+  const tableEquivalent = page.getByRole('region', { name: 'Dažniausi žodžiai' }).locator('details');
   await tableEquivalent.locator('summary').click();
   await expect(tableEquivalent.locator('table')).toBeVisible();
 

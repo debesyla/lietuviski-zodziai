@@ -9,13 +9,15 @@ const words = Array.from({ length: 25 }, (_, index) => ({
   frequency: 100 - index
 }));
 
-it('renders frequency concentration metrics and source-labelled POS composition', () => {
+it('renders frequency concentration metrics and source-labelled POS composition', async () => {
+  const user = userEvent.setup();
   const { getByText, getAllByText, getAllByRole } = render(FrequencyDashboard, {
     words,
     typeLabels: { dkt: 'Daiktavardis', jng: 'Jungtukas' }
   });
 
   expect(getByText('Dažnumo vaizdas')).toBeInTheDocument();
+  await user.click(getByText('Rodyti grafikus ir įžvalgas'));
   expect(getByText('Ką atskleidžia šis sąrašas')).toBeInTheDocument();
   expect(getByText('Faktai apskaičiuoti tik iš pasirinkto šaltinio ir aktyvius filtrus atitinkančių įrašų.')).toBeInTheDocument();
   expect(getByText((_, element) => element?.tagName === 'DD' && element.textContent === 'žodis-1 (100)')).toBeInTheDocument();
@@ -28,7 +30,8 @@ it('renders frequency concentration metrics and source-labelled POS composition'
 
 it('changes the top-word chart deterministically when its control changes', async () => {
   const user = userEvent.setup();
-  const { getByLabelText, getByRole } = render(FrequencyDashboard, { words });
+  const { getByLabelText, getByRole, getByText } = render(FrequencyDashboard, { words });
+  await user.click(getByText('Rodyti grafikus ir įžvalgas'));
   const topChart = getByRole('img', { name: /Dažniausi žodžiai/ });
 
   expect(topChart).not.toHaveAccessibleName(/žodis-11/);

@@ -27,7 +27,7 @@ describe('portable site configuration', () => {
     expect(configured.homeUrl).toBe('https://zodziai.example.test/app/');
     expect(configured.methodologyUrl).toBe('https://zodziai.example.test/app/apie');
     expect(configured.catalogueUrl).toBe('https://zodziai.example.test/app/duomenu-katalogas');
-    expect(configured.socialImageUrl).toBe('https://zodziai.example.test/app/social-preview.png');
+    expect(configured.socialImageUrl).toBe('https://zodziai.example.test/app/social-preview-v2.png');
     expect(publicRoutes).toContain('zanru-profilis');
     expect(publicRoutes).toContain('sintakse');
   });

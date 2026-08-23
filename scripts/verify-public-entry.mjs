@@ -35,17 +35,19 @@ const [home, methodology, robots, sitemap, socialImage] = await Promise.all([
   readBuildFile('apie.html'),
   readBuildFile('robots.txt'),
   readBuildFile('sitemap.xml'),
-  readFile(path.join(outputRoot, 'social-preview.png'))
+  readFile(path.join(outputRoot, 'social-preview-v2.png'))
 ]);
 
 for (const expected of [
   '<html lang="lt-LT">',
   '<meta name="viewport" content="width=device-width, initial-scale=1"',
-  '<link rel="icon" href="data:image/svg+xml,',
+  '<link rel="icon" type="image/png" href="https://dago.lt/assets/img/dago-icon.png"/>',
+  '<link rel="stylesheet" href="https://dago.lt/assets/styles/reset.css?v=20260808"/>',
+  '<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260808"/>',
   '<title>Dažniausi lietuviški žodžiai · lietuvių kalbos dažnumo duomenys</title>',
   `<link rel="canonical" href="${siteUrl}/"`,
   `<meta property="og:url" content="${siteUrl}/"`,
-  `<meta property="og:image" content="${siteUrl}/social-preview.png"`,
+  `<meta property="og:image" content="${siteUrl}/social-preview-v2.png"`,
   '<meta name="twitter:card" content="summary_large_image"'
 ]) {
   expectIncludes(home, expected, 'index.html');
@@ -65,10 +67,10 @@ for (const route of publicRoutes) {
 }
 
 if (!socialImage.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) {
-  throw new Error('social-preview.png is not a PNG file');
+  throw new Error('social-preview-v2.png is not a PNG file');
 }
 if (socialImage.readUInt32BE(16) !== 1200 || socialImage.readUInt32BE(20) !== 630) {
-  throw new Error('social-preview.png must be 1200 by 630 pixels');
+  throw new Error('social-preview-v2.png must be 1200 by 630 pixels');
 }
 
 expectIncludes(home, 'href="./apie"', 'index.html');

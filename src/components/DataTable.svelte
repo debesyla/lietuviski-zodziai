@@ -86,6 +86,8 @@
 
 <style>
   .table-scroll {
+    contain: inline-size;
+    display: block;
     max-width: 100%;
     min-width: 0;
     overflow-x: auto;
@@ -95,18 +97,30 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #222;
-    color: #FFBF00;
+    background: var(--bg-color);
+    color: var(--text-color);
   }
+
   th, td {
-    padding: var(--sm);
-    border: 1px solid #FFBF00;
+    padding: 0.65rem var(--sm);
+    border: 1px solid var(--border-color);
     text-align: left;
-    color: #FFBF00;
+    color: var(--text-color);
   }
+
   th.sortable {
-    background-color: #333;
+    background: var(--surface-color);
   }
+
+  tbody tr:hover {
+    background: var(--surface-color);
+  }
+
+  td:nth-child(1),
+  td:nth-child(3) {
+    font-variant-numeric: tabular-nums;
+  }
+
   .sort-button {
     background: transparent;
     border: 0;
@@ -117,10 +131,13 @@
     width: 100%;
   }
   .sort-button:hover {
-    background-color: #444;
+    background: transparent;
+    color: var(--text-color);
+    text-decoration: underline dashed;
+    text-underline-offset: var(--xs);
   }
   .sort-button:focus-visible {
-    outline: 2px solid #FFBF00;
+    outline: 2px dashed var(--text-color);
     outline-offset: 2px;
   }
 

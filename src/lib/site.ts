@@ -36,7 +36,7 @@ export function createSite(publicSiteUrl?: string) {
     genreProfileUrl: `${url}/zanru-profilis`,
     blktProfileUrl: `${url}/blkt-profilis`,
     syntaxExplorerUrl: `${url}/sintakse`,
-    socialImageUrl: `${url}/social-preview.png`,
+    socialImageUrl: `${url}/social-preview-v2.png`,
     description: 'Naršykite viešus lietuvių kalbos lemų ir žodžių formų dažnumo sąrašus: ieškokite, filtruokite, analizuokite rodiklius ir atsisiųskite duomenis su jų šaltiniais.'
   } as const;
 }

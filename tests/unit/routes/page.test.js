@@ -71,7 +71,7 @@ describe('Page', () => {
     );
     expect(document.head.querySelector('meta[property="og:image"]')).toHaveAttribute(
       'content',
-      'http://127.0.0.1:4173/social-preview.png'
+      'http://127.0.0.1:4173/social-preview-v2.png'
     );
     expect(document.head.querySelector('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
   });

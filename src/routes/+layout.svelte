@@ -1,6 +1,6 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
 	import { base } from '$app/paths';
+	import { page } from '$app/state';
 	import '../app.css';
 	import { t } from '$lib/translations';
 
@@ -8,36 +8,36 @@
 	const homeUrl = `${base}/`;
 	const methodologyUrl = `${homeUrl}apie`;
 	const catalogueUrl = `${homeUrl}duomenu-katalogas`;
+
+	function isCurrent(path: string) {
+		if (path === homeUrl) return page.url.pathname === homeUrl;
+		return page.url.pathname.startsWith(path);
+	}
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" type="image/png" href="https://dago.lt/assets/img/dago-icon.png" />
+	<link rel="stylesheet" href="https://dago.lt/assets/styles/reset.css?v=20260808" />
+	<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260808" />
 </svelte:head>
 
+<a class="skip-link" href="#main-content">Pereiti prie turinio</a>
 <header class="site-header">
+	<div class="site-brand">
+		<a href={homeUrl} class="brand-home print-a-no-link">dažniausi žodžiai</a>
+		<a href="https://dago.lt" class="dago-link print-a-no-link" target="_blank" rel="noopener">// dago</a>
+	</div>
 	<nav class="site-navigation" aria-label={t('siteNavigation')}>
-		<a href={homeUrl}>{t('exploreData')}</a>
-		<a href={catalogueUrl}>{t('dataProductsCatalogue')}</a>
-		<a href={methodologyUrl}>{t('methodologyAndSources')}</a>
+		<a href={homeUrl} aria-current={isCurrent(homeUrl) ? 'page' : undefined}>{#if isCurrent(homeUrl)}<span aria-hidden="true">› </span>{/if}{t('exploreData')}</a>
+		<a href={catalogueUrl} aria-current={isCurrent(catalogueUrl) ? 'page' : undefined}>{#if isCurrent(catalogueUrl)}<span aria-hidden="true">› </span>{/if}{t('dataProductsCatalogue')}</a>
+		<a href={methodologyUrl} aria-current={isCurrent(methodologyUrl) ? 'page' : undefined}>{#if isCurrent(methodologyUrl)}<span aria-hidden="true">› </span>{/if}{t('methodologyAndSources')}</a>
 	</nav>
 </header>
 
-{@render children?.()}
+<div id="main-content">
+	{@render children?.()}
+</div>
 
 <footer>
 	<p>{t('footerText')}<a href="mailto:{t('footerEmail')}">{t('footerEmail')}</a></p>
 </footer>
-
-<style>
-	.site-header {
-		border-bottom: 1px solid var(--border-color);
-		margin-bottom: var(--xl);
-		padding-bottom: var(--md);
-	}
-
-	.site-navigation {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--md);
-	}
-</style>
