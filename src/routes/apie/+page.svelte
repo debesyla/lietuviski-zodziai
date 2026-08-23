@@ -55,10 +55,10 @@
 </script>
 
 <svelte:head>
-  <title>Metodika ir šaltiniai · Dažniausi lietuviški žodžiai</title>
+  <title>Metodika ir šaltiniai · Lietuviški žodžiai</title>
   <meta name="description" content="Sužinokite, iš kokių viešų šaltinių sudaryti šios svetainės lietuvių kalbos duomenys, kokios jų licencijos ir kaip skaityti rodiklius." />
   <link rel="canonical" href={site.methodologyUrl} />
-  <meta property="og:title" content="Metodika ir šaltiniai · Dažniausi lietuviški žodžiai" />
+  <meta property="og:title" content="Metodika ir šaltiniai · Lietuviški žodžiai" />
   <meta property="og:description" content="Viešų lietuvių kalbos duomenų šaltiniai, licencijos, ribos ir rodiklių paaiškinimas." />
   <meta property="og:url" content={site.methodologyUrl} />
 </svelte:head>

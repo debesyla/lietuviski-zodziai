@@ -5,7 +5,7 @@ published to the selected server, and inspected by a maintainer. It is evidence
 for the launch decision, not a pre-merge checklist: leave a field blank rather
 than assuming a result.
 
-The release gate is tracked in [issue #37](https://github.com/debesyla/dazniausi-zodziai/issues/37).
+The release gate is tracked in [issue #37](https://github.com/debesyla/lietuviski-zodziai/issues/37).
 Use one copy of the template below for each public release candidate.
 
 ## Evidence commands
@@ -26,7 +26,7 @@ npm audit
 
 The currently accepted development-only exception is the low-severity `cookie`
 advisory inherited from stable SvelteKit and tracked in
-[issue #29](https://github.com/debesyla/dazniausi-zodziai/issues/29). Record the
+[issue #29](https://github.com/debesyla/lietuviski-zodziai/issues/29). Record the
 exact audit result; fix or separately review any additional finding rather than
 silently treating it as either a release blocker or a non-issue.
 

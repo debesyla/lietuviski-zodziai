@@ -264,7 +264,7 @@ function productPaths(root) {
 }
 
 async function buildFixture() {
-  const root = await mkdtemp(path.join(os.tmpdir(), 'dazniausi-zodziai-blkt-disclosure-'));
+  const root = await mkdtemp(path.join(os.tmpdir(), 'lietuviski-zodziai-blkt-disclosure-'));
   temporaryDirectories.push(root);
   const paths = productPaths(root);
   const policyPath = path.join(root, 'data', 'policies', 'blkt-disclosure.json');

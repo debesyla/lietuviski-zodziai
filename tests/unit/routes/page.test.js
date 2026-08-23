@@ -56,7 +56,7 @@ describe('Page', () => {
   it('publishes a specific, canonical Lithuanian discovery preview', () => {
     render(Page);
 
-    expect(document.title).toBe('Dažniausi lietuviški žodžiai · lietuvių kalbos dažnumo duomenys');
+    expect(document.title).toBe('Lietuviški žodžiai · lietuvių kalbos dažnumo duomenys');
     expect(document.head.querySelector('meta[name="description"]')).toHaveAttribute(
       'content',
       'Naršykite viešus lietuvių kalbos lemų ir žodžių formų dažnumo sąrašus: ieškokite, filtruokite, analizuokite rodiklius ir atsisiųskite duomenis su jų šaltiniais.'

@@ -47,7 +47,7 @@ and active filters unless it explicitly says otherwise.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ Dažniausi lietuviški žodžiai                                               │
+│ Lietuviški žodžiai                                                          │
 │ Tyrinėkite viešų lietuvių kalbos sąrašų dažnumus. [Apie duomenis ir ribas] │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ Pasirinkite duomenis  [Lemuotas 1 mln. ... tekstyno žodžių sąrašas ▾]    │
@@ -80,7 +80,7 @@ and active filters unless it explicitly says otherwise.
 
 ```text
 ┌──────────────────────────────┐
-│ Dažniausi lietuviški žodžiai │
+│ Lietuviški žodžiai            │
 │ Trumpa paskirtis ir [Apie]   │
 ├──────────────────────────────┤
 │ Pasirinkite duomenis         │
@@ -195,7 +195,7 @@ details summaries, and links retain native keyboard operation.
   “Neaptikta” (or the product's explicit equivalent), never rendered as zero.
 - **No co-occurrence, association, or word-sketch claim** is shown for a flat
   frequency list. The proposed expansion is tracked in
-  [issue #31](https://github.com/debesyla/dazniausi-zodziai/issues/31).
+  [issue #31](https://github.com/debesyla/lietuviski-zodziai/issues/31).
 
 ## Ordered implementation slices
 

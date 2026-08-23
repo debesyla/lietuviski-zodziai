@@ -26,7 +26,7 @@ function normalizePublicSiteUrl(value?: string) {
 export function createSite(publicSiteUrl?: string) {
   const url = normalizePublicSiteUrl(publicSiteUrl);
   return {
-    name: 'Dažniausi lietuviški žodžiai',
+    name: 'Lietuviški žodžiai',
     url,
     homeUrl: `${url}/`,
     methodologyUrl: `${url}/apie`,

@@ -277,7 +277,7 @@ function validatePolicy(policy) {
   ], [], 'policy');
   if (policy.schemaVersion !== 1 || policy.productId !== PRODUCT_ID
     || policy.status !== 'thresholded-marginals-only'
-    || policy.reviewIssue !== 'https://github.com/debesyla/dazniausi-zodziai/issues/59') {
+    || policy.reviewIssue !== 'https://github.com/debesyla/lietuviski-zodziai/issues/59') {
     fail('policy must identify the reviewed issue #59 BLKT product');
   }
   assertExactObject(policy.approvedView, {

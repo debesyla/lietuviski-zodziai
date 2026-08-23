@@ -44,7 +44,7 @@ for (const expected of [
   '<link rel="icon" type="image/png" href="https://dago.lt/assets/img/dago-icon.png"/>',
   '<link rel="stylesheet" href="https://dago.lt/assets/styles/reset.css?v=20260808"/>',
   '<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260808"/>',
-  '<title>Dažniausi lietuviški žodžiai · lietuvių kalbos dažnumo duomenys</title>',
+  '<title>Lietuviški žodžiai · lietuvių kalbos dažnumo duomenys</title>',
   `<link rel="canonical" href="${siteUrl}/"`,
   `<meta property="og:url" content="${siteUrl}/"`,
   `<meta property="og:image" content="${siteUrl}/social-preview-v2.png"`,
@@ -54,7 +54,7 @@ for (const expected of [
 }
 
 for (const expected of [
-  '<title>Metodika ir šaltiniai · Dažniausi lietuviški žodžiai</title>',
+  '<title>Metodika ir šaltiniai · Lietuviški žodžiai</title>',
   `<link rel="canonical" href="${siteUrl}/apie"`,
   `<meta property="og:url" content="${siteUrl}/apie"`
 ]) {

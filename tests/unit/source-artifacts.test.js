@@ -8,7 +8,7 @@ import { createSourceArtifactResolver } from '../../scripts/source-artifacts.mjs
 const temporaryDirectories = [];
 
 async function makeDirectory() {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'dazniausi-zodziai-artifact-'));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'lietuviski-zodziai-artifact-'));
   temporaryDirectories.push(directory);
   return directory;
 }

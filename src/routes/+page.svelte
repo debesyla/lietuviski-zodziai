@@ -58,12 +58,12 @@
   <meta property="og:image" content={site.socialImageUrl} />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Dažniausi lietuviški žodžiai – viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas" />
+  <meta property="og:image:alt" content="Lietuviški žodžiai – viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={`${site.name} · lietuvių kalbos dažnumo duomenys`} />
   <meta name="twitter:description" content={site.description} />
   <meta name="twitter:image" content={site.socialImageUrl} />
-  <meta name="twitter:image:alt" content="Dažniausi lietuviški žodžiai – viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas" />
+  <meta name="twitter:image:alt" content="Lietuviški žodžiai – viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas" />
 </svelte:head>
 
 <main class="home-page">

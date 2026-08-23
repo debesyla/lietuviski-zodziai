@@ -68,7 +68,7 @@ describe('project hygiene', () => {
 			expect.objectContaining({
 				id: 'tilde-2026-parallel-and-monolingual-corpora',
 				status: 'blocked-external',
-				trackingIssue: 'https://github.com/debesyla/dazniausi-zodziai/issues/63',
+				trackingIssue: 'https://github.com/debesyla/lietuviski-zodziai/issues/63',
 				rawImportAuthorized: false,
 				publicProductAuthorized: false
 			})
@@ -87,7 +87,7 @@ describe('project hygiene', () => {
 			]);
 			expect(candidate.id).toMatch(/^[a-z0-9][a-z0-9-]+$/);
 			expect(candidate.sourceUrl).toMatch(/^https:\/\/clarin-repo\.lt\/items\/[a-f0-9-]+$/);
-			expect(candidate.trackingIssue).toMatch(/^https:\/\/github\.com\/debesyla\/dazniausi-zodziai\/issues\/\d+$/);
+			expect(candidate.trackingIssue).toMatch(/^https:\/\/github\.com\/debesyla\/lietuviski-zodziai\/issues\/\d+$/);
 			expect(candidate.licence).toEqual(expect.any(String));
 			expect(candidate.licence.length).toBeGreaterThan(0);
 			expect(candidate.status).toBe('blocked-external');

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "productId": "kapociute-dzikiene-2017-parliament-frequency-aggregates",
   "status": "aggregate-only",
-  "reviewIssue": "https://github.com/debesyla/dazniausi-zodziai/issues/68",
+  "reviewIssue": "https://github.com/debesyla/lietuviski-zodziai/issues/68",
   "approvedGranularity": "corpus",
   "approvedViews": {
     "wordforms-by-frequency": {

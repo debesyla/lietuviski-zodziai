@@ -52,5 +52,5 @@ following:
 Person-level statistics, authorship attribution, politician rankings,
 quotations, and document browsing remain prohibited rather than pending. Any
 change to these decisions requires separate maintainer authorization; issue
-[#68](https://github.com/debesyla/dazniausi-zodziai/issues/68) tracks the
+[#68](https://github.com/debesyla/lietuviski-zodziai/issues/68) tracks the
 unresolved research boundary.
