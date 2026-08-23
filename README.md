@@ -29,6 +29,11 @@ npm run products:verify
 npm run public:verify
 ```
 
+Pakeitimai pagrindinėje `main` šakoje per SSH automatiškai įkeliami į
+`https://dago.lt/zodziai/`. Hostinger aplanko žymeklio, GitHub aplinkos
+paslapčių ir pirmojo diegimo veiksmai aprašyti
+[docs/deployment.md](docs/deployment.md).
+
 Pagrindinis prižiūrimas rinkinio failas yra
 `data/datasets/utka-2018-lemmatized-totals.json`. Duomenų tikrinimas:
 `npm run data:verify`.
