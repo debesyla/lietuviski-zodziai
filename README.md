@@ -67,6 +67,11 @@ hosted-site sign-off steps are in
 [release-record template](docs/release-record.md) for the final go/no-go
 decision.
 
+Production is deployed to `https://dago.lt/zodziai/` over SSH after changes
+land on `main`. The Hostinger directory marker, GitHub environment secrets,
+and first-deployment steps are documented in
+[docs/deployment.md](docs/deployment.md).
+
 ## Dataset maintenance
 
 Datasets are prepared rarely by a maintainer, not uploaded through the public
