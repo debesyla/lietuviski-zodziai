@@ -113,7 +113,10 @@
       </div>
     </dl>
 
-    <section class="facts-section" aria-labelledby="frequency-facts-title">
+    <details class="advanced-analysis">
+      <summary>{t('showAnalysis')}</summary>
+      <div class="analysis-content">
+      <section class="facts-section" aria-labelledby="frequency-facts-title">
       <h4 id="frequency-facts-title">{t('frequencyFacts')}</h4>
       <p>{t('frequencyFactsDescription')}</p>
       <dl class="fact-grid">
@@ -153,9 +156,9 @@
           })}</dd>
         </div>
       </dl>
-    </section>
+      </section>
 
-    <section class="chart-section" aria-labelledby="top-words-title">
+      <section class="chart-section" aria-labelledby="top-words-title">
       <div class="chart-heading">
         <div>
           <h4 id="top-words-title">{t('topWords')}</h4>
@@ -190,9 +193,9 @@
           </tbody>
         </table>
       </details>
-    </section>
+      </section>
 
-    <section class="chart-section" aria-labelledby="rank-frequency-title">
+      <section class="chart-section" aria-labelledby="rank-frequency-title">
       <h4 id="rank-frequency-title">{t('rankFrequency')}</h4>
       <p>{t('rankFrequencyDescription')}</p>
       <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="rank-frequency-title rank-frequency-description" class="line-chart">
@@ -222,9 +225,9 @@
           </tbody>
         </table>
       </details>
-    </section>
+      </section>
 
-    <section class="chart-section" aria-labelledby="coverage-title">
+      <section class="chart-section" aria-labelledby="coverage-title">
       <h4 id="coverage-title">{t('cumulativeCoverage')}</h4>
       <p>{t('coverageDescription')}</p>
       <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="coverage-title coverage-description" class="line-chart">
@@ -254,10 +257,10 @@
           </tbody>
         </table>
       </details>
-    </section>
+      </section>
 
     {#if analysis.partOfSpeech.length > 0}
-      <section class="chart-section" aria-labelledby="pos-title">
+        <section class="chart-section" aria-labelledby="pos-title">
         <h4 id="pos-title">{t('posComposition')}</h4>
         <p>{t('posCompositionDescription')}</p>
         <div class="bar-chart" role="img" aria-label={`${t('posComposition')}: ${analysis.partOfSpeech.map((part) => `${displayType(part.type)} ${formatPercent(part.share)}`).join(', ')}`}>
@@ -280,16 +283,19 @@
             </tbody>
           </table>
         </details>
-      </section>
+        </section>
     {/if}
+      </div>
+    </details>
   {/if}
 </section>
 
 <style>
   .dashboard {
     border-top: 1px solid var(--border-color);
-    margin-top: var(--xl);
-    padding-top: var(--lg);
+    contain: inline-size;
+    min-width: 0;
+    padding-top: var(--xl);
   }
 
   .dashboard-heading,
@@ -314,12 +320,29 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--sm);
-    margin: var(--md) 0 var(--xl);
+    margin: var(--md) 0 0;
   }
 
   .headline-metrics > div {
+    background: var(--surface-color);
     border: 1px solid var(--border-color);
-    padding: var(--sm);
+    padding: var(--md);
+  }
+
+  .advanced-analysis {
+    max-width: 100%;
+    min-width: 0;
+    margin: var(--md) 0 0;
+  }
+
+  .advanced-analysis > summary {
+    font-weight: bold;
+  }
+
+  .analysis-content {
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--sm);
+    padding-top: var(--lg);
   }
 
   .facts-section {
@@ -459,6 +482,9 @@
   }
 
   details {
+    contain: inline-size;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: auto;
   }
 

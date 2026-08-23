@@ -224,7 +224,7 @@
 <main class="catalogue">
   <p class="back-link"><a href={homeUrl}>← Tyrinėti dažnumo sąrašus</a></p>
   <h1>Viešų duomenų katalogas</h1>
-  <p class="lead">Kiekvienas produktas išlaiko savo šaltinio ribas. Prieš atveriant JSON duomenis čia matoma, ką jo reikšmės aprašo, ko jos neaprašo, ir kokiomis sąlygomis galima juos naudoti.</p>
+  <p class="lead">Ką kiekvienas rinkinys aprašo, kaip jį pasiekti ir kokios jo naudojimo ribos.</p>
 
   {#if loading}
     <p class="loading" role="status" aria-live="polite">Kraunami viešų produktų aprašai…</p>

@@ -13,27 +13,30 @@
 
 <style>
   .search-bar {
-    display: flex;
-    gap: var(--sm);
-    align-items: center;
+    min-width: 0;
+    position: relative;
+    width: 100%;
   }
+
   input {
-    background: #222;
-    color: #FFBF00;
-    border: 1px solid #FFBF00;
-    padding: var(--xs) var(--sm);
+    background: var(--bg-color);
+    border: 1px solid var(--border-strong);
+    color: var(--text-color);
+    font-size: 1.05rem;
+    padding: var(--sm) 3.25rem var(--sm) 0.75rem;
+    width: 100%;
   }
+
   button {
     background: transparent;
-    border: 1px solid #FFBF00;
-    color: #FFBF00;
-    padding: var(--xs) var(--sm);
+    border: 0;
+    color: var(--text-color);
     cursor: pointer;
-    user-select: none;
-  }
-  button:hover {
-    background: #FFBF00;
-    color: #222;
+    min-width: 44px;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 
   .sr-only {
@@ -45,18 +48,5 @@
     width: 1px;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
-  }
-
-  @media (max-width: 767px) {
-    .search-bar {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    input {
-      width: 100%;
-    }
-    button {
-      align-self: flex-end;
-    }
   }
 </style>
