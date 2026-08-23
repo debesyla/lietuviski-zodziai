@@ -88,7 +88,7 @@ export const translations = {
     posCompositionDescription: 'Žetonų dažnumo dalis pagal šaltinio pateiktas kalbos dalių žymas.',
     
     // Main page
-    pageTitle: 'Dažniausi lietuviški žodžiai',
+    pageTitle: 'Lietuviški žodžiai',
     exploreData: 'Tyrinėti duomenis',
     dataProductsCatalogue: 'Duomenų katalogas',
     methodologyAndSources: 'Metodika ir šaltiniai',

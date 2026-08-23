@@ -71,7 +71,7 @@ const FILE_NOTICE = {
 const temporaryDirectories = [];
 
 async function makeDirectory() {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'dazniausi-zodziai-blkt-product-'));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'lietuviski-zodziai-blkt-product-'));
   temporaryDirectories.push(directory);
   return directory;
 }

@@ -13,7 +13,7 @@ function sha256(value) {
 }
 
 async function makeWorkspace() {
-  const directory = await mkdtemp(path.join(tmpdir(), 'dazniausi-zodziai-'));
+  const directory = await mkdtemp(path.join(tmpdir(), 'lietuviski-zodziai-'));
   temporaryDirectories.push(directory);
   return directory;
 }

@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>ALKSNIS sintaksės kontekstai · Dažniausi lietuviški žodžiai</title>
+  <title>ALKSNIS sintaksės kontekstai · Lietuviški žodžiai</title>
 </svelte:head>
 
 <main>

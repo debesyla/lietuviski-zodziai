@@ -213,10 +213,10 @@
 </script>
 
 <svelte:head>
-  <title>Viešų duomenų katalogas · Dažniausi lietuviški žodžiai</title>
+  <title>Viešų duomenų katalogas · Lietuviški žodžiai</title>
   <meta name="description" content="Naršykite visus viešus lietuvių kalbos duomenų produktus: jų šaltinio apimtį, licenciją, prieigą ir interpretavimo ribas." />
   <link rel="canonical" href={site.catalogueUrl} />
-  <meta property="og:title" content="Viešų duomenų katalogas · Dažniausi lietuviški žodžiai" />
+  <meta property="og:title" content="Viešų duomenų katalogas · Lietuviški žodžiai" />
   <meta property="og:description" content="Viešų lietuvių kalbos duomenų produktų apimtis, licencijos, prieiga ir ribos vienoje vietoje." />
   <meta property="og:url" content={site.catalogueUrl} />
 </svelte:head>

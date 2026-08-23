@@ -194,7 +194,7 @@ jobs:
             || { echo "::error::live BUILD=$deployed_sha, expected $GITHUB_SHA"; exit 1; }
 
           fetch "$SITE/" /tmp/zodziai-index.html
-          grep -q 'Dažniausi lietuviški žodžiai' /tmp/zodziai-index.html \
+          grep -q 'Lietuviški žodžiai' /tmp/zodziai-index.html \
             || { echo "::error::homepage did not serve expected content"; exit 1; }
 
           # This extensionless route depends on the deployed Apache rewrite.

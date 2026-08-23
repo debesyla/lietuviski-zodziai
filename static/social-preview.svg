@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
-  <title id="title">Dažniausi lietuviški žodžiai</title>
+  <title id="title">Lietuviški žodžiai</title>
   <desc id="description">Viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas.</desc>
   <rect width="1200" height="630" fill="#222222" />
   <rect x="72" y="72" width="12" height="486" fill="#FFBF00" />
-  <text x="120" y="156" fill="#FFBF00" font-family="Courier New, Courier, monospace" font-size="38" font-weight="700" letter-spacing="2">DAŽNIAUSI LIETUVIŠKI</text>
+  <text x="120" y="156" fill="#FFBF00" font-family="Courier New, Courier, monospace" font-size="38" font-weight="700" letter-spacing="2">LIETUVIŠKI</text>
   <text x="120" y="244" fill="#FFBF00" font-family="Courier New, Courier, monospace" font-size="84" font-weight="700">ŽODŽIAI</text>
   <text x="120" y="304" fill="#D8A935" font-family="Courier New, Courier, monospace" font-size="28">Viešų lietuvių kalbos sąrašų tyrinėjimas</text>
   <line x1="120" y1="350" x2="1128" y2="350" stroke="#4B4535" stroke-width="2" />

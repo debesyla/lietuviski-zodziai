@@ -39,7 +39,7 @@ async function verifyDatasets(sourceRoot) {
     .sort();
   if (configFiles.length === 0) fail('no dataset configurations were found');
 
-  const workspace = await mkdtemp(path.join(tmpdir(), 'dazniausi-zodziai-verify-'));
+  const workspace = await mkdtemp(path.join(tmpdir(), 'lietuviski-zodziai-verify-'));
   try {
     for (const filename of configFiles) {
       const config = await loadConfig(path.join(configDirectory, filename));

@@ -9,7 +9,7 @@ import { verifyDataProducts } from '../../scripts/verify-data-products.mjs';
 const temporaryDirectories = [];
 
 async function makeDirectory() {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'dazniausi-zodziai-products-'));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'lietuviski-zodziai-products-'));
   temporaryDirectories.push(directory);
   return directory;
 }

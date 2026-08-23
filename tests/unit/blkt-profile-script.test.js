@@ -244,7 +244,7 @@ function canonicalSummary(tsv) {
 }
 
 async function createFixture() {
-  const createdRoot = await mkdtemp(path.join(os.tmpdir(), 'dazniausi-zodziai-blkt-profile-script-'));
+  const createdRoot = await mkdtemp(path.join(os.tmpdir(), 'lietuviski-zodziai-blkt-profile-script-'));
   const root = await realpath(createdRoot);
   temporaryDirectories.push(root);
   const outputDirectory = path.join(root, 'output');

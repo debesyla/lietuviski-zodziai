@@ -8,7 +8,7 @@ import { verifySourceContracts } from '../../scripts/verify-source-contracts.mjs
 const temporaryDirectories = [];
 
 async function makeDirectory() {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'dazniausi-zodziai-contract-'));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'lietuviski-zodziai-contract-'));
   temporaryDirectories.push(directory);
   return directory;
 }
