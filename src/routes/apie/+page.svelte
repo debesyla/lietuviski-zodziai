@@ -158,12 +158,6 @@
     min-width: 0;
   }
 
-  h1,
-  h2,
-  h3 {
-    color: var(--text-color);
-  }
-
   h2 {
     margin-bottom: var(--sm);
   }

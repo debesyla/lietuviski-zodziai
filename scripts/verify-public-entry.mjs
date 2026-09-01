@@ -43,7 +43,7 @@ for (const expected of [
   '<meta name="viewport" content="width=device-width, initial-scale=1"',
   '<link rel="icon" type="image/png" href="https://dago.lt/assets/img/dago-icon.png"/>',
   '<link rel="stylesheet" href="https://dago.lt/assets/styles/reset.css?v=20260808"/>',
-  '<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260808"/>',
+  '<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260901"/>',
   '<title>Lietuviški žodžiai · lietuvių kalbos dažnumo duomenys</title>',
   `<link rel="canonical" href="${siteUrl}/"`,
   `<meta property="og:url" content="${siteUrl}/"`,

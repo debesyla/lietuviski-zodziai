@@ -469,10 +469,8 @@
   }
 
   table {
-    border-collapse: collapse;
     margin-top: var(--md);
     min-width: 60rem;
-    width: 100%;
   }
 
   caption {

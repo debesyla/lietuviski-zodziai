@@ -77,19 +77,4 @@
   }
 </script>
 
-<button onclick={downloadCSV}>{t('downloadData')}</button>
-
-<style>
-  button {
-    background: transparent;
-    border: 1px solid #FFBF00;
-    color: #FFBF00;
-    padding: var(--xs) var(--sm);
-    cursor: pointer;
-    user-select: none;
-  }
-  button:hover {
-    background: #FFBF00;
-    color: #222;
-  }
-</style>
+<button class="primary-button" onclick={downloadCSV}>{t('downloadData')}</button>

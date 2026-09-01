@@ -129,7 +129,7 @@
         <h2 id="overview-title">Ką apima suvestinė</h2>
         <p>{formatNumber(profile.summary.totalTypeCount)} skirtingos žodžių formos ir {formatNumber(profile.summary.totalTokenCount)} JCL žetonai, suskirstyti į šešis nesikertančius dažnumo intervalus.</p>
       </div>
-      <button type="button" onclick={downloadSummary}>Atsisiųsti suvestinę CSV</button>
+      <button type="button" class="primary-button" onclick={downloadSummary}>Atsisiųsti suvestinę CSV</button>
     </section>
 
     <dl class="source-facts">
@@ -175,7 +175,7 @@
                     <th scope="col">DML6 aprėptis</th>
                     <th scope="col">Žodžių formos</th>
                     <th scope="col">JCL žetonai</th>
-                    <th scope="col"><span class="visually-hidden">Pavyzdžiai</span></th>
+                    <th scope="col"><span class="sr-only">Pavyzdžiai</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -192,7 +192,7 @@
                           <strong>{formatNumber(summary.tokenCount)}</strong>
                           <span>{formatPercent(tokenShare(summary.tokenCount, band.tokenCount))} intervalo žetonų</span>
                         </td>
-                        <td><button type="button" onclick={() => showExamples(band.id, category.code)}>Rodyti iki {summary.drilldown.records} pavyzdžių</button></td>
+                        <td><button type="button" class="text-button" onclick={() => showExamples(band.id, category.code)}>Rodyti iki {summary.drilldown.records} pavyzdžių</button></td>
                       </tr>
                     {/if}
                   {/each}
@@ -243,12 +243,6 @@
   main {
     display: grid;
     gap: var(--lg);
-  }
-
-  h1,
-  h2,
-  h3 {
-    color: var(--text-color);
   }
 
   h1 {
@@ -336,9 +330,7 @@
   }
 
   table {
-    border-collapse: collapse;
     min-width: 40rem;
-    width: 100%;
   }
 
   th,
@@ -372,17 +364,6 @@
 
   .error-message {
     color: #ffb4b4;
-  }
-
-  .visually-hidden {
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
-    position: absolute;
-    width: 1px;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
   }
 
   @media (max-width: 639px) {

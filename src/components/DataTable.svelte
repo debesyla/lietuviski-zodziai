@@ -95,17 +95,13 @@
   }
 
   table {
-    width: 100%;
-    border-collapse: collapse;
     background: var(--bg-color);
-    color: var(--text-color);
   }
 
   th, td {
     padding: 0.65rem var(--sm);
     border: 1px solid var(--border-color);
     text-align: left;
-    color: var(--text-color);
   }
 
   th.sortable {
@@ -123,22 +119,13 @@
 
   .sort-button {
     background: transparent;
-    border: 0;
-    color: inherit;
-    cursor: pointer;
     padding: 0;
     text-align: left;
     width: 100%;
   }
   .sort-button:hover {
-    background: transparent;
-    color: var(--text-color);
     text-decoration: underline dashed;
     text-underline-offset: var(--xs);
-  }
-  .sort-button:focus-visible {
-    outline: 2px dashed var(--text-color);
-    outline-offset: 2px;
   }
 
   @media (max-width: 767px) {

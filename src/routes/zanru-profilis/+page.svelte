@@ -135,7 +135,7 @@
       <label for="word-query">Tiksli žodžio forma</label>
       <div class="lookup-controls">
         <input id="word-query" bind:value={query} autocomplete="off" spellcheck="false" placeholder="pvz., karas" required />
-        <button type="submit" disabled={lookupLoading}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti žanruose'}</button>
+        <button type="submit" class="primary-button" disabled={lookupLoading}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti žanruose'}</button>
       </div>
       <p>Paieška neskaito visų sąrašų: įkeliama tik nedidelė maršruto dalis ir viena riboto dydžio duomenų dalis pasirinktam žodžiui.</p>
     </form>
@@ -175,7 +175,7 @@
             <h2 id="result-title">{result.word}</h2>
             <p>Aptikta {formatNumber(result.observedGenres)} iš {formatNumber(profile.sources.length)} pavadintų subkorpusų.</p>
           </div>
-          <button type="button" onclick={downloadResult}>Atsisiųsti šio atsakymo JSON</button>
+          <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti šio atsakymo JSON</button>
         </div>
 
         <div class="table-scroll">
@@ -240,11 +240,6 @@
     gap: var(--lg);
   }
 
-  h1,
-  h2 {
-    color: var(--text-color);
-  }
-
   h1 {
     margin-top: var(--sm);
   }
@@ -295,13 +290,9 @@
   }
 
   input {
-    background: #222;
-    border: 1px solid #ffbf00;
-    color: #ffbf00;
     flex: 1 1 18ch;
     max-width: 100%;
     min-width: 0;
-    padding: var(--xs) var(--sm);
   }
 
   .source-facts {
@@ -330,11 +321,7 @@
     width: 100%;
   }
 
-  table {
-    border-collapse: collapse;
-    min-width: 48rem;
-    width: 100%;
-  }
+  table { min-width: 48rem; }
 
   th,
   td {
@@ -372,19 +359,6 @@
     border: 1px solid #ff7f7f;
     color: #ffb4b4;
     padding: var(--md);
-  }
-
-  code {
-    font-family: inherit;
-  }
-
-  .sr-only {
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    width: 1px;
-    clip: rect(0, 0, 0, 0);
   }
 
   @media (max-width: 639px) {

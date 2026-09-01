@@ -19,9 +19,6 @@
   }
 
   input {
-    background: var(--bg-color);
-    border: 1px solid var(--border-strong);
-    color: var(--text-color);
     font-size: 1.05rem;
     padding: var(--sm) 3.25rem var(--sm) 0.75rem;
     width: 100%;
@@ -29,9 +26,6 @@
 
   button {
     background: transparent;
-    border: 0;
-    color: var(--text-color);
-    cursor: pointer;
     min-width: 44px;
     padding: 0;
     position: absolute;
@@ -39,14 +33,4 @@
     top: 0;
   }
 
-  .sr-only {
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
-    position: absolute;
-    width: 1px;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
 </style>
