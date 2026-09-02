@@ -153,7 +153,7 @@
         <label for="syntax-lemma-query">Lemos pradžia</label>
         <div class="search-controls">
           <input id="syntax-lemma-query" bind:value={query} autocomplete="off" placeholder="pvz., kalba" />
-          <button type="submit" disabled={searching}>{searching ? 'Ieškoma…' : 'Ieškoti'}</button>
+          <button type="submit" class="primary-button" disabled={searching}>{searching ? 'Ieškoma…' : 'Ieškoti'}</button>
         </div>
       </form>
 
@@ -177,6 +177,7 @@
             <li>
               <button
                 type="button"
+                class="text-button"
                 aria-pressed={selectedLemma?.lemma === lemma.lemma}
                 onclick={() => selectLemma(lemma)}
               >
@@ -294,11 +295,6 @@
     margin-bottom: var(--sm);
   }
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
   th,
   td {
     border-bottom: 1px solid var(--border-color);
@@ -315,11 +311,7 @@
   }
 
   .search-controls input {
-    background: #222;
-    border: 1px solid #ffbf00;
-    color: #ffbf00;
     flex: 1 1 16rem;
-    padding: var(--xs) var(--sm);
   }
 
   .result-count,

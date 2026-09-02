@@ -174,7 +174,7 @@
         <label for="blkt-word">Viena žodžio forma</label>
         <div class="search-row">
           <input id="blkt-word" bind:value={query} autocomplete="off" placeholder="pavyzdžiui, kalba" />
-          <button type="submit" disabled={lookupLoading || !query.trim()}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti BLKT'}</button>
+          <button type="submit" class="primary-button" disabled={lookupLoading || !query.trim()}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti BLKT'}</button>
         </div>
       </form>
       <p class="hint">Didžiosios raidės suvienodinamos. Įveskite tik vieną 1–64 raidžių žodį.</p>
@@ -199,7 +199,7 @@
             <p class="eyebrow">Sunorminta forma</p>
             <h2 id="result-title">{result.word}</h2>
           </div>
-          <button type="button" class="secondary" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti šį atsakymą JSON'}</button>
+          <button type="button" class="text-button" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti šį atsakymą JSON'}</button>
         </header>
         {#if downloadError}<p class="status error" role="alert">{downloadError}</p>{/if}
 
@@ -292,10 +292,6 @@
   form label { display: block; font-weight: 700; margin-bottom: var(--xs); }
   .search-row { display: flex; gap: var(--sm); }
   .search-row input { flex: 1; min-width: 0; }
-  input, button { background: #222; border: 1px solid #FFBF00; color: #FFBF00; padding: var(--sm); }
-  button { cursor: pointer; font-weight: 700; }
-  button:disabled { cursor: wait; opacity: 0.6; }
-  .secondary { background: transparent; }
   .hint { margin-top: var(--xs); }
   .status { border: 1px solid var(--border-color); margin-top: var(--md); padding: var(--md); }
   .error { border-color: #ff7d7d; }
@@ -304,12 +300,11 @@
   .result > section { min-width: 0; }
   .result-header { align-items: center; display: flex; flex-wrap: wrap; gap: var(--md); justify-content: space-between; }
   .table-scroll { max-width: 100%; min-width: 0; overflow-x: auto; width: 100%; }
-  table { border-collapse: collapse; min-width: 48rem; width: 100%; }
+  table { min-width: 48rem; }
   th, td { border-bottom: 1px solid var(--border-color); padding: var(--sm); text-align: right; vertical-align: top; }
   th:first-child, td:first-child { text-align: left; }
   .withheld { border-left: 2px solid var(--border-color); padding-left: var(--md); }
   .source li, .source a { overflow-wrap: anywhere; }
-  .sr-only { height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; clip: rect(0, 0, 0, 0); white-space: nowrap; }
   code { overflow-wrap: anywhere; }
   @media (max-width: 767px) {
     .method, .lookup, .result, .source { padding: var(--md); }

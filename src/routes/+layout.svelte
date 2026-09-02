@@ -18,7 +18,7 @@
 <svelte:head>
 	<link rel="icon" type="image/png" href="https://dago.lt/assets/img/dago-icon.png" />
 	<link rel="stylesheet" href="https://dago.lt/assets/styles/reset.css?v=20260808" />
-	<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260808" />
+	<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260901" />
 </svelte:head>
 
 <a class="skip-link" href="#main-content">Pereiti prie turinio</a>

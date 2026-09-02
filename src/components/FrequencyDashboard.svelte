@@ -306,11 +306,6 @@
     justify-content: space-between;
   }
 
-  .dashboard-heading h3,
-  .chart-section h4 {
-    color: var(--text-color);
-  }
-
   .dashboard-heading p,
   .chart-section > p {
     color: color-mix(in srgb, var(--text-color) 72%, transparent);
@@ -333,10 +328,6 @@
     max-width: 100%;
     min-width: 0;
     margin: var(--md) 0 0;
-  }
-
-  .advanced-analysis > summary {
-    font-weight: bold;
   }
 
   .analysis-content {
@@ -404,13 +395,6 @@
     align-items: center;
     gap: var(--xs);
     white-space: nowrap;
-  }
-
-  select {
-    background: var(--bg-color);
-    border: 1px solid var(--text-color);
-    color: var(--text-color);
-    padding: var(--xs);
   }
 
   .bar-chart {
@@ -489,9 +473,7 @@
   }
 
   details table {
-    border-collapse: collapse;
     margin-top: var(--sm);
-    width: 100%;
   }
 
   th,

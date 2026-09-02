@@ -151,7 +151,7 @@
       <div class="search-and-clear">
         <SearchBar bind:value={searchQuery} />
         {#if hasActiveFilters}
-          <button onclick={clearFilters} class="clear-filters">{t('clearFilters')}</button>
+          <button onclick={clearFilters} class="clear-filters text-button">{t('clearFilters')}</button>
         {/if}
       </div>
       {#if searchPending}
@@ -201,9 +201,9 @@
         {/key}
         {#if resultPage.totalPages > 1}
           <nav class="pagination" aria-label={t('pagination')}>
-            <button onclick={previousPage} disabled={resultPage.currentPage === 1}>{t('previousPage')}</button>
+            <button class="primary-button" onclick={previousPage} disabled={resultPage.currentPage === 1}>{t('previousPage')}</button>
             <span>{t('pageOf', { page: resultPage.currentPage, total: resultPage.totalPages })}</span>
-            <button onclick={nextPage} disabled={resultPage.currentPage === resultPage.totalPages}>{t('nextPage')}</button>
+            <button class="primary-button" onclick={nextPage} disabled={resultPage.currentPage === resultPage.totalPages}>{t('nextPage')}</button>
           </nav>
         {/if}
       {/if}

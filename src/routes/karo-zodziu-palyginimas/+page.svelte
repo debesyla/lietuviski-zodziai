@@ -105,7 +105,7 @@
       <label for="word-query">Žodžio forma</label>
       <div class="lookup-controls">
         <input id="word-query" bind:value={query} autocomplete="off" spellcheck="false" placeholder="pvz., karas" required />
-        <button type="submit" disabled={lookupLoading}>{lookupLoading ? 'Ieškoma…' : 'Palyginti'}</button>
+        <button type="submit" class="primary-button" disabled={lookupLoading}>{lookupLoading ? 'Ieškoma…' : 'Palyginti'}</button>
       </div>
       <p>Paieška neskaito viso sąrašo: po įvedimo įkeliama tik viena maža paieškos dalis ir ne daugiau kaip {profile.delivery.maxSourceRowsPerWord} susijusios šaltinio dalys.</p>
     </form>
@@ -225,11 +225,6 @@
     gap: var(--lg);
   }
 
-  h1,
-  h2 {
-    color: var(--text-color);
-  }
-
   h1 {
     margin-top: var(--sm);
   }
@@ -265,17 +260,9 @@
     gap: var(--sm);
   }
 
-  input,
-  select {
-    background: #222;
-    border: 1px solid #ffbf00;
-    color: #ffbf00;
-    max-width: 100%;
-    padding: var(--xs) var(--sm);
-  }
-
   input {
     flex: 1 1 18ch;
+    max-width: 100%;
     min-width: 0;
   }
 
@@ -313,9 +300,7 @@
   }
 
   table {
-    border-collapse: collapse;
     table-layout: fixed;
-    width: 100%;
   }
 
   th,
@@ -357,10 +342,6 @@
     border: 1px solid #ff7f7f;
     color: #ffb4b4;
     padding: var(--md);
-  }
-
-  code {
-    font-family: inherit;
   }
 
   @media (max-width: 639px) {
