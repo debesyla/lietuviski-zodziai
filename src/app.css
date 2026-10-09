@@ -243,3 +243,24 @@ footer {
     margin-bottom: var(--xl);
   }
 }
+
+/* Approved homepage layout. Research pages retain their current layout. */
+body.word-site:has(.homepage-shell) {
+  margin: 0 auto 0 0;
+  max-width: none;
+  min-width: 0;
+  padding: 2em 1em;
+}
+.homepage-shell .site-header { max-width: 75ch; border: 0; display: block; margin-bottom: 2rem; padding: 0; }
+.homepage-shell .site-header h1 { margin: 0 0 1rem; }
+.homepage-shell .dago-link { opacity: .2; text-decoration: none; white-space: nowrap; }
+.homepage-shell .dago-link:hover, .homepage-shell .dago-link:focus-visible { opacity: 1; }
+.homepage-shell .site-navigation { display: flex; flex-wrap: wrap; font-size: .875rem; gap: .5rem .75rem; justify-content: flex-start; }
+.homepage-shell .site-navigation a { text-decoration-color: hsl(var(--theme) / .5); }
+.homepage-shell .site-navigation [aria-current="page"] { font-weight: 700; }
+.homepage-shell .nav-separator { opacity: .2; }
+.homepage-shell .intro { font-size: inherit; max-width: 75ch; }
+.homepage-shell main > * { min-width: 0; }
+.homepage-shell .table-scroll { position: relative; }
+.homepage-shell .site-footer { max-width: 75ch; border-top: 1px solid hsl(var(--theme) / .35); margin-top: 3rem; padding-top: 1.5rem; color: inherit; font-size: inherit; }
+.homepage-shell .ai-badge { margin-top: 3rem; }

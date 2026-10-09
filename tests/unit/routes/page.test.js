@@ -31,6 +31,7 @@ vi.mock('../../../src/components/DataLoader.svelte', () => ({
 }));
 
 import Page from '../../../src/routes/+page.svelte';
+import DataLoader from '../../../src/components/DataLoader.svelte';
 
 describe('Page', () => {
   it('loads catalog metadata before rendering the dataset selector', async () => {
@@ -41,22 +42,20 @@ describe('Page', () => {
       expect(queryByText('loadingCatalog')).not.toBeInTheDocument();
     });
 
-    const select = getByRole('combobox');
-    expect(select).toHaveValue('second');
-    expect(select.querySelectorAll('option')).toHaveLength(2);
-    expect(select).toHaveTextContent('First dataset (2024)');
-    expect(getByRole('link', { name: 'Tyrinėti DML6 žodyno aprėptį pagal dažnumą' })).toHaveAttribute('href', '/zodyno-apreptis');
-    expect(getByRole('link', { name: 'Palyginti CCLL2 ir karo laikotarpio žodžių formas' })).toHaveAttribute('href', '/karo-zodziu-palyginimas');
-    expect(getByRole('link', { name: 'Palyginti CCLL žanrus pagal žodžio formą' })).toHaveAttribute('href', '/zanru-profilis');
-    expect(getByRole('link', { name: 'openDataProducts' })).toHaveAttribute('href', '/duomenu-katalogas');
-    expect(getByRole('link', { name: 'openDataProductsJson' })).toHaveAttribute('href', '/data-products/catalog.json');
-    expect(getByRole('link', { name: 'openMethodology' })).toHaveAttribute('href', '/apie');
+    expect(DataLoader).toHaveBeenCalled();
+    const explorerProps = vi.mocked(DataLoader).mock.calls.at(-1)[1];
+    expect(explorerProps.selectedDatasetId).toBe('second');
+    expect(explorerProps.datasets).toHaveLength(2);
+    expect(explorerProps.datasets[0].title).toBe('First dataset');
+    expect(getByRole('link', { name: 'DML6 žodyno aprėptis' })).toHaveAttribute('href', '/zodyno-apreptis');
+    expect(getByRole('link', { name: 'Karo meto vartosena' })).toHaveAttribute('href', '/karo-zodziu-palyginimas');
+    expect(getByRole('link', { name: 'CCLL žanrų profilis' })).toHaveAttribute('href', '/zanru-profilis');
   });
 
   it('publishes a specific, canonical Lithuanian discovery preview', () => {
     render(Page);
 
-    expect(document.title).toBe('Lietuviški žodžiai · lietuvių kalbos dažnumo duomenys');
+    expect(document.title).toBe('dažniausi žodžiai // dago');
     expect(document.head.querySelector('meta[name="description"]')).toHaveAttribute(
       'content',
       'Naršykite viešus lietuvių kalbos lemų ir žodžių formų dažnumo sąrašus: ieškokite, filtruokite, analizuokite rodiklius ir atsisiųskite duomenis su jų šaltiniais.'

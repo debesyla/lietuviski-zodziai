@@ -40,7 +40,7 @@ describe('DownloadButton', () => {
       exploration
     });
 
-    expect(getByRole('button')).toHaveTextContent('Atsisiųsti duomenis .csv formatu');
+    expect(getByRole('button')).toHaveTextContent('Atsisiųsti CSV');
   });
 
   it('downloads a UTF-8 CSV with descriptive metadata, a safe filename, and the supplied sorted result set', async () => {
