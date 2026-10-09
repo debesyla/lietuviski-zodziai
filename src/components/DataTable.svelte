@@ -76,7 +76,7 @@
         <tr>
           <td>{word.rank ?? ''}</td>
           <td>{word.word}</td>
-          <td>{word.frequency.toLocaleString()}</td>
+          <td>{word.frequency.toLocaleString('lt-LT')}</td>
           <td>{displayType(word.type)}</td>
         </tr>
       {/each}
@@ -92,20 +92,6 @@
     min-width: 0;
     overflow-x: auto;
     width: 100%;
-  }
-
-  table {
-    background: var(--bg-color);
-  }
-
-  th, td {
-    padding: 0.65rem var(--sm);
-    border: 1px solid var(--border-color);
-    text-align: left;
-  }
-
-  th.sortable {
-    background: var(--surface-color);
   }
 
   tbody tr:hover {
@@ -133,8 +119,6 @@
       min-width: 31rem;
       white-space: nowrap;
     }
-    th, td {
-      padding: var(--xs);
-    }
+
   }
 </style>

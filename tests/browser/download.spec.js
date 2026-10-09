@@ -69,14 +69,14 @@ test('downloads the filtered, sorted CSV in a real browser', async ({ page }) =>
   await page.route('**/datasets/browser-download-fixture.json', (route) => route.fulfill({ json: fixtureDataset }));
 
   await page.goto('.');
-  await expect(page.getByRole('heading', { name: fixtureDataset.title })).toBeVisible();
+  await expect(page.getByLabel('Šaltinis')).toHaveValue(fixtureDataset.id);
 
   await page.getByLabel('Ieškoti žodžių').fill('ąžuolas');
-  await expect(page.getByRole('heading', { name: 'Žodžiai (2)' })).toBeVisible();
+  await expect(page.getByText('Rodomi 1–2 iš 2')).toBeVisible();
 
   const expectedDate = await page.evaluate(() => new Date().toISOString().slice(0, 10));
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Atsisiųsti duomenis .csv formatu' }).click();
+  await page.getByRole('button', { name: 'Atsisiųsti CSV' }).click();
   const download = await downloadPromise;
   const csv = await downloadText(download);
 
