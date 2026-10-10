@@ -156,8 +156,9 @@
                   <span class="resource-link"><a href={product.manifestUrl}>JSON</a><span class="inline-separator" aria-hidden="true">//</span></span>
                 {/if}
                 <a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Šaltinis</a>
+                <span class="inline-separator" aria-hidden="true">//</span>
                 <details class="entry-details">
-                  <summary>Apie rinkinį</summary>
+                  <summary class="text-button">Apie rinkinį</summary>
                   <div class="entry-details-content">
                     <dl class="entry-facts">
                       <div><dt>Šaltinio pavadinimas</dt><dd>{product.title}</dd></div>
@@ -190,13 +191,16 @@
   .category { display: grid; gap: 1rem; }
   .category > h3, .entry-title { margin: 0; }
   .entries { display: grid; gap: 1.5rem; }
-  .catalogue-entry { display: grid; gap: .5rem; min-width: 0; }
+  .catalogue-entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; min-width: 0; }
   .catalogue-entry > p { margin: 0; }
   .entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
   .resource-link { display: inline-flex; align-items: center; gap: .5rem; }
-  .entry-details { min-width: 0; }
-  .entry-details[open] { flex-basis: 100%; }
-  .entry-details-content { padding: 1rem; overflow-wrap: anywhere; }
+  .entry-details { display: contents; border: 0; }
+  .entry-details::details-content { flex-basis: 100%; min-width: 0; }
+  .entry-details:not([open])::details-content { display: none; }
+  .entry-details > summary { padding: 0; border: 0; font-weight: inherit; }
+  .entry-details > summary:hover, .entry-details > summary:focus-visible { text-decoration-style: dashed; }
+  .entry-details-content { flex-basis: 100%; min-width: 0; padding-top: .5rem; overflow-wrap: anywhere; }
   .entry-facts { display: grid; gap: .75rem; margin-bottom: 1rem; }
   .entry-facts dd { margin: .25rem 0 0; }
 </style>
