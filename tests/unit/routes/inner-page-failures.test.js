@@ -8,7 +8,6 @@ vi.mock('../../../src/lib/ccll-genre-profile', () => ({ lookupCcllGenreWord: vi.
 vi.mock('../../../src/lib/blkt-wordform-profile', () => ({ loadBlktLicenceTexts: vi.fn(), lookupBlktWordform: vi.fn(), loadBlktWordformProfile: vi.fn(() => Promise.reject(new Error('Nepavyko atsisiųsti duomenų.'))) }));
 vi.mock('../../../src/lib/syntax-context', () => ({ loadSyntaxContexts: vi.fn(), searchSyntaxLemmas: vi.fn(), loadSyntaxOverview: vi.fn(() => Promise.reject(new Error('Nepavyko atsisiųsti duomenų.'))) }));
 
-import About from '../../../src/routes/apie/+page.svelte';
 import Catalogue from '../../../src/routes/duomenu-katalogas/+page.svelte';
 import Coverage from '../../../src/routes/zodyno-apreptis/+page.svelte';
 import War from '../../../src/routes/karo-zodziu-palyginimas/+page.svelte';
@@ -17,7 +16,7 @@ import Blkt from '../../../src/routes/blkt-profilis/+page.svelte';
 import Syntax from '../../../src/routes/sintakse/+page.svelte';
 
 it.each([
-  ['metodika', About], ['katalogas', Catalogue], ['aprėptis', Coverage], ['karo palyginimas', War], ['žanrai', Genre], ['BLKT', Blkt], ['sintaksė', Syntax]
+  ['katalogas', Catalogue], ['aprėptis', Coverage], ['karo palyginimas', War], ['žanrai', Genre], ['BLKT', Blkt], ['sintaksė', Syntax]
 ])('%s retains visible failure feedback instead of an empty interface', async (_name, component) => {
   const { getByRole, getByText } = render(component);
   await waitFor(() => expect(getByRole('alert')).toBeInTheDocument());

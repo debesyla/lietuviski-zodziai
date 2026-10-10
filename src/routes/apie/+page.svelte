@@ -1,218 +1,46 @@
 <script lang="ts">
-  import { loadPublicDataProducts, type DataProductType, type PublicDataProduct } from '$lib/publication';
   import { base } from '$app/paths';
   import { site } from '$lib/site';
 
   const catalogueUrl = `${base}/duomenu-katalogas`;
-  let products = $state<PublicDataProduct[]>([]);
-  let loading = $state(true);
-  let error = $state<string | null>(null);
-
-  function productForm(product: PublicDataProduct) {
-    const forms: Record<DataProductType, string> = {
-      'generic-frequency-dataset': product.content?.entryKind === 'wordform'
-        ? 'Žodžių formų dažnumo sąrašas'
-        : 'Lemų dažnumo sąrašas',
-      'chunked-wordform-list': 'Didelis žodžių formų dažnumo sąrašas',
-      'chunked-frequency-list': 'Žodžių formų arba viengramių dažnumo sąrašas',
-      'chunked-derived-frequency-list': 'Iš anotuoto tekstyno išvestas dažnumo sąrašas',
-      'chunked-lexical-collection': 'Specializuotas leksinis rinkinys su šaltiniui būdingais laukais',
-      'chunked-syntactic-context': 'Šaltinio priklausomybių ryšių ir sakinių kontekstų rinkinys',
-      'chunked-comparison': 'Atskirų metrikų palyginamasis rinkinys',
-      'metadata-only': 'Šaltinio metaduomenys be publikuojamų eilučių'
-    };
-    return forms[product.productType];
-  }
-
-  function publicationStatus(product: PublicDataProduct) {
-    return product.publication.status === 'published' ? 'Viešas JSON duomenų produktas' : 'Metaduomenys; įrašai neskelbiami';
-  }
-
-  function permissionDescription(product: PublicDataProduct) {
-    if (product.id === 'rimkute-morphemic-dictionary') {
-      return 'Leidžiama išgauti ir taisyti PDF duomenis, skelbti bei platinti visą išvestinį rinkinį ir statistiką, taip pat pernaudoti su įprastu priskyrimu.';
-    }
-    return product.provenance.permission?.scope ?? '';
-  }
-
-  $effect(() => {
-    let cancelled = false;
-    loadPublicDataProducts().then((loadedProducts) => {
-      if (cancelled) return;
-      products = loadedProducts;
-      loading = false;
-    }).catch((loadError) => {
-      if (cancelled) return;
-      error = loadError instanceof Error ? loadError.message : String(loadError);
-      loading = false;
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  });
 </script>
 
 <svelte:head>
   <title>metodika ir šaltiniai // dažniausi žodžiai</title>
-  <meta name="description" content="Sužinokite, iš kokių viešų šaltinių sudaryti šios svetainės lietuvių kalbos duomenys, kokios jų licencijos ir kaip skaityti rodiklius." />
+  <meta name="description" content="Lietuvių kalbos tekstynų duomenys: kaip skaityti dažnius, rasti šaltinius ir naudoti rinkinius." />
   <link rel="canonical" href={site.methodologyUrl} />
   <meta property="og:title" content="Metodika ir šaltiniai // dažniausi žodžiai" />
-  <meta property="og:description" content="Viešų lietuvių kalbos duomenų šaltiniai, licencijos, ribos ir rodiklių paaiškinimas." />
+  <meta property="og:description" content="Kaip skaityti dažnius, rasti šaltinius ir naudoti lietuvių kalbos tekstynų duomenis." />
   <meta property="og:url" content={site.methodologyUrl} />
 </svelte:head>
 
 <main class="methodology">
-  <header>
-  <h2>metodika ir šaltiniai</h2>
-  <p class="lead">Kaip skaityti duomenis ir kokiomis sąlygomis juos naudoti.</p>
-  </header>
+  <p>Lietuvių kalbos tekstynų duomenys, jų palyginimai ir sakinių pavyzdžiai.</p>
 
   <section aria-labelledby="reading-title">
-    <h2 id="reading-title">Kaip skaityti rodiklius</h2>
+    <h2 id="reading-title">Kaip skaityti duomenis</h2>
     <ul>
       <li><strong>Dažnumas</strong> – pavartojimų skaičius pasirinktame šaltinyje.</li>
-      <li><strong>Lema</strong> jungia vieno žodžio formas. <strong>Žodžio forma</strong> – konkretus šaltinio užrašas, pavyzdžiui, „namuose“.</li>
-      <li>Grafikai ir eksportas atitinka pasirinktą rinkinį bei filtrus. Lygindami tekstynus atsižvelkite į jų apimtį, laikotarpį, atranką ir normalizavimą.</li>
-      <li>Dažnumas nepaaiškina reikšmės ar žodžių ryšių. Tam reikia sakinių ir kontekstų.</li>
+      <li><strong>Lema</strong> – pagrindinė žodžio forma, pavyzdžiui, „namas“.</li>
+      <li><strong>Žodžio forma</strong> – konkretus užrašas, pavyzdžiui, „namuose“.</li>
     </ul>
+    <p>Grafikai ir eksportas atitinka pasirinktą rinkinį bei filtrus. Lygindami tekstynus atsižvelkite į jų apimtį, laikotarpį ir dažnių skaičiavimo būdą.</p>
+    <p>Dažnumas nepaaiškina žodžio reikšmės ar jo ryšių su kitais žodžiais. Tam reikia sakinių kontekstų.</p>
   </section>
 
   <section aria-labelledby="sources-title">
-    <h2 id="sources-title">Vieši rinkiniai ir jų kilmė</h2>
-    <p><a href={catalogueUrl}>Naršyti viešų duomenų katalogą</a></p>
-
-    {#if loading}
-      <p class="loading" role="status" aria-live="polite">Kraunami šaltinių metaduomenys…</p>
-    {:else if error}
-      <div class="error" role="alert">
-        <h3>Nepavyko įkelti šaltinių metaduomenų</h3>
-        <p>{error}</p>
-      </div>
-    {:else}
-      <div class="source-list">
-        {#each products as product}
-          <article class:metadata-only={product.publication.status === 'metadata-only'}>
-            <h3>{product.title}</h3>
-            <details><summary>Citata, licencija ir sąlygos</summary><div class="details-content">
-            <dl>
-              <div>
-                <dt>Duomenų forma</dt>
-                <dd>{productForm(product)}</dd>
-              </div>
-              <div>
-                <dt>Vieša būsena</dt>
-                <dd>{publicationStatus(product)}</dd>
-              </div>
-              {#if product.viewCount > 0}
-                <div>
-                  <dt>Vieši vaizdai</dt>
-                  <dd>{product.viewCount}</dd>
-                </div>
-              {/if}
-              <div>
-                <dt>Licencija</dt>
-                <dd>{product.provenance.licence}</dd>
-              </div>
-            </dl>
-            {#if product.publication.status === 'metadata-only'}
-              <p class="notice">Šaltinio eilutės sąmoningai neskelbiamos, kol nėra patikimo mašininiu būdu apdorojamo šaltinio ir aiškių pakartotinio naudojimo sąlygų.</p>
-            {/if}
-            <p><strong>Citata:</strong> {product.provenance.citation}</p>
-            {#if product.provenance.permission}
-              <p><strong>Teisių turėtojo leidimas:</strong> {permissionDescription(product)} ({product.provenance.permission.confirmedOn}). Privatus susirašinėjimas neskelbiamas.</p>
-            {/if}
-            {#if product.provenance.attributionNotice}
-              <p><strong>Priskyrimas:</strong> {product.provenance.attributionNotice}</p>
-            {/if}
-            {#if product.provenance.modificationNotice}
-              <p class="notice"><strong>Pakeitimo pranešimas:</strong> {product.provenance.modificationNotice}</p>
-            {/if}
-            <p><a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis šaltinio įrašas</a> <span class="inline-separator" aria-hidden="true">//</span> <a href={product.manifestUrl}>Viešo JSON produkto aprašas</a></p>
-            </div></details>
-          </article>
-        {/each}
-      </div>
-    {/if}
-  </section>
-
-  <section aria-labelledby="reuse-title">
-    <h2 id="reuse-title">Atnaujinimas ir pakartotinis naudojimas</h2>
-    <p>Rinkiniai atnaujinami retai ir tik po šaltinio, licencijos, eilučių schemos, kontrolinių sumų bei rezultatų suvestinių peržiūros. Svetainė nepriima lankytojų įkeliamų duomenų. Naudojant duomenis būtina laikytis prie kiekvieno rinkinio nurodytos licencijos ir pateikti jo citatą.</p>
+    <h2 id="sources-title">Šaltiniai ir naudojimas</h2>
+    <p><a href={catalogueUrl}>Duomenų kataloge</a> rasite šaltinius, citatas, licencijas ir naudojimo ribas. Naudodami rinkinį laikykitės jo licencijos ir nurodykite šaltinį.</p>
+    <p>Rinkiniai atnaujinami retai, patikrinus šaltinį, licenciją ir duomenis.</p>
   </section>
 
   <section aria-labelledby="privacy-title">
-    <h2 id="privacy-title">Privatumas ir ryšys</h2>
-    <p>Svetainėje nėra analizės, sekimo scenarijų ar naršyklės saugyklos telemetrijos. Statinis prieglobos paslaugos teikėjas gali tvarkyti savo techninius veikimo žurnalus pagal savo taisykles.</p>
-    <p>Pastabas apie šaltinius, netikslumus ar pakartotinį naudojimą siųskite <a href="mailto:labas@dago.lt">labas@dago.lt</a>.</p>
+    <h2 id="privacy-title">Privatumas</h2>
+    <p>Paieška vyksta jūsų naršyklėje. Svetainėje nėra analitikos ar sekimo scenarijų. Prieglobos paslauga gali saugoti techninius veikimo žurnalus.</p>
   </section>
 </main>
 
 <style>
-  .methodology {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .methodology > * {
-    min-width: 0;
-  }
-
-  h2 {
-    margin-bottom: var(--sm);
-  }
-
-  .lead {
-    font-size: inherit;
-    max-width: 62ch;
-  }
-
-  .source-list {
-    display: grid;
-    gap: var(--md);
-    grid-template-columns: minmax(0, 1fr);
-    margin-top: var(--md);
-  }
-
-  .source-list > * {
-    min-width: 0;
-  }
-
-  article,
-  .loading,
-  .error {
-    overflow-wrap: anywhere;
-  }
-
-  article { border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
-
-  article h3 {
-    margin-bottom: var(--sm);
-  }
-
-  dl {
-    display: grid;
-    gap: var(--sm);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: var(--md) 0;
-  }
-
-  dt {
-    color: color-mix(in srgb, var(--text-color) 72%, transparent);
-  }
-
-  dd {
-    margin: 0;
-  }
-
-  article p + p {
-    margin-top: var(--sm);
-  }
-
-  @media (max-width: 639px) {
-    dl {
-      grid-template-columns: 1fr;
-    }
-  }
+  .methodology { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .methodology > * { min-width: 0; }
 </style>
