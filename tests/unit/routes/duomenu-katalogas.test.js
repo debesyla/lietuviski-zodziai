@@ -102,14 +102,17 @@ import { loadPublicDataProducts } from '../../../src/lib/publication';
 
 describe('Public data catalogue page', () => {
   it('groups every product type and makes scope, licence, status, limits, and safe access visible', async () => {
-    const { getByRole, getByText, queryByText } = render(Page);
+    const { getByRole, getByText, queryByText, queryByRole } = render(Page);
 
     expect(getByText('Kraunami rinkiniai…')).toBeInTheDocument();
     await waitFor(() => expect(queryByText('Kraunami rinkiniai…')).not.toBeInTheDocument());
 
-    for (const heading of ['Tyrinėti naršyklėje', 'Rinkiniai JSON formatu', 'Tik šaltinių aprašai']) {
+    for (const heading of ['Rinkiniai JSON formatu', 'Tik šaltinių aprašai']) {
       expect(getByRole('heading', { name: heading })).toBeInTheDocument();
     }
+
+    expect(queryByText('duomenų katalogas')).not.toBeInTheDocument();
+    expect(queryByRole('heading', { name: 'Tyrinėti naršyklėje' })).not.toBeInTheDocument();
 
     const lexicalCard = getByRole('article', { name: 'Leksinis bandomasis rinkinys' });
     expect(within(lexicalCard).getByText('Leksinis šaltinis.')).toBeInTheDocument();

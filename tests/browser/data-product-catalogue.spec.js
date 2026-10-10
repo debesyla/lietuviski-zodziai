@@ -22,10 +22,11 @@ test('makes every public data product discoverable with scope, limits, and a saf
   const assertHealthy = observePageHealth(page);
 
   await page.goto('duomenu-katalogas');
-  await expect(page.getByRole('heading', { name: 'duomenų katalogas' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'duomenų katalogas' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Tyrinėti naršyklėje' })).toHaveCount(0);
   await expect(page.locator('article.catalogue-entry')).toHaveCount(15);
 
-  for (const heading of ['Tyrinėti naršyklėje', 'Rinkiniai JSON formatu']) {
+  for (const heading of ['Rinkiniai JSON formatu']) {
     await expect(page.getByRole('heading', { name: heading })).toBeVisible();
   }
   await expect(page.getByRole('heading', { name: 'Tik šaltinių aprašai' })).toHaveCount(0);

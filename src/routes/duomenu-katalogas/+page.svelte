@@ -131,10 +131,6 @@
 </svelte:head>
 
 <main class="catalogue">
-  <header>
-    <h2>duomenų katalogas</h2>
-  </header>
-
   {#if loading}
     <p class="loading" role="status">Kraunami rinkiniai…</p>
   {:else if error}
@@ -146,13 +142,13 @@
     <p role="status">Rinkinių nėra.</p>
   {:else}
     {#each groups as group}
-      <section class="category" aria-labelledby={`category-${group.id}`}>
-        <h3 id={`category-${group.id}`}>{group.title}</h3>
+      <section class="category" aria-label={group.title}>
+        {#if group.id !== 'explore'}<h3 aria-level="2">{group.title}</h3>{/if}
         <div class="entries">
           {#each group.products as product (product.id)}
             {@const action = explorerAction(product)}
             <article class="catalogue-entry" aria-labelledby={`product-${product.id}`}>
-              <h4 id={`product-${product.id}`}><a href={action?.href ?? product.manifestUrl}>{displayTitle(product)}</a></h4>
+              <p class="entry-title" id={`product-${product.id}`}><strong><a href={action?.href ?? product.manifestUrl}>{displayTitle(product)}</a></strong></p>
               <p>{description(product)}</p>
               {#if product.publication.status === 'metadata-only'}<p>Tik aprašas; duomenų eilutės neskelbiamos.</p>{/if}
               <div class="entry-actions">
@@ -192,7 +188,7 @@
 <style>
   .catalogue { display: grid; gap: 2rem; }
   .category { display: grid; gap: 1rem; }
-  .category > h3, .catalogue-entry h4 { margin: 0; }
+  .category > h3, .entry-title { margin: 0; }
   .entries { display: grid; gap: 1.5rem; }
   .catalogue-entry { display: grid; gap: .5rem; min-width: 0; }
   .catalogue-entry > p { margin: 0; }
