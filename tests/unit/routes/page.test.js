@@ -1,5 +1,5 @@
 import { render, waitFor } from '@testing-library/svelte/svelte5';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 
 const catalog = {
   schemaVersion: 1,
@@ -33,6 +33,8 @@ vi.mock('../../../src/components/DataLoader.svelte', () => ({
 import Page from '../../../src/routes/+page.svelte';
 import DataLoader from '../../../src/components/DataLoader.svelte';
 
+afterEach(() => window.history.replaceState(null, '', '/'));
+
 describe('Page', () => {
   it('loads catalog metadata before rendering the dataset selector', async () => {
     const { getByText, getByRole, queryByText } = render(Page);
@@ -50,6 +52,12 @@ describe('Page', () => {
     expect(getByRole('link', { name: 'DML6 žodyno aprėptis' })).toHaveAttribute('href', '/zodyno-apreptis');
     expect(getByRole('link', { name: 'Karo meto vartosena' })).toHaveAttribute('href', '/karo-zodziu-palyginimas');
     expect(getByRole('link', { name: 'CCLL žanrų profilis' })).toHaveAttribute('href', '/zanru-profilis');
+  });
+
+  it.each([['first', 'first'], ['unknown', 'second']])('uses a catalogue source link with a valid default fallback (%s)', async (requested, expected) => {
+    window.history.replaceState(null, '', `/?source=${requested}`);
+    render(Page);
+    await waitFor(() => expect(vi.mocked(DataLoader).mock.calls.at(-1)[1].selectedDatasetId).toBe(expected));
   });
 
   it('publishes a specific, canonical Lithuanian discovery preview', () => {

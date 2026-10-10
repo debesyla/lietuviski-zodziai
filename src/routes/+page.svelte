@@ -28,7 +28,9 @@
     loadCatalog().then((loadedCatalog) => {
       if (cancelled) return;
       catalog = loadedCatalog;
-      selectedDatasetId = loadedCatalog.defaultDatasetId ?? loadedCatalog.datasets[0]?.id ?? '';
+      const requestedSource = new URLSearchParams(window.location.search).get('source');
+      selectedDatasetId = loadedCatalog.datasets.find(dataset => dataset.id === requestedSource)?.id
+        ?? loadedCatalog.defaultDatasetId ?? loadedCatalog.datasets[0]?.id ?? '';
       catalogLoading = false;
     }).catch((error) => {
       if (cancelled) return;

@@ -98,15 +98,16 @@ vi.mock('../../../src/lib/publication', () => ({
 }));
 
 import Page from '../../../src/routes/duomenu-katalogas/+page.svelte';
+import { loadPublicDataProducts } from '../../../src/lib/publication';
 
 describe('Public data catalogue page', () => {
   it('groups every product type and makes scope, licence, status, limits, and safe access visible', async () => {
     const { getByRole, getByText, queryByText } = render(Page);
 
-    expect(getByText('Kraunami viešų produktų aprašai…')).toBeInTheDocument();
-    await waitFor(() => expect(queryByText('Kraunami viešų produktų aprašai…')).not.toBeInTheDocument());
+    expect(getByText('Kraunami rinkiniai…')).toBeInTheDocument();
+    await waitFor(() => expect(queryByText('Kraunami rinkiniai…')).not.toBeInTheDocument());
 
-    for (const heading of ['Dažnumo sąrašai', 'Palyginimai', 'Leksiniai rinkiniai', 'Sintaksės kontekstai', 'Metaduomenys be eilučių']) {
+    for (const heading of ['Tyrinėti naršyklėje', 'Rinkiniai JSON formatu', 'Tik šaltinių aprašai']) {
       expect(getByRole('heading', { name: heading })).toBeInTheDocument();
     }
 
@@ -114,46 +115,56 @@ describe('Public data catalogue page', () => {
     expect(within(lexicalCard).getByText('Leksinis šaltinis.')).toBeInTheDocument();
     expect(within(lexicalCard).getByText('CC BY 4.0')).toBeInTheDocument();
     expect(within(lexicalCard).getByText(/Tai nėra dažnumo sąrašas/)).toBeInTheDocument();
-    expect(within(lexicalCard).getByRole('link', { name: 'Atverti JSON aprašą ir prieigą' })).toHaveAttribute(
+    expect(within(lexicalCard).getByRole('link', { name: 'Leksinis bandomasis rinkinys' })).toHaveAttribute(
       'href',
       '/data-products/lexical/manifest.json'
     );
 
-    const morphemicCard = getByRole('article', { name: 'Dažninis lietuvių kalbos morfemikos žodynas' });
+    const morphemicCard = getByRole('article', { name: 'Morfemikos žodynas' });
     expect(within(morphemicCard).getByText('Rightsholder permission')).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/Leidžiama išgauti ir taisyti PDF duomenis/)).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/Rimkutė, Erika/)).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/MODIFIED FILE/)).toBeInTheDocument();
-    expect(within(morphemicCard).getByText(/72 325 įrašai.*310 012/i)).toBeInTheDocument();
+    expect(within(morphemicCard).getByText(/72 325 įrašai/)).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/61 eilute daugiau.*tik kontekstui.*ne kaip išgavimo tikslas/i)).toBeInTheDocument();
 
-    const comparisonCard = getByRole('article', { name: 'DML6 palyginimas' });
-    expect(within(comparisonCard).getByRole('link', { name: 'Tyrinėti žodyno aprėptį' })).toHaveAttribute('href', '/zodyno-apreptis');
+    const comparisonCard = getByRole('article', { name: 'DML6 žodyno aprėptis' });
+    expect(within(comparisonCard).getByRole('link', { name: 'DML6 žodyno aprėptis' })).toHaveAttribute('href', '/zodyno-apreptis');
 
-    const ccllCard = getByRole('article', { name: 'CCLL žodžių formos' });
-    expect(within(ccllCard).getByRole('link', { name: 'Tyrinėti žanrų profilį' })).toHaveAttribute('href', '/zanru-profilis');
+    const ccllCard = getByRole('article', { name: 'CCLL žanrų profilis' });
+    expect(within(ccllCard).getByRole('link', { name: 'CCLL žanrų profilis' })).toHaveAttribute('href', '/zanru-profilis');
 
-    const syntaxCard = getByRole('article', { name: 'ALKSNIS bandomieji kontekstai' });
-    expect(within(syntaxCard).getByRole('link', { name: 'Tyrinėti sintaksės kontekstus' })).toHaveAttribute('href', '/sintakse');
+    const syntaxCard = getByRole('article', { name: 'ALKSNIS sintaksė' });
+    expect(within(syntaxCard).getByRole('link', { name: 'ALKSNIS sintaksė' })).toHaveAttribute('href', '/sintakse');
 
     const blockedCard = getByRole('article', { name: 'Ribotas bandomasis šaltinis' });
-    expect(within(blockedCard).getByText('Tik metaduomenys; įrašai neskelbiami')).toBeInTheDocument();
+    expect(within(blockedCard).getByText('Tik aprašas; duomenų eilutės neskelbiamos.')).toBeInTheDocument();
     expect(within(blockedCard).getByText('Pakartotinio naudojimo sąlygos neišspręstos.')).toBeInTheDocument();
-    expect(within(blockedCard).getByRole('link', { name: 'Peržiūrėti viešą sprendimo aprašą' })).toHaveAttribute(
+    expect(within(blockedCard).getByRole('link', { name: 'Ribotas bandomasis šaltinis' })).toHaveAttribute(
       'href',
       '/data-products/blocked/manifest.json'
     );
-    expect(within(blockedCard).queryByRole('link', { name: 'Atverti JSON aprašą ir prieigą' })).not.toBeInTheDocument();
+    expect(within(blockedCard).queryByRole('link', { name: 'JSON' })).not.toBeInTheDocument();
 
-    const tableDetails = getByText('Visas katalogas tekstine lentele').closest('details');
-    expect(tableDetails).not.toBeNull();
-    expect(within(tableDetails).getByRole('table')).toBeInTheDocument();
-    expect(within(tableDetails).getByText('Ribotas bandomasis šaltinis')).toBeInTheDocument();
+    expect(document.querySelectorAll('article')).toHaveLength(products.length);
+    expect(getByRole('region', { name: 'Tyrinėti naršyklėje' })).toContainElement(comparisonCard);
+    expect(getByRole('region', { name: 'Rinkiniai JSON formatu' })).toContainElement(lexicalCard);
+    expect(getByRole('region', { name: 'Tik šaltinių aprašai' })).toContainElement(blockedCard);
+    expect(document.querySelector('table')).toBeNull();
+    expect(within(morphemicCard).getByText('Rimkutė, Kazlauskienė ir Raškinis (2011).')).toBeInTheDocument();
+
+  });
+
+  it('shows a useful empty state when the catalogue has no published entries', async () => {
+    vi.mocked(loadPublicDataProducts).mockResolvedValueOnce([]);
+    const { getByRole } = render(Page);
+    await waitFor(() => expect(getByRole('status')).toHaveTextContent('Rinkinių nėra.'));
+    expect(document.querySelectorAll('article')).toHaveLength(0);
   });
 
   it('keeps the catalogue structure accessible', async () => {
     const { queryByText } = render(Page);
-    await waitFor(() => expect(queryByText('Kraunami viešų produktų aprašai…')).not.toBeInTheDocument());
+    await waitFor(() => expect(queryByText('Kraunami rinkiniai…')).not.toBeInTheDocument());
 
     const result = await axe.run(document.body, {
       rules: { 'color-contrast': { enabled: false } }
