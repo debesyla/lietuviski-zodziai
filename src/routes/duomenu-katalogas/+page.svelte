@@ -190,8 +190,8 @@
 
 <style>
   .catalogue { display: grid; gap: 2rem; }
-  .category { display: grid; gap: 1rem; }
-  .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }
+  .category { display: grid; gap: 2rem; }
+  .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 2rem; }
   .category > :global(.dago-section-heading), .entry-title { margin: 0; }
   .entries { display: grid; gap: 1.5rem; }
   .catalogue-entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: .25rem; min-width: 0; }
