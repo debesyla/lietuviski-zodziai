@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import RateBars from '../../components/RateBars.svelte';
   import { base } from '$app/paths';
   import {
@@ -140,7 +141,7 @@
 
 <main class="profile-page">
   <header>
-    <h2>blkt žodžio profilis</h2>
+    <SectionHeading>BLKT žodžio profilis</SectionHeading>
     <p class="lead">Žodžio dažnumas Bendrajame lietuvių kalbos tekstyne pagal teksto tipą ir laikotarpį.</p>
   </header>
 
@@ -187,7 +188,7 @@
         {#if downloadError}<p class="status error" role="alert">{downloadError}</p>{/if}
 
         <section aria-labelledby="corpus-title">
-          <h3 id="corpus-title">Visas tekstynas</h3>
+          <SectionHeading level={3} id="corpus-title">Visas tekstynas</SectionHeading>
           <dl class="headline-metrics">
             <div><dt>Pavartojimai</dt><dd>{formatInteger(result.corpus.tokenCount)}</dd></div>
             <div><dt>Dokumentai su žodžiu</dt><dd>{formatInteger(result.corpus.documentCount)}</dd></div>
@@ -204,7 +205,7 @@
         </section>
 
         <section aria-labelledby="types-title">
-          <h3 id="types-title">Pagal teksto tipą</h3>
+          <SectionHeading level={3} id="types-title">Pagal teksto tipą</SectionHeading>
           {#if result.documentTypes}
             <p class="chart-unit">Pavartojimai milijonui žodžių</p>
             <RateBars rows={result.documentTypes.map(item => ({ label: item.label, value: item.ratePerMillion }))} unit="Pavartojimai milijonui žodžių" />
@@ -226,7 +227,7 @@
         </section>
 
         <section aria-labelledby="periods-title">
-          <h3 id="periods-title">Pagal laikotarpį</h3>
+          <SectionHeading level={3} id="periods-title">Pagal laikotarpį</SectionHeading>
           {#if result.periods}
             <p class="chart-unit">Pavartojimai milijonui žodžių</p>
             <RateBars rows={result.periods.map(item => ({ label: item.label, value: item.ratePerMillion }))} unit="Pavartojimai milijonui žodžių" />
@@ -297,7 +298,7 @@
   .lookup, .result, .source { min-width: 0; }
   .source-content { padding: 1rem; }
   .method-content { padding: 1rem; }
-  .result h3 { margin-bottom: 0; }
+  .result :global(.dago-section-heading) { margin-bottom: 0; }
   .result > section { display: grid; gap: 1rem; }
   .chart-unit { font-size: .875rem; }
   .facts { display: grid; gap: var(--md); grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--md); }

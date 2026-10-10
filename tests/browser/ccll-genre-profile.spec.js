@@ -26,7 +26,7 @@ test('looks up one CCLL wordform by named genre without loading the corpus', asy
   });
 
   await page.goto('zanru-profilis');
-  await expect(page.getByRole('heading', { name: 'ccll žanrų profilis' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'CCLL žanrų profilis' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
   expect(profileRequests.filter((url) => url.endsWith('/manifest.json'))).toHaveLength(1);
   expect(profileRequests.some((url) => url.includes('/buckets/'))).toBe(false);

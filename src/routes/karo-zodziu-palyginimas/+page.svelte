@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import RateBars from '../../components/RateBars.svelte';
   import {
     contrastPair,
@@ -89,7 +90,7 @@
 
 <main>
   <header>
-  <h2>karo laikotarpio žodžių palyginimas</h2>
+  <SectionHeading>Karo laikotarpio žodžių palyginimas</SectionHeading>
   <p class="intro">Žodžio vartosena CCLL2, karo meto žiniasklaidoje ir socialiniuose tinkluose. Rodikliai perskaičiuoti 100 mln. kiekvieno šaltinio žodžių.</p>
   </header>
 
@@ -131,7 +132,7 @@
           {/if}
         </div>
 
-        <h3>Pavartojimai / 100 mln. žodžių</h3>
+        <SectionHeading level={3}>Pavartojimai / 100 mln. žodžių</SectionHeading>
         <RateBars rows={profile.sources.map(source => ({ label: source.label, value: result!.metrics[source.id]?.tokenCount ?? null }))} unit="Pavartojimai / 100 mln. žodžių" />
         <details><summary>Lentelė</summary><div class="table-scroll"><table>
           <thead>
@@ -162,7 +163,7 @@
       </section>
 
       <section class="contrast" aria-labelledby="contrast-title">
-        <h2 id="contrast-title">Santykinis kontrastas</h2>
+        <SectionHeading id="contrast-title">Santykinis kontrastas</SectionHeading>
         <label for="contrast-pair">Lyginama pora</label>
         <select id="contrast-pair" bind:value={selectedPairId}>
           {#each profile.contrast.pairs as pair}
@@ -317,7 +318,7 @@
     font-style: italic;
   }
 
-  .result h3 { margin: 0; }
+  .result :global(.dago-section-heading) { margin: 0; }
   .lookup, .intro, .source-facts, .reading-notes { max-width: 75ch; }
   .contrast label {
     margin-top: var(--xs);

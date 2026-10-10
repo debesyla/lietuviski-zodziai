@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from './SectionHeading.svelte';
   import {
     loadSyntaxContexts,
     loadSyntaxOverview,
@@ -159,7 +160,7 @@
 
     {#if selectedLemma}
       <section class="contexts" aria-labelledby="contexts-title">
-        <h2 id="contexts-title">Sakinių kontekstai: {selectedLemma.lemma}</h2>
+        <SectionHeading id="contexts-title">Sakinių kontekstai: {selectedLemma.lemma}</SectionHeading>
         <p>
           Iki {overview.manifest.syntaxContext.exampleSelection.maxExamplesPerLemma} pavyzdžių šaltinio tvarka.
         </p>
@@ -208,7 +209,7 @@
 
     <div class="summary-columns">
       <section aria-labelledby="relation-summary-title">
-        <h3 id="relation-summary-title">Dažniausios ryšių žymos</h3>
+        <SectionHeading level={3} id="relation-summary-title">Dažniausios ryšių žymos</SectionHeading>
         <table>
           <thead><tr><th scope="col">Žyma</th><th scope="col">Eilučių</th></tr></thead>
           <tbody>
@@ -220,7 +221,7 @@
       </section>
 
       <section aria-labelledby="genre-summary-title">
-        <h3 id="genre-summary-title">Šaltinio žanrai</h3>
+        <SectionHeading level={3} id="genre-summary-title">Šaltinio žanrai</SectionHeading>
         <table>
           <thead><tr><th scope="col">Žanras</th><th scope="col">Dok.</th><th scope="col">Sak.</th></tr></thead>
           <tbody>
@@ -297,7 +298,7 @@
     margin-top: var(--lg);
   }
 
-  h3 {
+  .summary-columns :global(.dago-section-heading) {
     margin-bottom: var(--sm);
   }
 

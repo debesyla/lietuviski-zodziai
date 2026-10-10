@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import SyntaxExplorer from '../../components/SyntaxExplorer.svelte';
 
 </script>
@@ -8,12 +9,12 @@
 </svelte:head>
 
 <main>
-  <h2>alksnis sintaksės kontekstai</h2>
+  <SectionHeading>ALKSNIS sintaksės kontekstai</SectionHeading>
   <SyntaxExplorer />
 </main>
 
 <style>
-  h2 {
+  main > :global(.dago-section-heading) {
     margin: 0 0 1.5rem;
   }
 </style>

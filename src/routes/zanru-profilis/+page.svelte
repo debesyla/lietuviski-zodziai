@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import RateBars from '../../components/RateBars.svelte';
   import {
     loadCcllGenreProfile,
@@ -107,7 +108,7 @@
 
 <main>
   <header>
-  <h2>ccll žanrų profilis</h2>
+  <SectionHeading>CCLL žanrų profilis</SectionHeading>
   <p class="intro">Tikslios žodžio formos dažnumas penkiuose CCLL žanruose. Rodikliai skaičiuojami milijonui žetonų.</p>
   </header>
 
@@ -146,7 +147,7 @@
           <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti JSON</button>
         </div>
 
-        <h3>Pavartojimai milijonui žetonų</h3>
+        <SectionHeading level={3}>Pavartojimai milijonui žetonų</SectionHeading>
         <RateBars rows={profile.sources.map(source => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) }))} unit="Pavartojimai milijonui žetonų" />
         <details><summary>Lentelė</summary><div class="table-scroll">
           <table>
@@ -326,6 +327,6 @@
   }
   main { max-width: 100ch; }
   .lookup, .intro, .source-facts, .reading-notes { max-width: 75ch; }
-  .result h3 { margin: 0; }
+  .result :global(.dago-section-heading) { margin: 0; }
   .reading-notes-content { padding: 1rem; }
 </style>

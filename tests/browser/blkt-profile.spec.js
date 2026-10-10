@@ -37,7 +37,7 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   });
 
   await page.goto('blkt-profilis');
-  await expect(page.getByRole('heading', { name: 'blkt žodžio profilis' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'BLKT žodžio profilis' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
   await page.getByText('Kaip skaityti profilį', { exact: true }).click();
   await expect(page.getByText(/BLKT nėra reprezentatyvus visos lietuvių kalbos portretas/)).toBeVisible();

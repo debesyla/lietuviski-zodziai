@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import { base } from '$app/paths';
   import { loadPublicDataProducts, type DataProductType, type PublicDataProduct } from '$lib/publication';
   import { site } from '$lib/site';
@@ -131,7 +132,7 @@
 </svelte:head>
 
 <main class="catalogue">
-  <header><h2 class="catalogue-heading"><span aria-hidden="true">//</span>{' '}duomenų rinkiniai</h2></header>
+  <header><SectionHeading>Duomenų rinkiniai</SectionHeading></header>
   {#if loading}
     <p class="loading" role="status">Kraunami rinkiniai…</p>
   {:else if error}
@@ -144,7 +145,7 @@
   {:else}
     {#each groups as group}
       <section class="category" aria-label={group.title}>
-        {#if group.id !== 'explore'}<h3 class="catalogue-heading"><span aria-hidden="true">//</span>{' '}{group.title}</h3>{/if}
+        {#if group.id !== 'explore'}<SectionHeading level={3}>{group.title}</SectionHeading>{/if}
         <div class="entries">
           {#each group.products as product (product.id)}
             {@const action = explorerAction(product)}
@@ -189,10 +190,9 @@
 
 <style>
   .catalogue { display: grid; gap: 2rem; }
-  .catalogue-heading { margin: 0; opacity: .2; }
   .category { display: grid; gap: 1rem; }
   .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }
-  .category > h3, .entry-title { margin: 0; }
+  .category > :global(.dago-section-heading), .entry-title { margin: 0; }
   .entries { display: grid; gap: 1.5rem; }
   .catalogue-entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: .25rem; min-width: 0; }
   .catalogue-entry + .catalogue-entry { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }

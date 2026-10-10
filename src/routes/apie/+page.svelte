@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import { base } from '$app/paths';
   import { site } from '$lib/site';
 
@@ -18,7 +19,7 @@
   <p>Lietuvių kalbos tekstynų duomenys, jų palyginimai ir sakinių pavyzdžiai.</p>
 
   <section aria-labelledby="reading-title">
-    <h2 id="reading-title">Kaip skaityti duomenis</h2>
+    <SectionHeading id="reading-title">Kaip skaityti duomenis</SectionHeading>
     <ul>
       <li><strong>Dažnumas</strong> – pavartojimų skaičius pasirinktame šaltinyje.</li>
       <li><strong>Lema</strong> – pagrindinė žodžio forma, pavyzdžiui, „namas“.</li>
@@ -29,13 +30,13 @@
   </section>
 
   <section aria-labelledby="sources-title">
-    <h2 id="sources-title">Šaltiniai ir naudojimas</h2>
+    <SectionHeading id="sources-title">Šaltiniai ir naudojimas</SectionHeading>
     <p><a href={catalogueUrl}>Duomenų kataloge</a> rasite šaltinius, citatas, licencijas ir naudojimo ribas. Naudodami rinkinį laikykitės jo licencijos ir nurodykite šaltinį.</p>
     <p>Rinkiniai atnaujinami retai, patikrinus šaltinį, licenciją ir duomenis.</p>
   </section>
 
   <section aria-labelledby="privacy-title">
-    <h2 id="privacy-title">Privatumas</h2>
+    <SectionHeading id="privacy-title">Privatumas</SectionHeading>
     <p>Paieška vyksta jūsų naršyklėje. Svetainėje nėra analitikos ar sekimo scenarijų. Prieglobos paslauga gali saugoti techninius veikimo žurnalus.</p>
   </section>
 </main>

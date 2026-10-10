@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from './SectionHeading.svelte';
   import { analyseFrequency, sampleByRank } from '$lib/analysis';
   import { t } from '$lib/translations';
   import type { Word } from '$lib/data';
@@ -97,7 +98,7 @@
       <section class="chart-section" aria-labelledby="top-words-title">
       <div class="chart-heading">
         <div>
-          <h2 id="top-words-title">{t('topWords')}</h2>
+          <SectionHeading id="top-words-title">{t('topWords')}</SectionHeading>
         </div>
         <label>
           {t('showTop')}
@@ -121,7 +122,7 @@
       </section>
 
       <section class="chart-section" aria-labelledby="rank-frequency-title">
-      <h2 id="rank-frequency-title">{t('rankFrequency')}</h2>
+      <SectionHeading id="rank-frequency-title">{t('rankFrequency')}</SectionHeading>
       <p>{t('rankFrequencyDescription')}</p>
       <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="rank-frequency-title rank-frequency-description" class="line-chart">
         <desc id="rank-frequency-description">{t('rankFrequencyText', { first: formatNumber(analysis.topWord?.frequency ?? 0), last: formatNumber(minimumFrequency), count: formatNumber(analysis.entryCount) })}</desc>
@@ -154,7 +155,7 @@
       </section>
 
       <section class="chart-section" aria-labelledby="coverage-title">
-      <h2 id="coverage-title">{t('cumulativeCoverage')}</h2>
+      <SectionHeading id="coverage-title">{t('cumulativeCoverage')}</SectionHeading>
       <p>{t('coverageDescription')}</p>
       <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="coverage-title coverage-description" class="line-chart">
         <desc id="coverage-description">{t('coverageText', { topTen: formatPercent(analysis.coverage[Math.min(9, analysis.coverage.length - 1)]?.coverage ?? 0) })}</desc>
@@ -188,7 +189,7 @@
 
     {#if analysis.partOfSpeech.length > 0}
         <section class="chart-section" aria-labelledby="pos-title">
-        <h2 id="pos-title">{t('posComposition')}</h2>
+        <SectionHeading id="pos-title">{t('posComposition')}</SectionHeading>
         <div class="bar-chart" role="img" aria-label={`${t('posComposition')}: ${analysis.partOfSpeech.map((part) => `${displayType(part.type)} ${formatPercent(part.share)}`).join(', ')}`}>
           {#each analysis.partOfSpeech as part}
             <div class="bar-row">
@@ -228,7 +229,7 @@
     </dl>
 
       <section class="facts-section" aria-labelledby="frequency-facts-title">
-      <h2 id="frequency-facts-title">{t('frequencyFacts')}</h2>
+      <SectionHeading id="frequency-facts-title">{t('frequencyFacts')}</SectionHeading>
       <dl class="fact-grid">
         <div>
           <dt>{t('leadingEntryShare')}</dt>
@@ -318,8 +319,8 @@
     min-width: 0;
   }
 
-  .chart-section h2,
-  .facts-section h2 {
+  .chart-section :global(.dago-section-heading),
+  .facts-section :global(.dago-section-heading) {
     margin: 0;
   }
 

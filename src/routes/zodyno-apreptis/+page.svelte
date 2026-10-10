@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import {
     coverageCategoryDefinitions,
     loadDml6CoverageDrilldown,
@@ -116,7 +117,7 @@
 
 <main>
   <header>
-  <h2>žodyno aprėptis pagal dažnumą</h2>
+  <SectionHeading>Žodyno aprėptis pagal dažnumą</SectionHeading>
   <p class="intro">Kurios Jungtinio lietuvių kalbos tekstyno formos aptinkamos DML6 žodyne?</p>
   </header>
 
@@ -131,7 +132,7 @@
     <section aria-labelledby="bands-title">
       <div class="section-heading">
         <div>
-          <h2 id="bands-title">Aprėptis dažnumo intervaluose</h2>
+          <SectionHeading id="bands-title">Aprėptis dažnumo intervaluose</SectionHeading>
         </div>
         <button type="button" class="text-button" onclick={downloadSummary}>Atsisiųsti CSV</button>
       </div>
@@ -140,7 +141,7 @@
         {#each profile.summary.bands as band}
           <article class="band" aria-labelledby={`band-${band.id}`}>
             <header>
-              <h3 id={`band-${band.id}`}>Dažnumas {bandLabel(band)}</h3>
+              <SectionHeading level={3} id={`band-${band.id}`}>Dažnumas {bandLabel(band)}</SectionHeading>
               <p>{formatNumber(band.typeCount)} formų <span class="inline-separator" aria-hidden="true">//</span> {formatNumber(band.tokenCount)} žetonų</p>
             </header>
             <div class="table-scroll">
@@ -174,7 +175,7 @@
             </div>
     {#if selection?.bandId === band.id && selectedBand && selectedCategory}
       <section class="examples" id={`examples-${band.id}`} aria-labelledby="examples-title" aria-live="polite">
-        <h3 id="examples-title">Pavyzdžiai: {selectedCategoryLabel}, dažnumas {bandLabel(selectedBand)}</h3>
+        <SectionHeading level={3} id="examples-title">Pavyzdžiai: {selectedCategoryLabel}, dažnumas {bandLabel(selectedBand)}</SectionHeading>
         <p>Iki {formatNumber(selectedCategory.drilldown.records)} formų nuo dažniausios iki rečiausios; ne visa kategorija.</p>
         {#if drilldownLoading}
           <p role="status">Kraunami pasirinktos kategorijos pavyzdžiai…</p>
@@ -280,7 +281,7 @@
   }
 
   .section-heading { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
-  .section-heading h2 { margin: 0; }
+  .section-heading :global(.dago-section-heading) { margin: 0; }
   .section-heading button { flex-shrink: 0; }
   .bands {
     display: grid;
