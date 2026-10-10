@@ -22,8 +22,7 @@ test('makes every public data product discoverable with scope, limits, and a saf
   const assertHealthy = observePageHealth(page);
 
   await page.goto('duomenu-katalogas');
-  await expect(page.getByRole('heading', { name: 'Viešų duomenų katalogas' })).toBeVisible();
-  await expect(page.getByText('Kataloge: 15 produktų.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'viešų duomenų katalogas' })).toBeVisible();
   await expect(page.locator('article.product-card')).toHaveCount(15);
 
   for (const heading of ['Dažnumo sąrašai', 'Palyginimai', 'Leksiniai rinkiniai', 'Sintaksės kontekstai']) {
@@ -32,7 +31,7 @@ test('makes every public data product discoverable with scope, limits, and a saf
   await expect(page.getByRole('heading', { name: 'Metaduomenys be eilučių' })).toHaveCount(0);
 
   const parliament = page.getByRole('article', { name: 'Lithuanian Parliament Corpus corpus-wide frequency aggregates' });
-  await expect(parliament.getByText('Šaltinio apimtis')).toBeVisible();
+  await parliament.locator('summary').click();
   await expect(parliament.getByText('CC BY 4.0')).toBeVisible();
   await expect(parliament.getByText(/tai nėra autorystės nustatymo, politikų reitingavimo, citatų ar kalendorinės analizės priemonė/i)).toBeVisible();
   await expect(parliament.getByRole('link', { name: 'Atverti JSON aprašą ir prieigą' })).toHaveAttribute(
@@ -41,7 +40,7 @@ test('makes every public data product discoverable with scope, limits, and a saf
   );
 
   const morphemicDictionary = page.getByRole('article', { name: 'Dažninis lietuvių kalbos morfemikos žodynas' });
-  await expect(morphemicDictionary.getByText('Viešas JSON duomenų produktas')).toBeVisible();
+  await morphemicDictionary.locator('summary').click();
   await expect(morphemicDictionary.getByText('Rightsholder permission')).toBeVisible();
   await expect(morphemicDictionary.getByText(/72 325 įrašai.*310 012/i)).toBeVisible();
   await expect(morphemicDictionary.getByText(/61 eilute daugiau.*tik kontekstui.*ne kaip išgavimo tikslas/i)).toBeVisible();

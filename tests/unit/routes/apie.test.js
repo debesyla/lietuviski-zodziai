@@ -67,7 +67,7 @@ describe('Methodology page', () => {
     expect(getByText('Kraunami šaltinių metaduomenys…')).toBeInTheDocument();
     await waitFor(() => expect(queryByText('Kraunami šaltinių metaduomenys…')).not.toBeInTheDocument());
 
-    expect(getByRole('heading', { name: 'Metodika ir šaltiniai' })).toBeInTheDocument();
+    expect(getByRole('heading', { name: 'metodika ir šaltiniai' })).toBeInTheDocument();
     expect(getByText('Lemų bandomasis sąrašas')).toBeInTheDocument();
     expect(getByText('CC BY 4.0')).toBeInTheDocument();
     expect(getAllByRole('link', { name: 'Pirminis šaltinio įrašas' })[0]).toHaveAttribute('href', 'https://example.test/lemmas');
@@ -76,7 +76,7 @@ describe('Methodology page', () => {
     expect(getByText(/Privatus susirašinėjimas neskelbiamas/)).toBeInTheDocument();
     expect(getByText(/Rimkutė, Erika/)).toBeInTheDocument();
     expect(getByText(/MODIFIED FILE/)).toBeInTheDocument();
-    expect(getByRole('link', { name: '← Tyrinėti duomenis' })).toHaveAttribute('href', '/');
+    expect(getByRole('link', { name: 'Naršyti viešų duomenų katalogą' })).toHaveAttribute('href', '/duomenu-katalogas');
   });
 
   it('keeps the public methodology structure accessible', async () => {

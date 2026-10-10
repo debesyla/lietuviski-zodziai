@@ -3,7 +3,6 @@
   import { base } from '$app/paths';
   import { site } from '$lib/site';
 
-  const homeUrl = `${base}/`;
   const catalogueUrl = `${base}/duomenu-katalogas`;
   let products = $state<PublicDataProduct[]>([]);
   let loading = $state(true);
@@ -55,32 +54,32 @@
 </script>
 
 <svelte:head>
-  <title>Metodika ir šaltiniai · Lietuviški žodžiai</title>
+  <title>metodika ir šaltiniai // dažniausi žodžiai</title>
   <meta name="description" content="Sužinokite, iš kokių viešų šaltinių sudaryti šios svetainės lietuvių kalbos duomenys, kokios jų licencijos ir kaip skaityti rodiklius." />
   <link rel="canonical" href={site.methodologyUrl} />
-  <meta property="og:title" content="Metodika ir šaltiniai · Lietuviški žodžiai" />
+  <meta property="og:title" content="Metodika ir šaltiniai // dažniausi žodžiai" />
   <meta property="og:description" content="Viešų lietuvių kalbos duomenų šaltiniai, licencijos, ribos ir rodiklių paaiškinimas." />
   <meta property="og:url" content={site.methodologyUrl} />
 </svelte:head>
 
 <main class="methodology">
-  <p class="back-link"><a href={homeUrl}>← Tyrinėti duomenis</a></p>
-  <h1>Metodika ir šaltiniai</h1>
-  <p class="lead">Ši svetainė padeda tyrinėti lietuvių kalbos žodžių dažnumo ir gretimus leksinius rinkinius. Kiekvienas skaičius lieka susietas su konkrečiu šaltiniu, jo apimtimi ir licencija.</p>
+  <header>
+  <h1>metodika ir šaltiniai</h1>
+  <p class="lead">Kaip skaityti duomenis ir kokiomis sąlygomis juos naudoti.</p>
+  </header>
 
   <section aria-labelledby="reading-title">
     <h2 id="reading-title">Kaip skaityti rodiklius</h2>
     <ul>
-      <li><strong>Dažnumas</strong> yra šaltinyje suskaičiuotas žetonų ar įrašų skaičius, o ne bendras visos lietuvių kalbos „populiarumo“ matas.</li>
-      <li><strong>Lema</strong> sujungia tos pačios leksemos formas, o <strong>žodžio forma</strong> paliekama tokia, kokia pateikta šaltinyje. Tai nėra keičiami vienetai.</li>
-      <li>Diagramos, paieška, filtrai ir CSV eksportas visuomet aprašo tik pasirinktą rinkinį bei aktyvius filtrus. Skirtingų tekstynų dažnių negalima tiesiogiai lyginti nepatikrinus jų apimties, laikotarpio, atrankos ir normalizavimo.</li>
-      <li>Vien dažnumo sąrašas neparodo reikšmės, sinonimijos, kolokacijų ar vartosenos konteksto. Tokiems teiginiams reikia sakinių, dokumentų arba iš anksto apskaičiuotų ryšių duomenų.</li>
+      <li><strong>Dažnumas</strong> – pavartojimų skaičius pasirinktame šaltinyje.</li>
+      <li><strong>Lema</strong> jungia vieno žodžio formas. <strong>Žodžio forma</strong> – konkretus šaltinio užrašas, pavyzdžiui, „namuose“.</li>
+      <li>Grafikai ir eksportas atitinka pasirinktą rinkinį bei filtrus. Lygindami tekstynus atsižvelkite į jų apimtį, laikotarpį, atranką ir normalizavimą.</li>
+      <li>Dažnumas nepaaiškina reikšmės ar žodžių ryšių. Tam reikia sakinių ir kontekstų.</li>
     </ul>
   </section>
 
   <section aria-labelledby="sources-title">
     <h2 id="sources-title">Vieši rinkiniai ir jų kilmė</h2>
-    <p>Kiekvienam čia pateiktam rinkiniui nurodoma šaltinio citata, licencija ir nuoroda į pirminį įrašą. Dideli rinkiniai pateikiami JSON dalimis, kad jų metrikos nebūtų supainiotos su naršyklės dažnumo lentele.</p>
     <p><a href={catalogueUrl}>Naršyti viešų duomenų katalogą</a></p>
 
     {#if loading}
@@ -95,6 +94,7 @@
         {#each products as product}
           <article class:metadata-only={product.publication.status === 'metadata-only'}>
             <h3>{product.title}</h3>
+            <details><summary>Citata, licencija ir sąlygos</summary><div class="details-content">
             <dl>
               <div>
                 <dt>Duomenų forma</dt>
@@ -128,7 +128,8 @@
             {#if product.provenance.modificationNotice}
               <p class="notice"><strong>Pakeitimo pranešimas:</strong> {product.provenance.modificationNotice}</p>
             {/if}
-            <p><a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis šaltinio įrašas</a> · <a href={product.manifestUrl}>Viešo JSON produkto aprašas</a></p>
+            <p><a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis šaltinio įrašas</a> <span class="inline-separator" aria-hidden="true">//</span> <a href={product.manifestUrl}>Viešo JSON produkto aprašas</a></p>
+            </div></details>
           </article>
         {/each}
       </div>
@@ -150,7 +151,7 @@
 <style>
   .methodology {
     display: grid;
-    gap: var(--xl);
+    gap: 1.5rem;
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -162,12 +163,8 @@
     margin-bottom: var(--sm);
   }
 
-  .back-link {
-    margin-bottom: calc(var(--lg) * -1);
-  }
-
   .lead {
-    font-size: 1.15em;
+    font-size: inherit;
     max-width: 62ch;
   }
 
@@ -185,14 +182,10 @@
   article,
   .loading,
   .error {
-    border: 1px solid var(--border-color);
     overflow-wrap: anywhere;
-    padding: var(--md);
   }
 
-  article.metadata-only {
-    border-style: dashed;
-  }
+  article { border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
 
   article h3 {
     margin-bottom: var(--sm);
@@ -205,11 +198,6 @@
     margin: var(--md) 0;
   }
 
-  dl > div {
-    border-left: 2px solid var(--border-color);
-    padding-left: var(--sm);
-  }
-
   dt {
     color: color-mix(in srgb, var(--text-color) 72%, transparent);
   }
@@ -220,11 +208,6 @@
 
   article p + p {
     margin-top: var(--sm);
-  }
-
-  .notice {
-    border-left: 2px solid var(--text-color);
-    padding-left: var(--sm);
   }
 
   @media (max-width: 639px) {

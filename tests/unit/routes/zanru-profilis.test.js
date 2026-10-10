@@ -43,7 +43,7 @@ it('loads only profile metadata initially and exposes a keyboard-operable, denom
   const { getByText, getByLabelText, getByRole, getAllByText } = render(Page);
 
   expect(getByText('Kraunama žanrų profilio suvestinė…')).toBeInTheDocument();
-  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti žanruose' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
   expect(loadCcllGenreProfile).toHaveBeenCalledTimes(1);
   expect(lookupCcllGenreWord).not.toHaveBeenCalled();
 
@@ -55,7 +55,7 @@ it('loads only profile metadata initially and exposes a keyboard-operable, denom
   expect(getByRole('table')).toBeInTheDocument();
   expect(getAllByText('Neaptikta')).toHaveLength(3);
   expect(getByText('100')).toBeInTheDocument();
-  expect(getByRole('button', { name: 'Atsisiųsti šio atsakymo JSON' })).toBeInTheDocument();
+  expect(getByRole('button', { name: 'Atsisiųsti JSON' })).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 });
 
@@ -64,9 +64,9 @@ it('makes a no-result lookup explicit instead of inventing a zero', async () => 
   const user = userEvent.setup();
   const { getByLabelText, getByRole, getByText } = render(Page);
 
-  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti žanruose' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
   await user.type(getByLabelText('Tiksli žodžio forma'), 'nerasta');
-  await user.click(getByRole('button', { name: 'Ieškoti žanruose' }));
+  await user.click(getByRole('button', { name: 'Ieškoti' }));
 
   await waitFor(() => expect(getByText('Forma nerasta')).toBeInTheDocument());
   expect(getByText(/nereiškia, kad jos nėra lietuvių kalboje/i)).toBeInTheDocument();

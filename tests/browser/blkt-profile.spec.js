@@ -37,8 +37,9 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   });
 
   await page.goto('blkt-profilis');
-  await expect(page.getByRole('heading', { name: 'BLKT žodžio profilis' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Ieškoti BLKT' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'blkt žodžio profilis' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
+  await page.getByText('Kaip skaityti profilį', { exact: true }).click();
   await expect(page.getByText(/BLKT nėra reprezentatyvus visos lietuvių kalbos portretas/)).toBeVisible();
   await expect(page.getByText(/ne patvirtinti lietuviški ar taisyklingi žodžiai/)).toBeVisible();
   await expect(page.getByText(/Potipiai, tekstai, pavadinimai, autoriai/)).toBeVisible();
@@ -54,6 +55,9 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   await expect(page.getByRole('heading', { name: 'Visas tekstynas' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pagal teksto tipą' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pagal laikotarpį' })).toBeVisible();
+  await page.locator('.result details summary').nth(0).click();
+  await page.locator('.result details summary').nth(1).click();
+  await page.locator('.result details summary').nth(2).click();
   await expect(page.getByRole('table')).toHaveCount(3);
   expect(profileRequests.filter((url) => url.includes('/chunks/'))).toHaveLength(1);
   expect(profileRequests.filter((url) => url.includes('/routing/'))).toHaveLength(1);
@@ -65,7 +69,7 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   await expect.poll(() => typeTableRegion.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
 
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Atsisiųsti šį atsakymą JSON' }).click();
+  await page.getByRole('button', { name: 'Atsisiųsti JSON' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe('blkt-ir.json');
   const downloadedProfile = JSON.parse(await downloadText(download));
@@ -96,7 +100,7 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
 
 test('uses the same privacy-safe message when an exact BLKT word is not published', async ({ page }) => {
   await page.goto('blkt-profilis');
-  await expect(page.getByRole('button', { name: 'Ieškoti BLKT' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
 
   await page.getByLabel('Viena žodžio forma').fill('ž'.repeat(64));
   await page.keyboard.press('Enter');

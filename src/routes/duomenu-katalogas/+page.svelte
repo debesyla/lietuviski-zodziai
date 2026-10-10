@@ -17,27 +17,27 @@
     {
       id: 'frequency',
       title: 'Dažnumo sąrašai',
-      description: 'Lemų, žodžių formų ir viengramių skaičiai, kurie visada galioja tik nurodytam šaltiniui.'
+      description: 'Lemų, žodžių formų ir viengramių dažniai.'
     },
     {
       id: 'comparisons',
       title: 'Palyginimai',
-      description: 'Kelių šaltinių santykio ar aprėpties rodikliai; jų negalima perskaityti kaip bendro dažnumo reitingo.'
+      description: 'Šaltinių dažnumo ir žodyno aprėpties palyginimai.'
     },
     {
       id: 'lexical',
       title: 'Leksiniai rinkiniai',
-      description: 'Specializuoti žodyno, analizės ar porų įrašai, o ne dažnumo lentelės.'
+      description: 'Žodynai, analizės ir atitikmenų poros.'
     },
     {
       id: 'syntax',
       title: 'Sintaksės kontekstai',
-      description: 'Šaltiniui būdingi priklausomybių ryšiai, žanrai ir riboti sakinių kontekstai.'
+      description: 'Lemų ryšiai ir sakinių pavyzdžiai.'
     },
     {
       id: 'metadata',
       title: 'Metaduomenys be eilučių',
-      description: 'Šaltiniai, kuriems paskelbtas tik saugus aprašas, o ne duomenų įrašai.'
+      description: 'Šaltinių aprašai; duomenų eilutės neskelbiamos.'
     }
   ];
 
@@ -213,18 +213,19 @@
 </script>
 
 <svelte:head>
-  <title>Viešų duomenų katalogas · Lietuviški žodžiai</title>
+  <title>viešų duomenų katalogas // dažniausi žodžiai</title>
   <meta name="description" content="Naršykite visus viešus lietuvių kalbos duomenų produktus: jų šaltinio apimtį, licenciją, prieigą ir interpretavimo ribas." />
   <link rel="canonical" href={site.catalogueUrl} />
-  <meta property="og:title" content="Viešų duomenų katalogas · Lietuviški žodžiai" />
+  <meta property="og:title" content="Viešų duomenų katalogas // dažniausi žodžiai" />
   <meta property="og:description" content="Viešų lietuvių kalbos duomenų produktų apimtis, licencijos, prieiga ir ribos vienoje vietoje." />
   <meta property="og:url" content={site.catalogueUrl} />
 </svelte:head>
 
 <main class="catalogue">
-  <p class="back-link"><a href={homeUrl}>← Tyrinėti dažnumo sąrašus</a></p>
-  <h1>Viešų duomenų katalogas</h1>
-  <p class="lead">Ką kiekvienas rinkinys aprašo, kaip jį pasiekti ir kokios jo naudojimo ribos.</p>
+  <header>
+  <h1>viešų duomenų katalogas</h1>
+  <p class="lead">Rinkiniai, jų apimtis ir naudojimo sąlygos.</p>
+  </header>
 
   {#if loading}
     <p class="loading" role="status" aria-live="polite">Kraunami viešų produktų aprašai…</p>
@@ -234,7 +235,6 @@
       <p>{error}</p>
     </section>
   {:else}
-    <p class="result-count" role="status">Kataloge: {products.length} produktų.</p>
 
     {#each groupedCategories as category}
       <section class="category" aria-labelledby={`category-${category.id}`}>
@@ -248,10 +248,13 @@
             {@const action = primaryAction(product)}
             <article class:metadata-only={product.publication.status === 'metadata-only'} class="product-card" aria-labelledby={`product-${product.id}`}>
               <div class="card-header">
-                <p class="status">{availability(product)}</p>
+                {#if product.publication.status === 'metadata-only'}<p class="status">{availability(product)}</p>{/if}
                 <h3 id={`product-${product.id}`}>{product.title}</h3>
               </div>
 
+              <p class="source-scope">{sourceScope(product)}</p>
+              <details><summary>Apimtis, licencija ir prieiga</summary><div class="details-content">
+              {#if product.publication.status === 'published'}<p class="status">{availability(product)}</p>{/if}
               <dl class="facts">
                 <div>
                   <dt>Ką pateikia</dt>
@@ -260,10 +263,6 @@
                 <div>
                   <dt>Licencija</dt>
                   <dd>{product.provenance.licence}</dd>
-                </div>
-                <div class="scope">
-                  <dt>Šaltinio apimtis</dt>
-                  <dd>{sourceScope(product)}</dd>
                 </div>
                 <div class="scope">
                   <dt>Prieiga</dt>
@@ -288,13 +287,15 @@
                 <p class="modification-notice"><strong>Pakeitimo pranešimas:</strong> {product.provenance.modificationNotice}</p>
               {/if}
 
+              </div></details>
               <div class="card-actions">
                 {#if action}
                   <a href={action.href}>{action.label}</a>
-                  <a href={product.manifestUrl}>JSON produkto aprašas</a>
+                  {#if action.href !== product.manifestUrl}<span class="inline-separator" aria-hidden="true">//</span><a href={product.manifestUrl}>JSON aprašas</a>{/if}
                 {:else}
                   <a href={product.manifestUrl}>Peržiūrėti viešą sprendimo aprašą</a>
                 {/if}
+                <span class="inline-separator" aria-hidden="true">//</span>
                 <a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminio šaltinio įrašas</a>
               </div>
             </article>
@@ -346,21 +347,17 @@
 <style>
   .catalogue {
     display: grid;
-    gap: var(--xl);
+    gap: 1.5rem;
   }
 
-  .back-link {
-    margin-bottom: calc(var(--lg) * -1);
-  }
 
   .lead {
-    font-size: 1.15em;
+    font-size: inherit;
     max-width: 68ch;
   }
 
   .loading,
-  .error,
-  .result-count {
+  .error {
     border: 1px solid var(--border-color);
     padding: var(--md);
   }
@@ -386,27 +383,31 @@
 
   .product-grid {
     display: grid;
-    gap: var(--md);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    gap: 0;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .product-card {
-    border: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     gap: var(--md);
     min-width: 0;
-    padding: var(--md);
+    padding: 1.5rem 0;
   }
 
   .product-card.metadata-only {
-    border-style: dashed;
+    border-top-style: dashed;
   }
 
+  .card-header h3 { margin-top: 0; }
+  .category + .category { margin-top: 1.5rem; }
   .card-header {
     display: grid;
     gap: var(--xs);
   }
+
+  .card-header .status { border: 0; padding: 0; margin: 0; }
 
   .status {
     color: color-mix(in srgb, var(--text-color) 76%, transparent);
@@ -420,9 +421,7 @@
   }
 
   .facts > div {
-    border-left: 2px solid var(--border-color);
     min-width: 0;
-    padding-left: var(--sm);
   }
 
   .facts .scope {
@@ -438,20 +437,11 @@
     overflow-wrap: anywhere;
   }
 
-  .limitation {
-    border-left: 2px solid var(--text-color);
-    padding-left: var(--sm);
-  }
-
-  .modification-notice {
-    border-left: 2px dashed var(--text-color);
-    padding-left: var(--sm);
-  }
 
   .card-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--sm) var(--md);
+    gap: .5rem .75rem;
     margin-top: auto;
   }
 
@@ -480,8 +470,6 @@
 
   th,
   td {
-    border: 1px solid var(--border-color);
-    padding: var(--sm);
     text-align: left;
     vertical-align: top;
   }

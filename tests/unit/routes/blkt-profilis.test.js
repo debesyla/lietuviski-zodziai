@@ -125,7 +125,7 @@ it('submits from the keyboard and renders an accessible, denominator-aware resul
   const { getAllByRole, getByLabelText, getByRole, getByText } = render(Page);
 
   expect(getByText('Kraunama BLKT profilio suvestinė…')).toBeInTheDocument();
-  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti BLKT' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
   expect(getByText(/BLKT nėra reprezentatyvus visos lietuvių kalbos portretas/)).toBeInTheDocument();
   expect(getByText(/ne patvirtinti lietuviški ar taisyklingi žodžiai/)).toBeInTheDocument();
   expect(loadBlktWordformProfile).toHaveBeenCalledTimes(1);
@@ -137,8 +137,8 @@ it('submits from the keyboard and renders an accessible, denominator-aware resul
   await waitFor(() => expect(getByRole('heading', { name: 'žodis' })).toBeInTheDocument());
   expect(lookupBlktWordform).toHaveBeenCalledWith(profile, '  ŽODIS  ');
   expect(getAllByRole('table')).toHaveLength(2);
-  expect(getByText('Šio žodžio laikotarpių pjūvis neskelbiamas. Viešas atsakymas neatskleidžia, kuri reikšmė nepasiekė saugos ribos.')).toBeInTheDocument();
-  expect(getByRole('button', { name: 'Atsisiųsti šį atsakymą JSON' })).toBeInTheDocument();
+  expect(getByText('Šio žodžio laikotarpių pjūvis neskelbiamas. Atskiros saugos ribos nepasiekusios reikšmės neatskleidžiamos.')).toBeInTheDocument();
+  expect(getByRole('button', { name: 'Atsisiųsti JSON' })).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 });
 
@@ -154,11 +154,11 @@ it('downloads only the selected aggregate response as JSON', async () => {
   const user = userEvent.setup();
   const { getByLabelText, getByRole } = render(Page);
 
-  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti BLKT' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
   await user.type(getByLabelText('Viena žodžio forma'), 'žodis');
   await user.keyboard('{Enter}');
   await waitFor(() => expect(getByRole('heading', { name: 'žodis' })).toBeInTheDocument());
-  await user.click(getByRole('button', { name: 'Atsisiųsti šį atsakymą JSON' }));
+  await user.click(getByRole('button', { name: 'Atsisiųsti JSON' }));
 
   await waitFor(() => expect(click).toHaveBeenCalledOnce());
   expect(downloadLink.href).toBe('blob:blkt-result');
@@ -199,9 +199,9 @@ it('explains a no-result response without presenting it as a zero', async () => 
   const user = userEvent.setup();
   const { getByLabelText, getByRole, getByText } = render(Page);
 
-  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti BLKT' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
   await user.type(getByLabelText('Viena žodžio forma'), 'nerasta');
-  await user.click(getByRole('button', { name: 'Ieškoti BLKT' }));
+  await user.click(getByRole('button', { name: 'Ieškoti' }));
 
   await waitFor(() => expect(getByRole('heading', { name: 'Žodis paskelbtame profilyje nerastas' })).toBeInTheDocument());
   expect(getByText(/galėjo būti neaptiktas arba nepraeiti saugos slenksčio/i)).toBeInTheDocument();

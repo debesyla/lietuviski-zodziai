@@ -111,7 +111,7 @@ describe('Public data catalogue page', () => {
     }
 
     const lexicalCard = getByRole('article', { name: 'Leksinis bandomasis rinkinys' });
-    expect(within(lexicalCard).getByText('Šaltinio apimtis')).toBeInTheDocument();
+    expect(within(lexicalCard).getByText('Leksinis šaltinis.')).toBeInTheDocument();
     expect(within(lexicalCard).getByText('CC BY 4.0')).toBeInTheDocument();
     expect(within(lexicalCard).getByText(/Tai nėra dažnumo sąrašas/)).toBeInTheDocument();
     expect(within(lexicalCard).getByRole('link', { name: 'Atverti JSON aprašą ir prieigą' })).toHaveAttribute(
