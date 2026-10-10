@@ -25,7 +25,7 @@
 <div class="dago-shell">
 <a class="skip-link" href="#main-content">Pereiti prie turinio</a>
 <header class="site-header">
-  <h1>dažniausi žodžiai <a href="https://dago.lt" class="dago-link print-a-no-link">// dago</a></h1>
+  <h1><a href={homeUrl} class="site-home-link print-a-no-link">dažniausi žodžiai</a> <a href="https://dago.lt" class="dago-link print-a-no-link">// dago</a></h1>
   <nav class="site-navigation" aria-label={t('siteNavigation')}>
     <a href={homeUrl} aria-current={isCurrent(homeUrl) ? 'page' : undefined}>Žodžiai</a>
     <span class="nav-separator" aria-hidden="true">//</span>
