@@ -8,12 +8,12 @@
 </svelte:head>
 
 <main>
-  <h1>alksnis sintaksės kontekstai</h1>
+  <h2>alksnis sintaksės kontekstai</h2>
   <SyntaxExplorer />
 </main>
 
 <style>
-  h1 {
+  h2 {
     margin: 0 0 1.5rem;
   }
 </style>

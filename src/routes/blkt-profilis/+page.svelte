@@ -140,7 +140,7 @@
 
 <main class="profile-page">
   <header>
-    <h1>blkt žodžio profilis</h1>
+    <h2>blkt žodžio profilis</h2>
     <p class="lead">Žodžio dažnumas Bendrajame lietuvių kalbos tekstyne pagal teksto tipą ir laikotarpį.</p>
   </header>
 
@@ -306,7 +306,7 @@
   .headline-metrics dd { white-space: nowrap; }
   .facts dd { font-size: inherit; margin: 0; }
   form label { display: block; font-weight: 700; margin-bottom: var(--xs); }
-  .search-row { display: flex; gap: 1rem; }
+  .search-row { display: flex; align-items: stretch; gap: 1rem; }
   .search-row input { flex: 1; min-width: 0; }
   .hint { margin-top: var(--xs); }
   .status { border: 1px solid var(--border-color); margin-top: var(--md); padding: var(--md); }

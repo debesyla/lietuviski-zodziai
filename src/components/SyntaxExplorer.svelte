@@ -316,6 +316,7 @@
 
   .search-controls {
     display: flex;
+    align-items: stretch;
     gap: 1rem;
     margin-top: var(--sm);
   }

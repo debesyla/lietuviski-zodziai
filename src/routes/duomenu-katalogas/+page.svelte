@@ -223,7 +223,7 @@
 
 <main class="catalogue">
   <header>
-  <h1>viešų duomenų katalogas</h1>
+  <h2>viešų duomenų katalogas</h2>
   <p class="lead">Rinkiniai, jų apimtis ir naudojimo sąlygos.</p>
   </header>
 

@@ -107,7 +107,7 @@
 
 <main>
   <header>
-  <h1>ccll žanrų profilis</h1>
+  <h2>ccll žanrų profilis</h2>
   <p class="intro">Tikslios žodžio formos dažnumas penkiuose CCLL žanruose. Rodikliai skaičiuojami milijonui žetonų.</p>
   </header>
 
@@ -265,6 +265,8 @@
   .result-heading {
     justify-content: space-between;
   }
+
+  .lookup-controls { align-items: stretch; gap: 1rem; }
 
   input {
     flex: 1 1 18ch;

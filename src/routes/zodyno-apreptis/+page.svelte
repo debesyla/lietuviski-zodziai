@@ -116,7 +116,7 @@
 
 <main>
   <header>
-  <h1>žodyno aprėptis pagal dažnumą</h1>
+  <h2>žodyno aprėptis pagal dažnumą</h2>
   <p class="intro">Kurios Jungtinio lietuvių kalbos tekstyno formos aptinkamos DML6 žodyne?</p>
   </header>
 

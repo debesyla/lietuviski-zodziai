@@ -89,7 +89,7 @@
 
 <main>
   <header>
-  <h1>karo laikotarpio žodžių palyginimas</h1>
+  <h2>karo laikotarpio žodžių palyginimas</h2>
   <p class="intro">Žodžio vartosena CCLL2, karo meto žiniasklaidoje ir socialiniuose tinkluose. Rodikliai perskaičiuoti 100 mln. kiekvieno šaltinio žodžių.</p>
   </header>
 
@@ -253,6 +253,8 @@
     flex-wrap: wrap;
     gap: 1rem;
   }
+
+  .lookup-controls { align-items: stretch; gap: 1rem; }
 
   input {
     flex: 1 1 18ch;

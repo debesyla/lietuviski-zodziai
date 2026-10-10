@@ -25,11 +25,7 @@
 <div class="dago-shell">
 <a class="skip-link" href="#main-content">Pereiti prie turinio</a>
 <header class="site-header">
-  {#if isHomepage}
-    <h1>dažniausi žodžiai <a href="https://dago.lt" class="dago-link print-a-no-link">// dago</a></h1>
-  {:else}
-    <p class="site-brand"><a href={homeUrl}>dažniausi žodžiai</a> <a href="https://dago.lt" class="dago-link print-a-no-link">// dago</a></p>
-  {/if}
+  <h1>dažniausi žodžiai <a href="https://dago.lt" class="dago-link print-a-no-link">// dago</a></h1>
   <nav class="site-navigation" aria-label={t('siteNavigation')}>
     <a href={homeUrl} aria-current={isCurrent(homeUrl) ? 'page' : undefined}>Žodžiai</a>
     <span class="nav-separator" aria-hidden="true">//</span>

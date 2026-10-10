@@ -64,7 +64,7 @@
 
 <main class="methodology">
   <header>
-  <h1>metodika ir šaltiniai</h1>
+  <h2>metodika ir šaltiniai</h2>
   <p class="lead">Kaip skaityti duomenis ir kokiomis sąlygomis juos naudoti.</p>
   </header>
 
