@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import SectionHeading from '../../components/SectionHeading.svelte';
+  import RateBars from '../../components/RateBars.svelte';
   import {
     loadCcllGenreProfile,
     lookupCcllGenreWord,
@@ -18,14 +19,6 @@
   let lookupLoading = $state(false);
   let searched = $state(false);
   let requestNumber = 0;
-  const homeUrl = `${base}/`;
-
-  let maximumRate = $derived.by(() => {
-    const activeProfile = profile;
-    const activeResult = result;
-    if (!activeProfile || !activeResult) return 1;
-    return Math.max(1, ...activeProfile.sources.map((source) => ratePerMillion(activeProfile, activeResult, source.id) ?? 0));
-  });
 
   function formatNumber(value: number) {
     return value.toLocaleString('lt-LT');
@@ -33,11 +26,6 @@
 
   function formatRate(value: number | null) {
     return value === null ? 'Neaptikta' : value.toLocaleString('lt-LT', { maximumFractionDigits: 2 });
-  }
-
-  function rateWidth(value: number | null) {
-    if (value === null) return '0%';
-    return `${Math.max(3, value / maximumRate * 100)}%`;
   }
 
   async function search() {
@@ -110,7 +98,7 @@
 </script>
 
 <svelte:head>
-  <title>CCLL žanrų profilis pagal žodžio formą</title>
+  <title>ccll žanrų profilis pagal žodžio formą</title>
   <meta name="description" content="Tiksli žodžio formos paieška penkiuose pavadintuose CCLL subkorpusuose, su atskirais dažniais ir vardikliais." />
   <link rel="canonical" href={site.genreProfileUrl} />
   <meta property="og:title" content="CCLL žanrų profilis pagal žodžio formą" />
@@ -119,9 +107,10 @@
 </svelte:head>
 
 <main>
-  <a class="back-link" href={homeUrl}>← Grįžti į žodžių dažnumo tyrinėjimą</a>
-  <h1>CCLL žanrų profilis pagal žodžio formą</h1>
-  <p class="intro">Įveskite tikslią žodžio formą ir palyginkite ją penkiuose pavadintuose Dabartinės lietuvių kalbos tekstyno subkorpusuose. Rodomi pirminiai žetonų skaičiai ir iš kiekvieno subkorpuso vardiklio apskaičiuoti rodikliai milijonui žetonų.</p>
+  <header>
+  <SectionHeading>CCLL žanrų profilis</SectionHeading>
+  <p class="intro">Tikslios žodžio formos dažnumas penkiuose CCLL žanruose. Rodikliai skaičiuojami milijonui žetonų.</p>
+  </header>
 
   {#if loading}
     <p class="status" role="status" aria-live="polite">Kraunama žanrų profilio suvestinė…</p>
@@ -135,29 +124,10 @@
       <label for="word-query">Tiksli žodžio forma</label>
       <div class="lookup-controls">
         <input id="word-query" bind:value={query} autocomplete="off" spellcheck="false" placeholder="pvz., karas" required />
-        <button type="submit" class="primary-button" disabled={lookupLoading}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti žanruose'}</button>
+        <button type="submit" class="primary-button" disabled={lookupLoading}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti'}</button>
       </div>
-      <p>Paieška neskaito visų sąrašų: įkeliama tik nedidelė maršruto dalis ir viena riboto dydžio duomenų dalis pasirinktam žodžiui.</p>
     </form>
 
-    <dl class="source-facts">
-      <div>
-        <dt>Paieškos formų</dt>
-        <dd>{formatNumber(profile.summary.joinedWordforms)}</dd>
-      </div>
-      <div>
-        <dt>Pavadintų subkorpusų</dt>
-        <dd>{formatNumber(profile.sources.length)}</dd>
-      </div>
-      <div>
-        <dt>Rodiklio vienetas</dt>
-        <dd>{profile.rate.unit}</dd>
-      </div>
-      <div>
-        <dt>Licencija</dt>
-        <dd>{profile.provenance.licence}</dd>
-      </div>
-    </dl>
 
     {#if lookupLoading}
       <p class="status" role="status" aria-live="polite">Ieškoma pasirinktos žodžio formos…</p>
@@ -166,19 +136,20 @@
     {:else if searched && !result}
       <section class="empty" aria-live="polite">
         <h2>Forma nerasta</h2>
-        <p>Ši tiksli forma nebuvo aptikta penkių pavadintų CCLL subkorpusų sąrašuose. Tai nereiškia, kad jos nėra lietuvių kalboje ar kad jos dažnis lygus nuliui.</p>
+        <p>Forma neaptikta šiuose žanruose. Tai nereiškia, kad jos nėra lietuvių kalboje ar kad jos dažnis lygus nuliui.</p>
       </section>
     {:else if result}
       <section class="result" aria-labelledby="result-title" aria-live="polite">
         <div class="result-heading">
           <div>
             <h2 id="result-title">{result.word}</h2>
-            <p>Aptikta {formatNumber(result.observedGenres)} iš {formatNumber(profile.sources.length)} pavadintų subkorpusų.</p>
           </div>
-          <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti šio atsakymo JSON</button>
+          <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti JSON</button>
         </div>
 
-        <div class="table-scroll">
+        <SectionHeading level={3}>Pavartojimai milijonui žetonų</SectionHeading>
+        <RateBars rows={profile.sources.map(source => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) }))} unit="Pavartojimai milijonui žetonų" />
+        <details><summary>Lentelė</summary><div class="table-scroll">
           <table>
             <thead>
               <tr>
@@ -186,7 +157,6 @@
                 <th scope="col">Pirminis žetonų skaičius</th>
                 <th scope="col">/ 1 mln. šaltinio žetonų</th>
                 <th scope="col">Šaltinio vardiklis</th>
-                <th scope="col">Santykinė juosta</th>
               </tr>
             </thead>
             <tbody>
@@ -198,28 +168,47 @@
                   <td class:absent={rawCount === null}>{rawCount === null ? 'Neaptikta' : formatNumber(rawCount)}</td>
                   <td class:absent={rate === null}>{formatRate(rate)}</td>
                   <td>{formatNumber(source.sourceTokens)}</td>
-                  <td>
-                    <div class="bar-track" aria-hidden="true"><span class="bar" style:width={rateWidth(rate)}></span></div>
-                    <span class="sr-only">{rate === null ? 'Neaptikta' : `${formatRate(rate)} milijonui šaltinio žetonų`}</span>
-                  </td>
+
                 </tr>
               {/each}
             </tbody>
           </table>
-        </div>
+        </div></details>
       </section>
     {/if}
 
-    <section class="limitations" aria-labelledby="limits-title">
-      <h2 id="limits-title">Kaip šį palyginimą skaityti</h2>
+    <details class="reading-notes">
+      <summary>Kaip skaityti palyginimą</summary>
+      <div class="reading-notes-content">
+    <dl class="source-facts">
+      <div>
+        <dt>Paieškos formų</dt>
+        <dd>{formatNumber(profile.summary.joinedWordforms)}</dd>
+      </div>
+      <div>
+        <dt>Pavadintų subkorpusų</dt>
+        <dd>{formatNumber(profile.sources.length)}</dd>
+      </div>
+      <div>
+        <dt>Rodiklio vienetas</dt>
+        <dd>Pavartojimai milijonui žetonų</dd>
+      </div>
+      <div>
+        <dt>Licencija</dt>
+        <dd>{profile.provenance.licence}</dd>
+      </div>
+    </dl>
+
+
       <ul>
         <li>Rodomi tik penki pavadinti subkorpusai; bendras CCLL sąrašas ir jo abėcėlinis indeksas nėra žanrai ir čia neįtraukiami.</li>
         <li>„Neaptikta“ yra šaltinio <code>null</code>, o ne nulinis dažnis.</li>
         <li>Rodiklis milijonui žetonų apskaičiuojamas atskirai iš kiekvieno subkorpuso vardiklio. Tai nėra bendras žodžių populiarumo reitingas ar „būdingiausių žodžių“ lentelė.</li>
         <li>Skyrybos ženklai, didžiosios ir mažosios raidės išlaikomi taip, kaip pateikta šaltinio žodžių formų sąrašuose.</li>
       </ul>
-      <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Atverti pirminį CLARIN-LT šaltinio įrašą</a> · {profile.provenance.citation}</p>
-    </section>
+      <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Atverti pirminį CLARIN-LT šaltinio įrašą</a> <span class="inline-separator" aria-hidden="true">//</span> {profile.provenance.citation}</p>
+      </div>
+    </details>
   {/if}
 </main>
 
@@ -227,7 +216,6 @@
   main,
   .lookup,
   .result,
-  .limitations,
   .empty,
   .error,
   .status {
@@ -237,39 +225,28 @@
 
   main {
     min-width: 0;
-    gap: var(--lg);
+    gap: 2rem;
   }
 
-  h1 {
-    margin-top: var(--sm);
-  }
-
-  .back-link {
-    justify-self: start;
-  }
 
   .intro,
-  .lookup > p,
-  .result-heading > div > p,
-  .limitations p {
+  .reading-notes p {
     color: color-mix(in srgb, var(--text-color) 78%, transparent);
   }
 
   .lookup,
   .source-facts,
   .result,
-  .limitations,
   .empty,
   .error,
   .status {
-    border: 1px solid var(--border-color);
-    padding: var(--md);
+    border: 0;
+    padding: 0;
   }
 
   .lookup,
   .source-facts,
   .result,
-  .limitations,
   .empty,
   .error,
   .status,
@@ -277,6 +254,7 @@
     min-width: 0;
   }
 
+  .lookup label { font-weight: 700; }
   .lookup-controls,
   .result-heading {
     align-items: start;
@@ -288,6 +266,8 @@
   .result-heading {
     justify-content: space-between;
   }
+
+  .lookup-controls { align-items: stretch; gap: 1rem; }
 
   input {
     flex: 1 1 18ch;
@@ -301,9 +281,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .source-facts > div {
-    min-width: 0;
-  }
+  .source-facts > div { min-width: 0; border: 0; padding-left: 0; }
 
   dt {
     color: color-mix(in srgb, var(--text-color) 68%, transparent);
@@ -323,41 +301,18 @@
 
   table { min-width: 48rem; }
 
-  th,
-  td {
-    border: 1px solid var(--border-color);
-    overflow-wrap: anywhere;
-    padding: var(--sm);
-    text-align: left;
-    vertical-align: top;
-  }
-
   .absent {
     color: color-mix(in srgb, var(--text-color) 65%, transparent);
     font-style: italic;
   }
 
-  .bar-track {
-    background: color-mix(in srgb, var(--border-color) 70%, transparent);
-    height: 0.75rem;
-    min-width: 5rem;
-  }
-
-  .bar {
-    background: #ffbf00;
-    display: block;
-    height: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-
   .error {
-    border-color: #ff7f7f;
+    border-color: var(--border-strong);
   }
 
   .error-message {
-    border: 1px solid #ff7f7f;
-    color: #ffb4b4;
+    border: 1px solid var(--border-strong);
+    color: var(--text-color);
     padding: var(--md);
   }
 
@@ -366,23 +321,12 @@
       grid-template-columns: minmax(0, 1fr);
     }
 
-    .result-heading {
-      display: grid;
-    }
 
-    th,
-    td {
-      font-size: 0.875em;
-      padding: var(--xs);
-    }
+    table { min-width: 48rem; }
 
-    table {
-      min-width: 100%;
-      table-layout: fixed;
-    }
-
-    .bar-track {
-      min-width: 0;
-    }
   }
+  main { max-width: 100ch; }
+  .lookup, .intro, .source-facts, .reading-notes { max-width: 75ch; }
+  .result :global(.dago-section-heading) { margin: 0; }
+  .reading-notes-content { padding: 1rem; }
 </style>

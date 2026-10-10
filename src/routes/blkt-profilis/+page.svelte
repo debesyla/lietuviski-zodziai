@@ -1,10 +1,11 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
+  import RateBars from '../../components/RateBars.svelte';
   import { base } from '$app/paths';
   import {
     loadBlktWordformProfile,
     loadBlktLicenceTexts,
     lookupBlktWordform,
-    type BlktScopeResult,
     type BlktWordformResult,
     type LoadedBlktWordformProfile
   } from '$lib/blkt-wordform-profile';
@@ -21,7 +22,6 @@
   let downloadLoading = $state(false);
   let downloadError = $state<string | null>(null);
   let requestNumber = 0;
-  const homeUrl = `${base}/`;
 
   function formatInteger(value: number) {
     return value.toLocaleString('lt-LT');
@@ -128,23 +128,21 @@
 </script>
 
 <svelte:head>
-  <title>BLKT žodžio profilis · {site.name}</title>
+  <title>blkt žodžio profilis // dažniausi žodžiai</title>
   <meta name="description" content="Privatumo slenksčiais apsaugotas BLKT žodžio dažnumo palyginimas pagal teksto tipą ir laikotarpį." />
   <link rel="canonical" href={site.blktProfileUrl} />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="lt_LT" />
   <meta property="og:site_name" content={site.name} />
-  <meta property="og:title" content={`BLKT žodžio profilis · ${site.name}`} />
+  <meta property="og:title" content={'BLKT žodžio profilis // dažniausi žodžiai'} />
   <meta property="og:description" content="Privatumo slenksčiais apsaugotas BLKT žodžio dažnumo palyginimas." />
   <meta property="og:url" content={site.blktProfileUrl} />
 </svelte:head>
 
 <main class="profile-page">
-  <a class="back-link" href={homeUrl}>← Grįžti į pradžią</a>
   <header>
-    <p class="eyebrow">Bendrasis lietuvių kalbos tekstynas</p>
-    <h1>BLKT žodžio profilis</h1>
-    <p class="lead">Patikrinkite vieną sunormintą žodžio formą visame BLKT ir palyginkite saugiai paskelbtus dažnius pagal penkis plačius teksto tipus bei keturis laikotarpius.</p>
+    <SectionHeading>BLKT žodžio profilis</SectionHeading>
+    <p class="lead">Žodžio dažnumas Bendrajame lietuvių kalbos tekstyne pagal teksto tipą ir laikotarpį.</p>
   </header>
 
   {#if loading}
@@ -155,29 +153,16 @@
       <p>{loadError}</p>
     </div>
   {:else if profile}
-    <section class="method" aria-labelledby="method-title">
-      <h2 id="method-title">Ką rodo šis profilis</h2>
-      <p class="scope-warning"><strong>Šaltinio riba:</strong> BLKT nėra reprezentatyvus visos lietuvių kalbos portretas, nes jame vyrauja žiniasklaida ir dokumentai. Rezultatai apibūdina tik šio tekstyno sudėtį.</p>
-      <p>Skaičiuojami projekto taisykle išskirti mažosiomis raidėmis sunorminti žodžiai. Dažnis milijonui skaičiuojamas pagal to paties pjūvio išvestinių žodžių vardiklį, o ne pagal šaltinio <code>alpha_word_count</code>.</p>
-      <p>Įrašai yra tokenizatoriaus aptiktos raidžių sekos, o ne patvirtinti lietuviški ar taisyklingi žodžiai. Iš dažnio negalima spręsti apie kalbinį taisyklingumą.</p>
-      <p>Žodis arba pjūvių šeima skelbiama tik tada, kai kiekviena teigiama reikšmė turi bent <strong>{profile.metadata.disclosure.minimumTokenCount}</strong> pavartojimų bent <strong>{profile.metadata.disclosure.minimumDocumentSupport}</strong> dokumentų. Potipiai, tekstai, pavadinimai, autoriai, nuorodos ir šaltinių identifikatoriai neskelbiami.</p>
-      <dl class="facts">
-        <div><dt>Dokumentų</dt><dd>{formatInteger(profile.metadata.corpus.documents)}</dd></div>
-        <div><dt>Išvestinių žodžių</dt><dd>{formatInteger(profile.metadata.corpus.derivedTokens)}</dd></div>
-        <div><dt>Paskelbtų žodžių formų</dt><dd>{formatInteger(profile.index.summary.recordCount)}</dd></div>
-      </dl>
-    </section>
 
-    <section class="lookup" aria-labelledby="lookup-title">
-      <h2 id="lookup-title">Ieškoti žodžio</h2>
+    <section class="lookup" aria-label="Žodžio paieška">
       <form onsubmit={submitSearch}>
         <label for="blkt-word">Viena žodžio forma</label>
         <div class="search-row">
           <input id="blkt-word" bind:value={query} autocomplete="off" placeholder="pavyzdžiui, kalba" />
-          <button type="submit" class="primary-button" disabled={lookupLoading || !query.trim()}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti BLKT'}</button>
+          <button type="submit" class="primary-button" disabled={lookupLoading || !query.trim()}>{lookupLoading ? 'Ieškoma…' : 'Ieškoti'}</button>
         </div>
       </form>
-      <p class="hint">Didžiosios raidės suvienodinamos. Įveskite tik vieną 1–64 raidžių žodį.</p>
+      <p class="hint">1–64 raidės; didžiosios ir mažosios raidės nesiskiria.</p>
 
       {#if lookupError}
         <p class="status error" role="alert">{lookupError}</p>
@@ -185,7 +170,7 @@
         <p class="status" role="status" aria-live="polite">Ieškoma paskelbtame profilyje…</p>
       {:else if searched && !result}
         <div class="status" role="status">
-          <h3>Žodis paskelbtame profilyje nerastas</h3>
+          <h2>Žodis paskelbtame profilyje nerastas</h2>
           <p>Jis galėjo būti neaptiktas arba nepraeiti saugos slenksčio. Tai nereiškia, kad tokios raidžių sekos nėra BLKT.</p>
         </div>
       {/if}
@@ -196,27 +181,35 @@
         <p class="sr-only" role="status" aria-live="polite">Rastas žodžio „{result.word}“ BLKT profilis.</p>
         <header class="result-header">
           <div>
-            <p class="eyebrow">Sunorminta forma</p>
             <h2 id="result-title">{result.word}</h2>
           </div>
-          <button type="button" class="text-button" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti šį atsakymą JSON'}</button>
+          <button type="button" class="text-button" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti JSON'}</button>
         </header>
         {#if downloadError}<p class="status error" role="alert">{downloadError}</p>{/if}
 
         <section aria-labelledby="corpus-title">
-          <h3 id="corpus-title">Visas tekstynas</h3>
+          <SectionHeading level={3} id="corpus-title">Visas tekstynas</SectionHeading>
+          <dl class="headline-metrics">
+            <div><dt>Pavartojimai</dt><dd>{formatInteger(result.corpus.tokenCount)}</dd></div>
+            <div><dt>Dokumentai su žodžiu</dt><dd>{formatInteger(result.corpus.documentCount)}</dd></div>
+            <div><dt>Milijonui žodžių</dt><dd>{formatRate(result.corpus.ratePerMillion)}</dd></div>
+          </dl>
+          <details><summary>Lentelė</summary>
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
           <div class="table-scroll" role="region" aria-label="Viso BLKT rezultatų lentelė" tabindex="0" onkeydown={scrollTable}>
             <table>
               <thead><tr><th scope="col">Apimtis</th><th scope="col">Pavartojimai</th><th scope="col">Dokumentai su žodžiu</th><th scope="col">Dažnis milijonui</th><th scope="col">Tekstyno dokumentai</th><th scope="col">Pjūvio žodžiai</th></tr></thead>
               <tbody><tr><th scope="row">Visas BLKT</th><td>{formatInteger(result.corpus.tokenCount)}</td><td>{formatInteger(result.corpus.documentCount)}</td><td>{formatRate(result.corpus.ratePerMillion)}</td><td>{formatInteger(result.corpus.documents)}</td><td>{formatInteger(result.corpus.derivedTokens)}</td></tr></tbody>
             </table>
-          </div>
+          </div></details>
         </section>
 
         <section aria-labelledby="types-title">
-          <h3 id="types-title">Pagal teksto tipą</h3>
+          <SectionHeading level={3} id="types-title">Pagal teksto tipą</SectionHeading>
           {#if result.documentTypes}
+            <p class="chart-unit">Pavartojimai milijonui žodžių</p>
+            <RateBars rows={result.documentTypes.map(item => ({ label: item.label, value: item.ratePerMillion }))} unit="Pavartojimai milijonui žodžių" />
+            <details><summary>Lentelė</summary>
             <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
             <div class="table-scroll" role="region" aria-label="Rezultatai pagal teksto tipą" tabindex="0" onkeydown={scrollTable}>
               <table>
@@ -227,15 +220,18 @@
                   {/each}
                 </tbody>
               </table>
-            </div>
+            </div></details>
           {:else}
-            <p class="withheld">Šio žodžio teksto tipų pjūvis neskelbiamas. Viešas atsakymas neatskleidžia, kuri reikšmė nepasiekė saugos ribos.</p>
+            <p class="withheld">Šio žodžio teksto tipų pjūvis neskelbiamas. Atskiros saugos ribos nepasiekusios reikšmės neatskleidžiamos.</p>
           {/if}
         </section>
 
         <section aria-labelledby="periods-title">
-          <h3 id="periods-title">Pagal laikotarpį</h3>
+          <SectionHeading level={3} id="periods-title">Pagal laikotarpį</SectionHeading>
           {#if result.periods}
+            <p class="chart-unit">Pavartojimai milijonui žodžių</p>
+            <RateBars rows={result.periods.map(item => ({ label: item.label, value: item.ratePerMillion }))} unit="Pavartojimai milijonui žodžių" />
+            <details><summary>Lentelė</summary>
             <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
             <div class="table-scroll" role="region" aria-label="Rezultatai pagal laikotarpį" tabindex="0" onkeydown={scrollTable}>
               <table>
@@ -246,16 +242,29 @@
                   {/each}
                 </tbody>
               </table>
-            </div>
+            </div></details>
           {:else}
-            <p class="withheld">Šio žodžio laikotarpių pjūvis neskelbiamas. Viešas atsakymas neatskleidžia, kuri reikšmė nepasiekė saugos ribos.</p>
+            <p class="withheld">Šio žodžio laikotarpių pjūvis neskelbiamas. Atskiros saugos ribos nepasiekusios reikšmės neatskleidžiamos.</p>
           {/if}
         </section>
       </article>
     {/if}
 
-    <section class="source" aria-labelledby="source-title">
-      <h2 id="source-title">Šaltinis ir leidimas</h2>
+    <div class="detail-group">
+    <details class="method">
+      <summary>Kaip skaityti profilį</summary><div class="method-content">
+      <p class="scope-warning"><strong>Šaltinio riba:</strong> BLKT nėra reprezentatyvus visos lietuvių kalbos portretas, nes jame vyrauja žiniasklaida ir dokumentai. Rezultatai apibūdina tik šio tekstyno sudėtį.</p>
+      <p>Skaičiuojami projekto taisykle išskirti mažosiomis raidėmis sunorminti žodžiai. Dažnis milijonui skaičiuojamas pagal to paties pjūvio išvestinių žodžių vardiklį, o ne pagal šaltinio <code>alpha_word_count</code>.</p>
+      <p>Įrašai yra tokenizatoriaus aptiktos raidžių sekos, o ne patvirtinti lietuviški ar taisyklingi žodžiai. Iš dažnio negalima spręsti apie kalbinį taisyklingumą.</p>
+      <p>Žodis arba pjūvių šeima skelbiama tik tada, kai kiekviena teigiama reikšmė turi bent <strong>{profile.metadata.disclosure.minimumTokenCount}</strong> pavartojimų bent <strong>{profile.metadata.disclosure.minimumDocumentSupport}</strong> dokumentų. Potipiai, tekstai, pavadinimai, autoriai, nuorodos ir šaltinių identifikatoriai neskelbiami.</p>
+      <dl class="facts">
+        <div><dt>Dokumentų</dt><dd>{formatInteger(profile.metadata.corpus.documents)}</dd></div>
+        <div><dt>Išvestinių žodžių</dt><dd>{formatInteger(profile.metadata.corpus.derivedTokens)}</dd></div>
+        <div><dt>Paskelbtų žodžių formų</dt><dd>{formatInteger(profile.index.summary.recordCount)}</dd></div>
+      </dl>
+    </div></details>
+
+    <details class="source"><summary>Šaltinis ir leidimas</summary><div class="source-content">
       <p>{profile.manifest.provenance.citation}</p>
       <p><a href={profile.manifest.provenance.sourceUrl}>Oficialus BLKT šaltinio įrašas</a></p>
       <p>Taikomos abi šaltinio licencijos. Projekto savininkas patvirtino leidimą skelbti šio projekto išvestinius agregatus ir duomenų rinkinius.</p>
@@ -275,41 +284,46 @@
           <li>{requirement}</li>
         {/each}
       </ul>
-    </section>
+    </div></details>
+    </div>
   {/if}
 </main>
 
 <style>
+  .detail-group { display: grid; gap: .75rem; max-width: 75ch; }
+  .detail-group > details + details { margin-top: 0; }
+  .lookup { max-width: 75ch; }
   .profile-page { display: grid; gap: var(--xl); grid-template-columns: minmax(0, 1fr); min-width: 0; }
-  .back-link { margin-bottom: calc(var(--lg) * -1); }
-  .eyebrow { font-size: 0.85rem; letter-spacing: 0.08em; margin-bottom: var(--xs); text-transform: uppercase; }
-  .lead { font-size: 1.15rem; max-width: 72ch; }
-  .method, .lookup, .result, .source { border: 1px solid var(--border-color); min-width: 0; padding: var(--lg); }
-  .method h2, .lookup h2, .source h2, .result h3 { margin-bottom: var(--sm); }
+  .lead { font-size: inherit; max-width: 72ch; }
+  .lookup, .result, .source { min-width: 0; }
+  .source-content { padding: 1rem; }
+  .method-content { padding: 1rem; }
+  .result :global(.dago-section-heading) { margin-bottom: 0; }
+  .result > section { display: grid; gap: 1rem; }
+  .chart-unit { font-size: .875rem; }
   .facts { display: grid; gap: var(--md); grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--md); }
-  .facts div { border-left: 2px solid var(--border-color); padding-left: var(--sm); }
-  .facts dd { font-size: 1.2rem; font-weight: 700; margin: 0; }
+
+  .headline-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .headline-metrics dd { white-space: nowrap; }
+  .facts dd { font-size: inherit; margin: 0; }
   form label { display: block; font-weight: 700; margin-bottom: var(--xs); }
-  .search-row { display: flex; gap: var(--sm); }
+  .search-row { display: flex; align-items: stretch; gap: 1rem; }
   .search-row input { flex: 1; min-width: 0; }
   .hint { margin-top: var(--xs); }
   .status { border: 1px solid var(--border-color); margin-top: var(--md); padding: var(--md); }
-  .error { border-color: #ff7d7d; }
-  .scope-warning { border-left: 3px solid #FFBF00; padding-left: var(--md); }
+  .error { border-color: var(--border-strong); }
   .result { display: grid; gap: var(--xl); min-width: 0; }
   .result > section { min-width: 0; }
   .result-header { align-items: center; display: flex; flex-wrap: wrap; gap: var(--md); justify-content: space-between; }
   .table-scroll { max-width: 100%; min-width: 0; overflow-x: auto; width: 100%; }
   table { min-width: 48rem; }
-  th, td { border-bottom: 1px solid var(--border-color); padding: var(--sm); text-align: right; vertical-align: top; }
+  th, td { text-align: right; vertical-align: top; }
   th:first-child, td:first-child { text-align: left; }
   .withheld { border-left: 2px solid var(--border-color); padding-left: var(--md); }
   .source li, .source a { overflow-wrap: anywhere; }
   code { overflow-wrap: anywhere; }
   @media (max-width: 767px) {
-    .method, .lookup, .result, .source { padding: var(--md); }
     .facts { grid-template-columns: 1fr; }
-    .search-row { align-items: stretch; flex-direction: column; }
-    .search-row button { width: 100%; }
+    .headline-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from '../components/SectionHeading.svelte';
   import DataLoader from '../components/DataLoader.svelte';
   import { base } from '$app/paths';
   import { t } from '$lib/translations';
@@ -28,7 +29,9 @@
     loadCatalog().then((loadedCatalog) => {
       if (cancelled) return;
       catalog = loadedCatalog;
-      selectedDatasetId = loadedCatalog.defaultDatasetId ?? loadedCatalog.datasets[0]?.id ?? '';
+      const requestedSource = new URLSearchParams(window.location.search).get('source');
+      selectedDatasetId = loadedCatalog.datasets.find(dataset => dataset.id === requestedSource)?.id
+        ?? loadedCatalog.defaultDatasetId ?? loadedCatalog.datasets[0]?.id ?? '';
       catalogLoading = false;
     }).catch((error) => {
       if (cancelled) return;
@@ -75,7 +78,7 @@
     {:else}<p role="status">{t('noDatasets')}</p>{/if}
   </section>
   <section class="research-tools">
-    <h2>Kiti tyrinėjimo būdai</h2>
+    <SectionHeading>Kiti tyrinėjimo būdai</SectionHeading>
     <ul>
       <li><a href={coverageProfile}><strong>DML6 žodyno aprėptis</strong></a><p>Kurios dažnos formos patenka į žodyną?</p></li>
       <li><a href={wartimeContrast}><strong>Karo meto vartosena</strong></a><p>Žodžio forma trijuose laikotarpių šaltiniuose.</p></li>
@@ -89,7 +92,7 @@
 .home-page { display: grid; gap: 2rem; max-width: 100ch; }
 .intro, .research-tools { max-width: 75ch; }
 .research-tools { margin-top: 1rem; }
-.research-tools h2 { margin: 0 0 1rem; }
+.research-tools :global(.dago-section-heading) { margin: 0 0 1rem; }
 .research-tools li + li { margin-top: 1.5rem; }
 .research-tools li p { margin-top: .25rem; }
 </style>
