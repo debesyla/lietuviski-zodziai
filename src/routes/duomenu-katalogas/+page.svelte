@@ -131,6 +131,7 @@
 </svelte:head>
 
 <main class="catalogue">
+  <header><h2>duomenų rinkiniai</h2></header>
   {#if loading}
     <p class="loading" role="status">Kraunami rinkiniai…</p>
   {:else if error}
@@ -143,7 +144,7 @@
   {:else}
     {#each groups as group}
       <section class="category" aria-label={group.title}>
-        {#if group.id !== 'explore'}<h3 aria-level="2">{group.title}</h3>{/if}
+        {#if group.id !== 'explore'}<h3>{group.title}</h3>{/if}
         <div class="entries">
           {#each group.products as product (product.id)}
             {@const action = explorerAction(product)}
