@@ -20,5 +20,5 @@ it.each([
 ])('%s retains visible failure feedback instead of an empty interface', async (_name, component) => {
   const { getByRole, getByText } = render(component);
   await waitFor(() => expect(getByRole('alert')).toBeInTheDocument());
-  expect(getByText('Nepavyko atsisiųsti duomenų.')).toBeInTheDocument();
+  expect(getByText(component === Catalogue ? 'Pabandykite atnaujinti puslapį.' : 'Nepavyko atsisiųsti duomenų.')).toBeInTheDocument();
 });

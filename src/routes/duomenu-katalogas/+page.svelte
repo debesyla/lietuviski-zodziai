@@ -131,20 +131,20 @@
 </svelte:head>
 
 <main class="catalogue">
-  <header><h2>duomenų rinkiniai</h2></header>
+  <header><h2 class="catalogue-heading"><span aria-hidden="true">//</span>{' '}duomenų rinkiniai</h2></header>
   {#if loading}
     <p class="loading" role="status">Kraunami rinkiniai…</p>
   {:else if error}
     <section class="error" role="alert">
       <h3>Nepavyko įkelti katalogo</h3>
-      <p>{error}</p>
+      <p>Pabandykite atnaujinti puslapį.</p>
     </section>
   {:else if groups.length === 0}
     <p role="status">Rinkinių nėra.</p>
   {:else}
     {#each groups as group}
       <section class="category" aria-label={group.title}>
-        {#if group.id !== 'explore'}<h3>{group.title}</h3>{/if}
+        {#if group.id !== 'explore'}<h3 class="catalogue-heading"><span aria-hidden="true">//</span>{' '}{group.title}</h3>{/if}
         <div class="entries">
           {#each group.products as product (product.id)}
             {@const action = explorerAction(product)}
@@ -189,19 +189,22 @@
 
 <style>
   .catalogue { display: grid; gap: 2rem; }
+  .catalogue-heading { margin: 0; opacity: .2; }
   .category { display: grid; gap: 1rem; }
+  .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }
   .category > h3, .entry-title { margin: 0; }
   .entries { display: grid; gap: 1.5rem; }
-  .catalogue-entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; min-width: 0; }
+  .catalogue-entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: .25rem; min-width: 0; }
+  .catalogue-entry + .catalogue-entry { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }
   .catalogue-entry > p { margin: 0; }
-  .entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+  .entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .25rem; }
   .resource-link { display: inline-flex; align-items: center; gap: .5rem; }
   .entry-details { display: contents; border: 0; }
   .entry-details::details-content { flex-basis: 100%; min-width: 0; }
   .entry-details:not([open])::details-content { display: none; }
   .entry-details > summary { padding: 0; border: 0; font-weight: inherit; }
   .entry-details > summary:hover, .entry-details > summary:focus-visible { text-decoration-style: dashed; }
-  .entry-details-content { flex-basis: 100%; min-width: 0; padding-top: .5rem; overflow-wrap: anywhere; }
+  .entry-details-content { flex-basis: 100%; min-width: 0; margin-top: .5rem; border-left: 1px solid hsl(var(--theme) / .35); padding-left: 1rem; overflow-wrap: anywhere; }
   .entry-facts { display: grid; gap: .75rem; margin-bottom: 1rem; }
   .entry-facts dd { margin: .25rem 0 0; }
 </style>
