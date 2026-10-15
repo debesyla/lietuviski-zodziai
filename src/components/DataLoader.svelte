@@ -143,7 +143,7 @@
   {#if searchPending}
     <p class="note wide" role="status" aria-live="polite">{t('updatingResults')}</p>
   {:else if dataset}
-    <p class="summary wide">
+    <p class="totals wide">
       <span>{t('entries')}: <strong>{filteredWords.length.toLocaleString('lt-LT')}</strong></span>
       <span class="inline-separator" aria-hidden="true">//</span>
       <span>{t('totalFrequency')}: <strong>{filteredFrequency.toLocaleString('lt-LT')}</strong></span>
@@ -216,7 +216,7 @@
   .source-control label { display: block; font-size: .875rem; margin-bottom: .5rem; }
   .source-control select { width: 100%; }
   .wide { grid-column: 1 / -1; }
-  .summary { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+  .totals { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
   .type-filter { position: relative; }
   .type-filter summary { padding-block: .65rem; white-space: nowrap; }
   .type-filter[open] summary { border-bottom: 0; }

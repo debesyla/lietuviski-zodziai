@@ -13,6 +13,6 @@
 
 <style>
   .search-bar { min-width: 0; position: relative; }
-  input { padding-right: 3rem; }
+  .search-bar input { padding-right: 3rem; }
   button { bottom: 0; min-width: 2.75rem; position: absolute; right: 0; text-decoration: none; top: 0; }
 </style>

@@ -142,6 +142,6 @@ describe('dataset workflow integration', () => {
     await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50), { timeout: 5_000 });
     expect(getByRole('combobox', { name: 'Šaltinis' })).toHaveValue(utka.id);
     expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50);
-    expect(container.querySelector('.summary')).toHaveTextContent(/Pavartojimai: 922\s+949/);
+    expect(container.querySelector('.totals')).toHaveTextContent(/Pavartojimai: 922\s+949/);
   });
 });
