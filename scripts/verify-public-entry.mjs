@@ -44,7 +44,7 @@ for (const expected of [
   '<link rel="icon" type="image/png" href="https://dago.lt/assets/img/dago-icon.png"/>',
   '<link rel="stylesheet" href="https://dago.lt/assets/styles/reset.css?v=20260808"/>',
   '<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260901"/>',
-  '<title>Lietuviški žodžiai · lietuvių kalbos dažnumo duomenys</title>',
+  '<title>dažniausi žodžiai // dago</title>',
   `<link rel="canonical" href="${siteUrl}/"`,
   `<meta property="og:url" content="${siteUrl}/"`,
   `<meta property="og:image" content="${siteUrl}/social-preview-v2.png"`,
@@ -74,7 +74,8 @@ if (socialImage.readUInt32BE(16) !== 1200 || socialImage.readUInt32BE(20) !== 63
 }
 
 expectIncludes(home, 'href="./apie"', 'index.html');
-expectIncludes(home, 'href="./data-products/catalog.json"', 'index.html');
+expectIncludes(home, 'href="./duomenu-katalogas"', 'index.html');
+await access(path.join(outputRoot, 'data-products/catalog.json'));
 
 await access(path.join(outputRoot, 'social-preview.svg'));
 

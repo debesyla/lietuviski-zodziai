@@ -90,30 +90,31 @@ describe('dataset workflow integration', () => {
     const user = userEvent.setup();
     const { container, getByRole, getByText, queryByRole, queryByText } = render(Page);
 
-    await waitFor(() => expect(getByRole('heading', { name: firstDataset.title })).toBeInTheDocument());
+    await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('beta'));
     expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('beta');
     expect(container.querySelector('.fact-grid')).toHaveTextContent(/66,667\s*%/);
 
     await user.click(getByRole('button', { name: 'Rikiuoti pagal Žodis: nerikiuota' }));
     await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('alfa'));
 
+    await user.click(getByText('Filtrai', { exact: true }));
     await user.click(getByRole('checkbox', { name: /Noun/ }));
     await waitFor(() => {
       expect(getByRole('button', { name: 'Išvalyti filtrus' })).toBeInTheDocument();
-      expect(container.querySelector('.fact-grid')).toHaveTextContent('„beta“ sukaupia 100 %');
+      expect(container.querySelector('.fact-grid')).toHaveTextContent('„beta“: 100 %');
     });
 
-    await user.selectOptions(getByRole('combobox', { name: 'Pasirinkite duomenis:' }), 'second');
-    await waitFor(() => expect(getByRole('heading', { name: secondDataset.title })).toBeInTheDocument());
+    await user.selectOptions(getByRole('combobox', { name: 'Šaltinis' }), 'second');
+    await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('kitas'));
     expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('kitas');
     expect(queryByRole('button', { name: 'Išvalyti filtrus' })).not.toBeInTheDocument();
 
-    await user.click(getByRole('button', { name: 'Atsisiųsti duomenis .csv formatu' }));
+    await user.click(getByRole('button', { name: 'Atsisiųsti CSV' }));
     expect(createObjectURL).toHaveBeenCalledOnce();
     expect(revokeObjectURL).not.toHaveBeenCalled();
 
     await user.type(getByRole('textbox'), 'nėra-tokio-žodžio');
-    await waitFor(() => expect(getByText('Nėra žodžių, atitinkančių aktyvius filtrus.')).toBeInTheDocument());
+    await waitFor(() => expect(getByText('Žodžių nerasta.')).toBeInTheDocument());
     expect(queryByText('kitas')).not.toBeInTheDocument();
   });
 
@@ -124,7 +125,8 @@ describe('dataset workflow integration', () => {
 
     const { container, getByRole } = render(Page);
 
-    await waitFor(() => expect(getByRole('heading', { name: utka.title })).toBeInTheDocument(), { timeout: 5_000 });
+    await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50), { timeout: 5_000 });
+    expect(getByRole('combobox', { name: 'Šaltinis' })).toHaveValue(utka.id);
     expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50);
     expect(container.querySelector('.dashboard')).toHaveTextContent(/922\s+949/);
   });

@@ -5,7 +5,7 @@
 
 <div class="search-bar">
   <label class="sr-only" for={inputId}>{t('searchWords')}</label>
-  <input id={inputId} bind:value type="text" placeholder={t('searchPlaceholder')} />
+  <input id={inputId} bind:value type="text" placeholder="Žodis arba jo dalis" />
   {#if value}
   <button type="button" onclick={() => value = ''} aria-label={t('clearSearch')}>✕</button>
   {/if}
@@ -19,7 +19,7 @@
   }
 
   input {
-    font-size: 1.05rem;
+    font-size: 1rem;
     padding: var(--sm) 3.25rem var(--sm) 0.75rem;
     width: 100%;
   }
@@ -30,7 +30,7 @@
     padding: 0;
     position: absolute;
     right: 0;
-    top: 0;
+    bottom: 0;
   }
 
 </style>

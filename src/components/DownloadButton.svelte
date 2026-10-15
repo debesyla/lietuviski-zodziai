@@ -77,4 +77,4 @@
   }
 </script>
 
-<button class="primary-button" onclick={downloadCSV}>{t('downloadData')}</button>
+<button class="text-button" onclick={downloadCSV}>{t('downloadData')}</button>
