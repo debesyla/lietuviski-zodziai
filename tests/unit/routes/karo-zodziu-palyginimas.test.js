@@ -58,7 +58,7 @@ it('loads only the lookup profile initially and exposes a keyboard-operable comp
   await waitFor(() => expect(getByText('KARAS')).toBeInTheDocument());
   expect(lookupWarContrastWord).toHaveBeenCalledWith(profile, 'karas');
   expect(getAllByRole('table')).toHaveLength(1);
-  expect(getAllByText('Neaptikta')).toHaveLength(2);
+  expect(getAllByText('Neaptikta')).toHaveLength(3);
   expect(getByText('+2 log₂')).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 });

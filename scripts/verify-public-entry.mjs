@@ -54,7 +54,7 @@ for (const expected of [
 }
 
 for (const expected of [
-  '<title>Metodika ir šaltiniai · Lietuviški žodžiai</title>',
+  '<title>metodika ir šaltiniai // dažniausi žodžiai</title>',
   `<link rel="canonical" href="${siteUrl}/apie"`,
   `<meta property="og:url" content="${siteUrl}/apie"`
 ]) {

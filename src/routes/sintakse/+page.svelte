@@ -1,22 +1,20 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import SyntaxExplorer from '../../components/SyntaxExplorer.svelte';
 
-  const homeUrl = `${base}/`;
 </script>
 
 <svelte:head>
-  <title>ALKSNIS sintaksės kontekstai · Lietuviški žodžiai</title>
+  <title>alksnis sintaksės kontekstai // dažniausi žodžiai</title>
 </svelte:head>
 
 <main>
-  <a href={homeUrl}>← Grįžti į dažninių sąrašų tyrinėjimą</a>
-  <h1>ALKSNIS sintaksės kontekstai</h1>
+  <SectionHeading>ALKSNIS sintaksės kontekstai</SectionHeading>
   <SyntaxExplorer />
 </main>
 
 <style>
-  h1 {
-    margin: var(--lg) 0;
+  main > :global(.dago-section-heading) {
+    margin: 0 0 1.5rem;
   }
 </style>

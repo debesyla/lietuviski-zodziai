@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeading from './SectionHeading.svelte';
   import {
     loadSyntaxContexts,
     loadSyntaxOverview,
@@ -13,23 +14,29 @@
   let error = $state<string | null>(null);
   let query = $state('');
   let searching = $state(false);
+  let searched = $state(false);
   let searchError = $state<string | null>(null);
   let results = $state<SyntaxLemma[]>([]);
   let resultTotal = $state(0);
   let selectedLemma = $state<SyntaxLemma | null>(null);
   let contextLoading = $state(false);
   let contextError = $state<string | null>(null);
+  let searchRequest = 0;
+  let contextRequest = 0;
   let contexts = $state<SyntaxContextExample[]>([]);
 
   function directionLabel(direction: SyntaxContextExample['direction']) {
-    if (direction === 'head') return 'pasirinkta lema yra pagrindinis žodis';
-    if (direction === 'root') return 'pasirinkta lema turi šaknies (HEAD=0) vaidmenį';
-    return 'pasirinkta lema yra priklausomasis žodis';
+    if (direction === 'head') return 'lema – pagrindinis žodis';
+    if (direction === 'root') return 'lema – sakinio šaknis (HEAD=0)';
+    return 'lema – priklausomasis žodis';
   }
 
   async function search(event: SubmitEvent) {
     event.preventDefault();
     if (!overview) return;
+    const request = ++searchRequest;
+    ++contextRequest;
+    contextLoading = false;
     const term = query.trim();
     searchError = null;
     results = [];
@@ -38,33 +45,40 @@
     contexts = [];
     contextError = null;
     if (!term) {
+      searching = false;
       searchError = 'Įveskite bent vieną lemos raidę.';
       return;
     }
+    searched = true;
     searching = true;
     try {
       const found = await searchSyntaxLemmas(overview.manifest, term);
+      if (request !== searchRequest) return;
       results = found.matches;
       resultTotal = found.total;
     } catch (cause) {
+      if (request !== searchRequest) return;
       searchError = cause instanceof Error ? cause.message : String(cause);
     } finally {
-      searching = false;
+      if (request === searchRequest) searching = false;
     }
   }
 
   async function selectLemma(lemma: SyntaxLemma) {
     if (!overview) return;
+    const request = ++contextRequest;
     selectedLemma = lemma;
     contexts = [];
     contextError = null;
     contextLoading = true;
     try {
-      contexts = await loadSyntaxContexts(overview.manifest, lemma.lemma);
+      const loaded = await loadSyntaxContexts(overview.manifest, lemma.lemma);
+      if (request === contextRequest) contexts = loaded;
     } catch (cause) {
+      if (request !== contextRequest) return;
       contextError = cause instanceof Error ? cause.message : String(cause);
     } finally {
-      contextLoading = false;
+      if (request === contextRequest) contextLoading = false;
     }
   }
 
@@ -93,61 +107,17 @@
     <p>{error}</p>
   </section>
 {:else if overview}
-  <section class="explorer" aria-labelledby="syntax-overview-title">
+  <section class="explorer" aria-label="ALKSNIS apžvalga">
     <header>
-      <h2 id="syntax-overview-title">{overview.manifest.title}</h2>
       <p>
-        Tai yra ribotas, ranka tikrintas sintaksinis medis, o ne bendras lietuvių kalbos dažnumo reitingas ar sinonimų šaltinis.
-        Rodomi tik šaltinio pateikti ryšiai ir sakinių kontekstai.
+        Lemų ryšiai ir sakinių pavyzdžiai iš ALKSNIS tekstyno.
       </p>
-      <p>
-        <a href={overview.manifest.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis ALKSNIS įrašas</a>
-        · {overview.manifest.provenance.licence}
-      </p>
+
     </header>
 
-    <dl class="overview-grid">
-      <div><dt>Dokumentai</dt><dd>{overview.manifest.syntaxContext.overview.documents}</dd></div>
-      <div><dt>Pristatyti sakinių ID</dt><dd>{overview.manifest.syntaxContext.overview.deliveredSentenceIds}</dd></div>
-      <div><dt>Nepunktuacijos žetonai</dt><dd>{overview.manifest.syntaxContext.overview.nonPunctuationRows}</dd></div>
-      <div><dt>Ryšių žymos</dt><dd>{overview.manifest.syntaxContext.overview.nonPunctuationRelationLabels}</dd></div>
-    </dl>
-
-    <p class="source-note">
-      Repozitorija nurodo {overview.manifest.syntaxContext.overview.repositorySentenceClaim} sakinius, o pristatytose CoNLL-U bylose yra
-      {overview.manifest.syntaxContext.overview.deliveredSentenceIds} sakinių ID. Šį skirtumą išsaugome, o ne taisome spėjimu.
-    </p>
-
-    <div class="summary-columns">
-      <section aria-labelledby="relation-summary-title">
-        <h3 id="relation-summary-title">Dažniausios ryšių žymos</h3>
-        <table>
-          <thead><tr><th scope="col">Žyma</th><th scope="col">Eilučių</th></tr></thead>
-          <tbody>
-            {#each overview.relations.slice(0, 12) as relation}
-              <tr><td>{relation.relation}</td><td>{relation.count}</td></tr>
-            {/each}
-          </tbody>
-        </table>
-      </section>
-
-      <section aria-labelledby="genre-summary-title">
-        <h3 id="genre-summary-title">Šaltinio žanrai</h3>
-        <table>
-          <thead><tr><th scope="col">Žanras</th><th scope="col">Dok.</th><th scope="col">Sak.</th></tr></thead>
-          <tbody>
-            {#each overview.genres as genre}
-              <tr><td>{genre.genre}</td><td>{genre.documents}</td><td>{genre.sentences}</td></tr>
-            {/each}
-          </tbody>
-        </table>
-      </section>
-    </div>
-
-    <section class="lemma-search" aria-labelledby="lemma-search-title">
-      <h3 id="lemma-search-title">Ieškoti lemos konteksto</h3>
+    <section class="lemma-search" aria-label="Lemos paieška">
       <p>
-        Įvedus lemos pradžią, atsiunčiamas tik atitinkamas lemos rodyklės fragmentas. Sakiniai atsiunčiami tik pasirinkus konkrečią lemą.
+        Pasirinkite rastą lemą, kad pamatytumėte sakinių pavyzdžius.
       </p>
       <form onsubmit={search}>
         <label for="syntax-lemma-query">Lemos pradžia</label>
@@ -160,14 +130,12 @@
       {#if searchError}
         <p class="error-inline" role="alert">{searchError}</p>
       {/if}
-      {#if !searching && query.trim() && !searchError}
+      {#if searched && !searching && !searchError && (resultTotal === 0 || resultTotal > results.length)}
         <p class="result-count" role="status" aria-live="polite">
           {#if resultTotal === 0}
             Atitikmenų nerasta.
           {:else if resultTotal > results.length}
             Rasta {resultTotal}; rodomi pirmi {results.length}.
-          {:else}
-            Rasta {resultTotal}.
           {/if}
         </p>
       {/if}
@@ -182,7 +150,7 @@
                 onclick={() => selectLemma(lemma)}
               >
                 <strong>{lemma.lemma}</strong>
-                <span>{lemma.tokenCount} žet.; pagrindinis {lemma.headEdgeCount}; priklausomasis {lemma.dependentEdgeCount}; šaknis {lemma.rootEdgeCount}</span>
+                <span>Pavartojimai: {lemma.tokenCount}</span>
               </button>
             </li>
           {/each}
@@ -192,11 +160,9 @@
 
     {#if selectedLemma}
       <section class="contexts" aria-labelledby="contexts-title">
-        <h3 id="contexts-title">Sakinių kontekstai: {selectedLemma.lemma}</h3>
+        <SectionHeading id="contexts-title">Sakinių kontekstai: {selectedLemma.lemma}</SectionHeading>
         <p>
-          Rodoma ne daugiau kaip {overview.manifest.syntaxContext.exampleSelection.maxExamplesPerLemma} pavyzdžių, parinktų
-          {overview.manifest.syntaxContext.exampleSelection.order.toLocaleLowerCase('lt')}
-          Dėl ribos neparodyta {overview.manifest.syntaxContext.exampleSelection.omittedRows} kitų galimų vaidmenų eilučių visame produkte.
+          Iki {overview.manifest.syntaxContext.exampleSelection.maxExamplesPerLemma} pavyzdžių šaltinio tvarka.
         </p>
         {#if contextLoading}
           <p class="status" role="status" aria-live="polite">Kraunami pasirinktos lemos sakiniai…</p>
@@ -208,13 +174,13 @@
           <ol class="context-list">
             {#each contexts as context}
               <li>
-                <p><strong>{context.relation}</strong> · {directionLabel(context.direction)}</p>
+                <p><strong>{context.relation}</strong> <span class="inline-separator" aria-hidden="true">//</span> {directionLabel(context.direction)}</p>
                 <p class="relation-pair">
                   <span>priklausomasis: <strong>{context.dependentForm}</strong> ({context.dependentLemma})</span>
                   <span>pagrindinis: <strong>{context.headForm}</strong> ({context.headLemma})</span>
                 </p>
                 <blockquote>{context.sentenceText}</blockquote>
-                <p class="context-source">{context.genre} · {context.document} · sakinys {context.sourceSentenceId}</p>
+                <details class="context-source"><summary>Šaltinis</summary><div class="details-content">{context.genre} <span class="inline-separator" aria-hidden="true">//</span> {context.document} <span class="inline-separator" aria-hidden="true">//</span> sakinys {context.sourceSentenceId}</div></details>
               </li>
             {/each}
           </ol>
@@ -223,9 +189,54 @@
     {/if}
 
     <details>
-      <summary>Ribos ir kilmė</summary>
+      <summary>Apie tekstyną ir jo ribas</summary>
       <div class="details-content">
+      <p>
+        <a href={overview.manifest.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis ALKSNIS įrašas</a>
+        <span class="inline-separator" aria-hidden="true">//</span> {overview.manifest.provenance.licence}
+      </p>
+        <p>ALKSNIS yra ranka tikrintas tekstynas. Jo ryšiai ir pavyzdžiai neaprašo visos lietuvių kalbos vartosenos.</p>
+    <dl class="overview-grid">
+      <div><dt>Dokumentai</dt><dd>{overview.manifest.syntaxContext.overview.documents}</dd></div>
+      <div><dt>Sakiniai (pagal ID)</dt><dd>{overview.manifest.syntaxContext.overview.deliveredSentenceIds}</dd></div>
+      <div><dt>Žetonai be skyrybos</dt><dd>{overview.manifest.syntaxContext.overview.nonPunctuationRows}</dd></div>
+      <div><dt>Ryšių žymos</dt><dd>{overview.manifest.syntaxContext.overview.nonPunctuationRelationLabels}</dd></div>
+    </dl>
+
+    <p class="source-note">
+      Šaltinyje nurodyti {overview.manifest.syntaxContext.overview.repositorySentenceClaim} sakiniai; CoNLL-U bylose – {overview.manifest.syntaxContext.overview.deliveredSentenceIds} sakinių ID.
+    </p>
+
+    <div class="summary-columns">
+      <section aria-labelledby="relation-summary-title">
+        <SectionHeading level={3} id="relation-summary-title">Dažniausios ryšių žymos</SectionHeading>
+        <table>
+          <thead><tr><th scope="col">Žyma</th><th scope="col">Eilučių</th></tr></thead>
+          <tbody>
+            {#each overview.relations.slice(0, 12) as relation}
+              <tr><td>{relation.relation}</td><td>{relation.count}</td></tr>
+            {/each}
+          </tbody>
+        </table>
+      </section>
+
+      <section aria-labelledby="genre-summary-title">
+        <SectionHeading level={3} id="genre-summary-title">Šaltinio žanrai</SectionHeading>
+        <table>
+          <thead><tr><th scope="col">Žanras</th><th scope="col">Dok.</th><th scope="col">Sak.</th></tr></thead>
+          <tbody>
+            {#each overview.genres as genre}
+              <tr><td>{genre.genre}</td><td>{genre.documents}</td><td>{genre.sentences}</td></tr>
+            {/each}
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+
+
         <p>{overview.manifest.provenance.citation}</p>
+        <p>Dėl pavyzdžių ribos nerodomos {overview.manifest.syntaxContext.exampleSelection.omittedRows} galimos ryšių eilutės visame rinkinyje.</p>
         <ul>
           {#each overview.manifest.syntaxContext.exclusions as exclusion}
             <li>{exclusion}</li>
@@ -240,10 +251,7 @@
 
 <style>
   .status,
-  .error,
-  .source-note,
-  .lemma-search,
-  .contexts {
+  .error {
     border: 1px solid var(--border-color);
     margin-top: var(--lg);
     padding: var(--md);
@@ -251,10 +259,9 @@
 
   .error,
   .error-inline {
-    border-color: #ffbf00;
+    border-color: var(--border-strong);
   }
 
-  header p + p,
   .source-note,
   .lemma-search > p,
   .contexts > p,
@@ -271,8 +278,8 @@
   }
 
   .overview-grid div {
-    border-left: 2px solid var(--border-color);
-    padding-left: var(--sm);
+    border: 0;
+    padding-left: 0;
   }
 
   .overview-grid dt {
@@ -280,7 +287,7 @@
   }
 
   .overview-grid dd {
-    font-size: 1.25em;
+    font-size: inherit;
     margin: 0;
   }
 
@@ -291,27 +298,34 @@
     margin-top: var(--lg);
   }
 
-  h3 {
+  .summary-columns :global(.dago-section-heading) {
     margin-bottom: var(--sm);
   }
 
   th,
   td {
-    border-bottom: 1px solid var(--border-color);
-    padding: var(--xs);
     text-align: left;
     vertical-align: top;
   }
 
+  .explorer { min-width: 0; }
+  .explorer > header, .lemma-search { max-width: 75ch; }
+  .source-note { margin-top: 1.5rem; }
+  .lemma-search label { display: block; font-weight: 700; }
+  .lemma-search, .contexts { margin-top: 2rem; min-width: 0; }
+  .summary-columns > section { min-width: 0; }
+
   .search-controls {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--sm);
-    margin-top: var(--xs);
+    align-items: stretch;
+    gap: 1rem;
+    margin-top: var(--sm);
   }
 
   .search-controls input {
-    flex: 1 1 16rem;
+    flex: 1;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .result-count,
@@ -339,6 +353,7 @@
   }
 
   .lemma-results span {
+    display: inline-block;
     font-size: 0.875em;
   }
 
@@ -346,10 +361,7 @@
     margin-top: var(--md);
   }
 
-  .context-list li {
-    border-left: 2px solid var(--border-color);
-    padding-left: var(--sm);
-  }
+  .context-list li + li { margin-top: 2rem; }
 
   .relation-pair {
     display: flex;
@@ -358,22 +370,21 @@
   }
 
   blockquote {
-    border-left: 2px solid #ffbf00;
+    border-left: 2px solid var(--text-color);
     margin-left: 0;
     padding-left: var(--sm);
   }
 
+  .lemma-results button[aria-pressed="true"] { font-weight: 700; text-decoration: none; }
   .context-source {
+    overflow-wrap: anywhere;
     font-size: 0.875em;
   }
 
-  details {
-    margin-top: var(--lg);
-  }
+  details { margin-top: 1.5rem; }
+  .context-source { margin-top: .75rem; }
 
-  .details-content {
-    margin: var(--md) 0 var(--sm);
-  }
+  .details-content { padding: 1rem; }
 
   @media (max-width: 639px) {
     .overview-grid,

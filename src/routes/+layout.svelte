@@ -12,7 +12,7 @@
 
 	function isCurrent(path: string) {
 		if (path === homeUrl) return isHomepage;
-		return page.url.pathname.startsWith(path);
+		return page.route.id === (path === catalogueUrl ? '/duomenu-katalogas' : '/apie');
 	}
 </script>
 
@@ -22,11 +22,10 @@
 	<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260901" />
 </svelte:head>
 
-<div class:homepage-shell={isHomepage}>
-{#if isHomepage}
+<div class="dago-shell">
 <a class="skip-link" href="#main-content">Pereiti prie turinio</a>
 <header class="site-header">
-  <h1>dažniausi žodžiai <a href="https://dago.lt" class="dago-link print-a-no-link">// dago</a></h1>
+  <h1><a href={homeUrl} class="site-home-link print-a-no-link">dažniausi žodžiai</a> <a href="https://dago.lt" class="dago-link print-a-no-link">// dago</a></h1>
   <nav class="site-navigation" aria-label={t('siteNavigation')}>
     <a href={homeUrl} aria-current={isCurrent(homeUrl) ? 'page' : undefined}>Žodžiai</a>
     <span class="nav-separator" aria-hidden="true">//</span>
@@ -45,27 +44,4 @@
   <div class="ai-badge"><a href="https://weblog.dago.lt/mano-ai-di-politika" target="_blank" rel="noopener" class="print-a-no-link"><img src="https://dago.lt/assets/img/byai.png" srcset="https://dago.lt/assets/img/byai.png 1x, https://dago.lt/assets/img/byai@2x.png 2x" alt="Sukūrė DI, ne žmogus" width="132" height="43" /></a></div>
 </footer>
 
-{:else}
-<a class="skip-link" href="#main-content">Pereiti prie turinio</a>
-<header class="site-header">
-	<div class="site-brand">
-		<a href={homeUrl} class="brand-home print-a-no-link">dažniausi žodžiai</a>
-		<a href="https://dago.lt" class="dago-link print-a-no-link" target="_blank" rel="noopener">// dago</a>
-	</div>
-	<nav class="site-navigation" aria-label={t('siteNavigation')}>
-		<a href={homeUrl} aria-current={isCurrent(homeUrl) ? 'page' : undefined}>{#if isCurrent(homeUrl)}<span aria-hidden="true">› </span>{/if}{t('exploreData')}</a>
-		<a href={catalogueUrl} aria-current={isCurrent(catalogueUrl) ? 'page' : undefined}>{#if isCurrent(catalogueUrl)}<span aria-hidden="true">› </span>{/if}{t('dataProductsCatalogue')}</a>
-		<a href={methodologyUrl} aria-current={isCurrent(methodologyUrl) ? 'page' : undefined}>{#if isCurrent(methodologyUrl)}<span aria-hidden="true">› </span>{/if}{t('methodologyAndSources')}</a>
-	</nav>
-</header>
-
-<div id="main-content">
-	{@render children?.()}
-</div>
-
-<footer>
-	<p>{t('footerText')}<a href="mailto:{t('footerEmail')}">{t('footerEmail')}</a></p>
-</footer>
-
-{/if}
 </div>

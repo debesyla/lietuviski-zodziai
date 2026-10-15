@@ -1,114 +1,46 @@
 <script lang="ts">
+  import SectionHeading from '../../components/SectionHeading.svelte';
   import { base } from '$app/paths';
   import { loadPublicDataProducts, type DataProductType, type PublicDataProduct } from '$lib/publication';
   import { site } from '$lib/site';
 
-  type CategoryId = 'frequency' | 'comparisons' | 'lexical' | 'syntax' | 'metadata';
   type PrimaryAction = { href: string; label: string } | null;
-
-  interface Category {
-    id: CategoryId;
-    title: string;
-    description: string;
-  }
-
   const homeUrl = `${base}/`;
-  const categoryDefinitions: Category[] = [
-    {
-      id: 'frequency',
-      title: 'Dažnumo sąrašai',
-      description: 'Lemų, žodžių formų ir viengramių skaičiai, kurie visada galioja tik nurodytam šaltiniui.'
-    },
-    {
-      id: 'comparisons',
-      title: 'Palyginimai',
-      description: 'Kelių šaltinių santykio ar aprėpties rodikliai; jų negalima perskaityti kaip bendro dažnumo reitingo.'
-    },
-    {
-      id: 'lexical',
-      title: 'Leksiniai rinkiniai',
-      description: 'Specializuoti žodyno, analizės ar porų įrašai, o ne dažnumo lentelės.'
-    },
-    {
-      id: 'syntax',
-      title: 'Sintaksės kontekstai',
-      description: 'Šaltiniui būdingi priklausomybių ryšiai, žanrai ir riboti sakinių kontekstai.'
-    },
-    {
-      id: 'metadata',
-      title: 'Metaduomenys be eilučių',
-      description: 'Šaltiniai, kuriems paskelbtas tik saugus aprašas, o ne duomenų įrašai.'
-    }
+  const explorerOrder = [
+    'utka-2018-lemmatized-totals', 'dadurkevicius-2020-jcl-lemmas', 'petkevicius-2025-ccll-lemmas',
+    'dadurkevicius-dml6-vs-jcl-comparison', 'utka-ccll2-war-ukraine-comparison',
+    'utka-ccll-wordforms', 'vssa-2026-blkt-wordform-profile', 'rimkute-2019-alksnis-syntactic-context'
   ];
+  const entryCopy: Record<string, { title: string; description: string }> = {
+    'utka-2018-lemmatized-totals': { title: '1 mln. tekstyno lemos (2018)', description: 'Lemų dažniai ir kalbos dalių žymos.' },
+    'dadurkevicius-2020-jcl-lemmas': { title: 'JCL lemos (2020)', description: 'Jungtinio lietuvių kalbos tekstyno lemų dažniai ir kalbos dalys.' },
+    'petkevicius-2025-ccll-lemmas': { title: 'CCLL lemos (2025)', description: 'Dabartinės lietuvių kalbos tekstyno lemų dažnumo sąrašas.' },
+    'utka-ccll-wordforms': { title: 'CCLL žanrų profilis', description: 'Žodžio formos dažnis penkiuose tekstų žanruose.' },
+    'dadurkevicius-dml6-vs-jcl-comparison': { title: 'DML6 žodyno aprėptis', description: 'Kurios JCL žodžių formos aptinkamos žodyne?' },
+    'utka-ccll2-war-ukraine-comparison': { title: 'Karo meto vartosena', description: 'Žodžio forma CCLL2, karo meto žiniasklaidoje ir socialiniuose tinkluose.' },
+    'vssa-2026-blkt-wordform-profile': { title: 'BLKT žodžio profilis', description: 'Dažnis pagal teksto tipą ir laikotarpį; tik paskelbti suvestiniai duomenys.' },
+    'rimkute-2019-alksnis-syntactic-context': { title: 'ALKSNIS sintaksė', description: 'Lemų ryšiai ir sakinių pavyzdžiai.' },
+    'bielinskiene-2019-delfi-1grams': { title: 'Delfi.lt viengramiai', description: 'Atskirų tekstyno žetonų dažnumo sąrašas.' },
+    'rimkute-2024-matas-v3-frequencies': { title: 'MATAS v3.0 dažniai', description: 'Lemų ir žodžių formų dažniai iš anotuoto tekstyno.' },
+    'kapociute-dzikiene-2017-parliament-frequency-aggregates': { title: 'Parlamento kalbų dažniai', description: 'Viso tekstyno lemų ir žodžių formų suvestinės.' },
+    'zemriete-2025-lithuanian-homoforms': { title: 'Lietuvių homoformos', description: 'Vienodai rašomų formų analizės.' },
+    'raskinis-2025-foreign-name-transliterations': { title: 'Užsienio vardų atitikmenys', description: 'Vardų perteikimo poros ir atitikčių skaičiai.' },
+    'birvinskaite-2026-lithuanian-basketball-slang': { title: 'Krepšinio žargonas', description: 'Lietuviški krepšinio žargono įrašai.' },
+    'rimkute-morphemic-dictionary': { title: 'Morfemikos žodynas', description: '72 325 įrašai iš trijų 2011 m. žodyno tomų.' }
+  };
 
   let products = $state<PublicDataProduct[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
+  let groups = $derived([
+    { id: 'explore', title: 'Tyrinėti naršyklėje', products: products.filter(product => explorerAction(product)).sort((a, b) => explorerRank(a) - explorerRank(b)) },
+    { id: 'json', title: 'Rinkiniai JSON formatu', products: products.filter(product => product.publication.status === 'published' && !explorerAction(product)).sort((a, b) => displayTitle(a).localeCompare(displayTitle(b), 'lt')) },
+    { id: 'metadata', title: 'Tik šaltinių aprašai', products: products.filter(product => product.publication.status === 'metadata-only') }
+  ].filter(group => group.products.length));
 
-  let groupedCategories = $derived(categoryDefinitions
-    .map((category) => ({
-      ...category,
-      products: products.filter((product) => categoryId(product) === category.id)
-    }))
-    .filter((category) => category.products.length > 0));
-
-  function categoryId(product: PublicDataProduct): CategoryId {
-    switch (product.productType) {
-      case 'generic-frequency-dataset':
-      case 'chunked-wordform-list':
-      case 'chunked-frequency-list':
-      case 'chunked-derived-frequency-list':
-        return 'frequency';
-      case 'chunked-comparison':
-        return 'comparisons';
-      case 'chunked-lexical-collection':
-        return 'lexical';
-      case 'chunked-syntactic-context':
-        return 'syntax';
-      case 'metadata-only':
-        return 'metadata';
-    }
-  }
-
-  function productForm(product: PublicDataProduct) {
-    if (product.id === 'vssa-2026-blkt-wordform-profile') {
-      return 'Vieno tekstyno žodžio profilis pagal tipą ir laikotarpį';
-    }
-    const forms: Record<DataProductType, string> = {
-      'generic-frequency-dataset': product.content?.entryKind === 'wordform'
-        ? 'Naršyklėje tiriamas žodžių formų dažnumo sąrašas'
-        : 'Naršyklėje tiriamas lemų dažnumo sąrašas',
-      'chunked-wordform-list': 'Didelis žodžių formų dažnumo sąrašas',
-      'chunked-frequency-list': 'Šaltinio leksinių vienetų dažnumo sąrašas',
-      'chunked-derived-frequency-list': 'Iš anotuoto tekstyno išvestas dažnumo sąrašas',
-      'chunked-lexical-collection': 'Specializuotų leksinių įrašų rinkinys',
-      'chunked-syntactic-context': 'Sintaksinių ryšių ir kontekstų rinkinys',
-      'chunked-comparison': 'Tarp šaltinių apskaičiuotas palyginimas',
-      'metadata-only': 'Šaltinio metaduomenys be viešų įrašų'
-    };
-    return forms[product.productType];
-  }
-
-  function sourceScope(product: PublicDataProduct) {
-    const scopes: Record<string, string> = {
-      'utka-2018-lemmatized-totals': '1 mln. lietuvių kalbos tekstyno lemos ir kalbos dalių žymos.',
-      'dadurkevicius-2020-jcl-lemmas': 'Jungtinio lietuvių kalbos tekstyno lemų ir kalbos dalių dažniai.',
-      'petkevicius-2025-ccll-lemmas': 'Dabartinės lietuvių kalbos tekstyno lemų dažniai.',
-      'utka-ccll-wordforms': 'Bendras CCLL sąrašas ir penki atskirų subkorpusų žodžių formų sąrašai.',
-      'dadurkevicius-dml6-vs-jcl-comparison': 'DML6 žodyno aprėpties ir JCL vartosenos palyginimo rodikliai.',
-      'utka-ccll2-war-ukraine-comparison': 'CCLL2, karo laikotarpio žiniasklaidos ir socialinių tinklų leksikonų palyginimas.',
-      'bielinskiene-2019-delfi-1grams': 'Delfi.lt tekstyno viengramiai.',
-      'rimkute-2024-matas-v3-frequencies': 'Iš MATAS v3.0 anotuoto tekstyno išvesti lemų ir žodžių formų dažniai.',
-      'zemriete-2025-lithuanian-homoforms': 'Lietuvių homoformų analizės su šaltiniui būdingais laukais.',
-      'raskinis-2025-foreign-name-transliterations': 'Užsienio vardų perteikimo poros ir šaltinio atitikčių skaičiai.',
-      'birvinskaite-2026-lithuanian-basketball-slang': 'Lietuvių krepšinio žargono leksiniai įrašai.',
-      'rimkute-2019-alksnis-syntactic-context': 'ALKSNIS medyno priklausomybių ryšiai, žanrai, lemos ir riboti sakinių kontekstai.',
-      'kapociute-dzikiene-2017-parliament-frequency-aggregates': 'Lietuvos parlamento kalbų tekstyno bendri lemų ir žodžių formų dažniai.',
-      'vssa-2026-blkt-wordform-profile': 'Vienos tikslios žodžio formos rodikliai visame BLKT ir saugiai paskelbtuose penkių teksto tipų bei keturių laikotarpių pjūviuose.',
-      'rimkute-morphemic-dictionary': 'Iš trijų 2011 m. PDF tomų deterministiškai išgauti 72 325 įrašai; šaltinio dažnių suma – 310 012.'
-    };
-    return scopes[product.id] ?? product.publication.scope;
-  }
+  function displayTitle(product: PublicDataProduct) { return entryCopy[product.id]?.title ?? product.title; }
+  function description(product: PublicDataProduct) { return entryCopy[product.id]?.description ?? product.publication.scope; }
+  function explorerRank(product: PublicDataProduct) { const index = explorerOrder.indexOf(product.id); return index < 0 ? explorerOrder.length : index; }
 
   function limitation(product: PublicDataProduct) {
     const sourceSpecificLimits: Record<string, string> = {
@@ -132,25 +64,6 @@
     return limits[product.productType];
   }
 
-  function accessDescription(product: PublicDataProduct) {
-    if (product.publication.status === 'metadata-only') {
-      return 'Pateikiamas tik viešas JSON sprendimo aprašas; duomenų eilučių nėra.';
-    }
-    if (product.productType === 'generic-frequency-dataset') {
-      return 'Tyrinėjimas naršyklėje ir pilnas peržiūrėtas JSON rinkinys.';
-    }
-    if (product.productType === 'chunked-comparison' || product.productType === 'chunked-syntactic-context') {
-      return 'Galimas specialus tyrinėjimo vaizdas; JSON aprašas nurodo atskiras statines duomenų dalis.';
-    }
-    return 'JSON aprašas įkeliamas pirmas, o duomenys pateikiami mažesnėmis statinėmis dalimis.';
-  }
-
-  function availability(product: PublicDataProduct) {
-    return product.publication.status === 'published'
-      ? 'Viešas JSON duomenų produktas'
-      : 'Tik metaduomenys; įrašai neskelbiami';
-  }
-
   function permissionDescription(product: PublicDataProduct) {
     if (product.id === 'rimkute-morphemic-dictionary') {
       return 'Leidžiama išgauti ir taisyti PDF duomenis, skelbti bei platinti visą išvestinį rinkinį ir statistiką, taip pat pernaudoti su įprastu priskyrimu.';
@@ -158,11 +71,11 @@
     return product.provenance.permission?.scope ?? '';
   }
 
-  function primaryAction(product: PublicDataProduct): PrimaryAction {
+  function explorerAction(product: PublicDataProduct): PrimaryAction {
     if (product.publication.status === 'metadata-only') return null;
 
     if (product.productType === 'generic-frequency-dataset') {
-      return { href: homeUrl, label: 'Tyrinėti dažnumo sąrašą' };
+      return { href: `${homeUrl}?source=${encodeURIComponent(product.id)}`, label: 'Tyrinėti' };
     }
 
     const explorerActions: Record<string, PrimaryAction> = {
@@ -188,10 +101,7 @@
       }
     };
 
-    return explorerActions[product.id] ?? {
-      href: product.manifestUrl,
-      label: 'Atverti JSON aprašą ir prieigą'
-    };
+    return explorerActions[product.id] ?? null;
   }
 
   $effect(() => {
@@ -213,286 +123,88 @@
 </script>
 
 <svelte:head>
-  <title>Viešų duomenų katalogas · Lietuviški žodžiai</title>
+  <title>viešų duomenų katalogas // dažniausi žodžiai</title>
   <meta name="description" content="Naršykite visus viešus lietuvių kalbos duomenų produktus: jų šaltinio apimtį, licenciją, prieigą ir interpretavimo ribas." />
   <link rel="canonical" href={site.catalogueUrl} />
-  <meta property="og:title" content="Viešų duomenų katalogas · Lietuviški žodžiai" />
+  <meta property="og:title" content="Viešų duomenų katalogas // dažniausi žodžiai" />
   <meta property="og:description" content="Viešų lietuvių kalbos duomenų produktų apimtis, licencijos, prieiga ir ribos vienoje vietoje." />
   <meta property="og:url" content={site.catalogueUrl} />
 </svelte:head>
 
 <main class="catalogue">
-  <p class="back-link"><a href={homeUrl}>← Tyrinėti dažnumo sąrašus</a></p>
-  <h1>Viešų duomenų katalogas</h1>
-  <p class="lead">Ką kiekvienas rinkinys aprašo, kaip jį pasiekti ir kokios jo naudojimo ribos.</p>
-
+  <header><SectionHeading>Duomenų rinkiniai</SectionHeading></header>
   {#if loading}
-    <p class="loading" role="status" aria-live="polite">Kraunami viešų produktų aprašai…</p>
+    <p class="loading" role="status">Kraunami rinkiniai…</p>
   {:else if error}
-    <section class="error" role="alert" aria-labelledby="catalogue-load-error">
-      <h2 id="catalogue-load-error">Nepavyko įkelti viešų produktų katalogo</h2>
-      <p>{error}</p>
+    <section class="error" role="alert">
+      <h3>Nepavyko įkelti katalogo</h3>
+      <p>Pabandykite atnaujinti puslapį.</p>
     </section>
+  {:else if groups.length === 0}
+    <p role="status">Rinkinių nėra.</p>
   {:else}
-    <p class="result-count" role="status">Kataloge: {products.length} produktų.</p>
-
-    {#each groupedCategories as category}
-      <section class="category" aria-labelledby={`category-${category.id}`}>
-        <header>
-          <h2 id={`category-${category.id}`}>{category.title}</h2>
-          <p>{category.description}</p>
-        </header>
-
-        <div class="product-grid">
-          {#each category.products as product}
-            {@const action = primaryAction(product)}
-            <article class:metadata-only={product.publication.status === 'metadata-only'} class="product-card" aria-labelledby={`product-${product.id}`}>
-              <div class="card-header">
-                <p class="status">{availability(product)}</p>
-                <h3 id={`product-${product.id}`}>{product.title}</h3>
-              </div>
-
-              <dl class="facts">
-                <div>
-                  <dt>Ką pateikia</dt>
-                  <dd>{productForm(product)}</dd>
-                </div>
-                <div>
-                  <dt>Licencija</dt>
-                  <dd>{product.provenance.licence}</dd>
-                </div>
-                <div class="scope">
-                  <dt>Šaltinio apimtis</dt>
-                  <dd>{sourceScope(product)}</dd>
-                </div>
-                <div class="scope">
-                  <dt>Prieiga</dt>
-                  <dd>{accessDescription(product)}</dd>
-                </div>
-                {#if product.provenance.permission}
-                  <div class="scope">
-                    <dt>Teisių turėtojo leidimo apimtis</dt>
-                    <dd>{permissionDescription(product)} ({product.provenance.permission.confirmedOn})</dd>
-                  </div>
-                {/if}
-                {#if product.provenance.attributionNotice}
-                  <div class="scope">
-                    <dt>Priskyrimas</dt>
-                    <dd>{product.provenance.attributionNotice}</dd>
-                  </div>
-                {/if}
-              </dl>
-
-              <p class="limitation"><strong>Interpretavimo riba:</strong> {limitation(product)}</p>
-              {#if product.provenance.modificationNotice}
-                <p class="modification-notice"><strong>Pakeitimo pranešimas:</strong> {product.provenance.modificationNotice}</p>
-              {/if}
-
-              <div class="card-actions">
+    {#each groups as group}
+      <section class="category" aria-label={group.title}>
+        {#if group.id !== 'explore'}<SectionHeading level={3}>{group.title}</SectionHeading>{/if}
+        <div class="entries">
+          {#each group.products as product (product.id)}
+            {@const action = explorerAction(product)}
+            <article class="catalogue-entry" aria-labelledby={`product-${product.id}`}>
+              <p class="entry-title" id={`product-${product.id}`}><strong><a href={action?.href ?? product.manifestUrl}>{displayTitle(product)}</a></strong></p>
+              <p>{description(product)}</p>
+              {#if product.publication.status === 'metadata-only'}<p>Tik aprašas; duomenų eilutės neskelbiamos.</p>{/if}
+              <div class="entry-actions">
                 {#if action}
-                  <a href={action.href}>{action.label}</a>
-                  <a href={product.manifestUrl}>JSON produkto aprašas</a>
-                {:else}
-                  <a href={product.manifestUrl}>Peržiūrėti viešą sprendimo aprašą</a>
+                  <span class="resource-link"><a href={product.manifestUrl}>JSON</a><span class="inline-separator" aria-hidden="true">//</span></span>
                 {/if}
-                <a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminio šaltinio įrašas</a>
+                <a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Šaltinis</a>
+                <span class="inline-separator" aria-hidden="true">//</span>
+                <details class="entry-details">
+                  <summary class="text-button">Apie rinkinį</summary>
+                  <div class="entry-details-content">
+                    <dl class="entry-facts">
+                      <div><dt>Šaltinio pavadinimas</dt><dd>{product.title}</dd></div>
+                      <div><dt>Licencija</dt><dd>{product.provenance.licence}</dd></div>
+                    </dl>
+                    <p><strong>Citata:</strong> {product.provenance.citation}</p>
+                    {#if product.provenance.permission}
+                      <p><strong>Leidimas:</strong> {permissionDescription(product)} ({product.provenance.permission.confirmedOn})</p>
+                    {/if}
+                    {#if product.provenance.attributionNotice}
+                      <p><strong>Priskyrimas:</strong> {product.provenance.attributionNotice}</p>
+                    {/if}
+                    <p><strong>Duomenų ribos:</strong> {limitation(product)}</p>
+                    {#if product.provenance.modificationNotice}
+                      <p><strong>Pakeitimai:</strong> {product.provenance.modificationNotice}</p>
+                    {/if}
+                  </div>
+                </details>
               </div>
             </article>
           {/each}
         </div>
       </section>
     {/each}
-
-    <details class="table-equivalent">
-      <summary>Visas katalogas tekstine lentele</summary>
-      <div class="table-scroll">
-        <table>
-          <caption>Visi katalogo produktai, jų paskirtis, būsena ir prieiga</caption>
-          <thead>
-            <tr>
-              <th scope="col">Kategorija</th>
-              <th scope="col">Produktas</th>
-              <th scope="col">Šaltinio apimtis</th>
-              <th scope="col">Būsena</th>
-              <th scope="col">Prieiga</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each groupedCategories as category}
-              {#each category.products as product}
-                {@const action = primaryAction(product)}
-                <tr>
-                  <th scope="row">{category.title}</th>
-                  <td>{product.title}</td>
-                  <td>{sourceScope(product)}</td>
-                  <td>{availability(product)}</td>
-                  <td>
-                    {#if action}
-                      <a href={action.href}>{action.label}</a>
-                    {:else}
-                      <a href={product.manifestUrl}>Sprendimo aprašas</a>
-                    {/if}
-                  </td>
-                </tr>
-              {/each}
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    </details>
   {/if}
 </main>
 
 <style>
-  .catalogue {
-    display: grid;
-    gap: var(--xl);
-  }
-
-  .back-link {
-    margin-bottom: calc(var(--lg) * -1);
-  }
-
-  .lead {
-    font-size: 1.15em;
-    max-width: 68ch;
-  }
-
-  .loading,
-  .error,
-  .result-count {
-    border: 1px solid var(--border-color);
-    padding: var(--md);
-  }
-
-  .category {
-    display: grid;
-    gap: var(--md);
-  }
-
-  .category header {
-    max-width: 72ch;
-  }
-
-  .category h2,
-  .category h3,
-  .category header p {
-    margin-bottom: var(--sm);
-  }
-
-  .category header p {
-    margin-bottom: 0;
-  }
-
-  .product-grid {
-    display: grid;
-    gap: var(--md);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
-  }
-
-  .product-card {
-    border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    gap: var(--md);
-    min-width: 0;
-    padding: var(--md);
-  }
-
-  .product-card.metadata-only {
-    border-style: dashed;
-  }
-
-  .card-header {
-    display: grid;
-    gap: var(--xs);
-  }
-
-  .status {
-    color: color-mix(in srgb, var(--text-color) 76%, transparent);
-    font-size: 0.9em;
-  }
-
-  .facts {
-    display: grid;
-    gap: var(--sm);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .facts > div {
-    border-left: 2px solid var(--border-color);
-    min-width: 0;
-    padding-left: var(--sm);
-  }
-
-  .facts .scope {
-    grid-column: 1 / -1;
-  }
-
-  dt {
-    color: color-mix(in srgb, var(--text-color) 72%, transparent);
-  }
-
-  dd {
-    margin: 0;
-    overflow-wrap: anywhere;
-  }
-
-  .limitation {
-    border-left: 2px solid var(--text-color);
-    padding-left: var(--sm);
-  }
-
-  .modification-notice {
-    border-left: 2px dashed var(--text-color);
-    padding-left: var(--sm);
-  }
-
-  .card-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--sm) var(--md);
-    margin-top: auto;
-  }
-
-  .table-equivalent {
-    margin: 0;
-    max-width: 100%;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .table-scroll {
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-  }
-
-  table {
-    margin-top: var(--md);
-    min-width: 60rem;
-  }
-
-  caption {
-    margin-bottom: var(--sm);
-    text-align: left;
-  }
-
-  th,
-  td {
-    border: 1px solid var(--border-color);
-    padding: var(--sm);
-    text-align: left;
-    vertical-align: top;
-  }
-
-  @media (max-width: 639px) {
-    .facts {
-      grid-template-columns: 1fr;
-    }
-
-    .facts .scope {
-      grid-column: auto;
-    }
-  }
+  .catalogue { display: grid; gap: 2rem; }
+  .category { display: grid; gap: 2rem; }
+  .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 2rem; }
+  .category > :global(.dago-section-heading), .entry-title { margin: 0; }
+  .entries { display: grid; gap: 1.5rem; }
+  .catalogue-entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: .25rem; min-width: 0; }
+  .catalogue-entry + .catalogue-entry { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }
+  .catalogue-entry > p { margin: 0; }
+  .entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .25rem; }
+  .resource-link { display: inline-flex; align-items: center; gap: .5rem; }
+  .entry-details { display: contents; border: 0; }
+  .entry-details::details-content { flex-basis: 100%; min-width: 0; }
+  .entry-details:not([open])::details-content { display: none; }
+  .entry-details > summary { padding: 0; border: 0; font-weight: inherit; }
+  .entry-details > summary:hover, .entry-details > summary:focus-visible { text-decoration-style: dashed; }
+  .entry-details-content { flex-basis: 100%; min-width: 0; margin-top: .5rem; border-left: 1px solid hsl(var(--theme) / .35); padding-left: 1rem; overflow-wrap: anywhere; }
+  .entry-facts { display: grid; gap: .75rem; margin-bottom: 1rem; }
+  .entry-facts dd { margin: .25rem 0 0; }
 </style>

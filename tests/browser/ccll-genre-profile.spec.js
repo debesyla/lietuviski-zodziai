@@ -26,14 +26,15 @@ test('looks up one CCLL wordform by named genre without loading the corpus', asy
   });
 
   await page.goto('zanru-profilis');
-  await expect(page.getByRole('heading', { name: 'CCLL žanrų profilis pagal žodžio formą' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Ieškoti žanruose' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'CCLL žanrų profilis' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
   expect(profileRequests.filter((url) => url.endsWith('/manifest.json'))).toHaveLength(1);
   expect(profileRequests.some((url) => url.includes('/buckets/'))).toBe(false);
 
   await page.getByLabel('Tiksli žodžio forma').fill('ir');
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'ir' })).toBeVisible();
+  await page.getByText('Lentelė', { exact: true }).click();
   const table = page.getByRole('table');
   await expect(table).toBeVisible();
   await expect(table.getByRole('row', { name: /Grožinė literatūra/ })).toContainText(/600.?403/);
@@ -42,7 +43,7 @@ test('looks up one CCLL wordform by named genre without loading the corpus', asy
   expect(profileRequests.some((url) => url.includes('/views/'))).toBe(false);
 
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Atsisiųsti šio atsakymo JSON' }).click();
+  await page.getByRole('button', { name: 'Atsisiųsti JSON' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/^ccll-zanru-profilis-ir\.json$/);
 
@@ -52,9 +53,9 @@ test('looks up one CCLL wordform by named genre without loading the corpus', asy
 
 test('does not turn a missing exact wordform into zero', async ({ page }) => {
   await page.goto('zanru-profilis');
-  await expect(page.getByRole('button', { name: 'Ieškoti žanruose' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
   await page.getByLabel('Tiksli žodžio forma').fill('visiškai-nerasta-forma');
-  await page.getByRole('button', { name: 'Ieškoti žanruose' }).click();
+  await page.getByRole('button', { name: 'Ieškoti' }).click();
   await expect(page.getByRole('heading', { name: 'Forma nerasta' })).toBeVisible();
   await expect(page.getByText(/nereiškia, kad jos nėra lietuvių kalboje/i)).toBeVisible();
 });

@@ -12,8 +12,9 @@ test('loads ALKSNIS sentence contexts only after a visitor selects a source lemm
 
   await page.goto('sintakse');
   await expect(page.getByRole('heading', { name: 'ALKSNIS sintaksės kontekstai' })).toBeVisible();
-  await expect(page.getByText('Pristatyti sakinių ID')).toBeVisible();
-  await expect(page.getByText(/3643 sakinius/)).toBeVisible();
+  await page.getByText('Apie tekstyną ir jo ribas', { exact: true }).click();
+  await expect(page.getByText('Sakiniai (pagal ID)')).toBeVisible();
+  await expect(page.getByText(/3.?643 sakiniai/)).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(contextChunkRequests).toEqual([]);
 
