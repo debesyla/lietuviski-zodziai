@@ -20,7 +20,7 @@ export interface Page<T> {
  * @param selectedTypes - Optional array of types to filter by
  * @returns Filtered array of words
  */
-export function filterWords(words: Word[], query: string, selectedTypes?: string[]): Word[] {
+export function filterWords<T extends Word>(words: T[], query: string, selectedTypes?: string[]): T[] {
   let filtered = words;
 
   // Filter by search query
@@ -80,4 +80,16 @@ export function paginate<T>(items: T[], requestedPage: number, pageSize = RESULT
     start,
     end
   };
+}
+
+/**
+ * Picks the Lithuanian noun form for a count: 1 žodis, 2 žodžiai, 10 žodžių.
+ */
+export function pluralLt(count: number, forms: [one: string, few: string, many: string]): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 19) return forms[2];
+  if (lastDigit === 1) return forms[0];
+  if (lastDigit >= 2) return forms[1];
+  return forms[2];
 }

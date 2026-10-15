@@ -136,7 +136,9 @@ it('submits from the keyboard and renders an accessible, denominator-aware resul
 
   await waitFor(() => expect(getByRole('heading', { name: 'žodis' })).toBeInTheDocument());
   expect(lookupBlktWordform).toHaveBeenCalledWith(profile, '  ŽODIS  ');
-  expect(getAllByRole('table')).toHaveLength(2);
+  // The whole-corpus figures are shown as facts; only sliced results need a table.
+  expect(getAllByRole('table')).toHaveLength(1);
+  expect(getByText('Milijonui žodžių', { selector: 'dt' }).nextElementSibling).toHaveTextContent('111 111,11');
   expect(getByText('Šio žodžio laikotarpių pjūvis neskelbiamas. Atskiros saugos ribos nepasiekusios reikšmės neatskleidžiamos.')).toBeInTheDocument();
   expect(getByRole('button', { name: 'Atsisiųsti JSON' })).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
@@ -163,7 +165,7 @@ it('downloads only the selected aggregate response as JSON', async () => {
   await waitFor(() => expect(click).toHaveBeenCalledOnce());
   expect(downloadLink.href).toBe('blob:blkt-result');
   expect(downloadLink.download).toBe('blkt-žodis.json');
-  await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:blkt-result'));
+  await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:blkt-result'), { timeout: 2_000 });
   const blob = createObjectURL.mock.calls[0][0];
   expect(blob.type).toBe('application/json');
   const payload = JSON.parse(await blob.text());
@@ -203,7 +205,7 @@ it('explains a no-result response without presenting it as a zero', async () => 
   await user.type(getByLabelText('Viena žodžio forma'), 'nerasta');
   await user.click(getByRole('button', { name: 'Ieškoti' }));
 
-  await waitFor(() => expect(getByRole('heading', { name: 'Žodis paskelbtame profilyje nerastas' })).toBeInTheDocument());
+  await waitFor(() => expect(getByText('Žodis paskelbtame profilyje nerastas.')).toBeInTheDocument());
   expect(getByText(/galėjo būti neaptiktas arba nepraeiti saugos slenksčio/i)).toBeInTheDocument();
   expect(getByText(/nereiškia, kad tokios raidžių sekos nėra BLKT/i)).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);

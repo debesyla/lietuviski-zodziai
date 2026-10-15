@@ -92,7 +92,7 @@ describe('dataset workflow integration', () => {
 
     await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('beta'));
     expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('beta');
-    expect(container.querySelector('.fact-grid')).toHaveTextContent(/66,667\s*%/);
+    expect(container.querySelector('.coverage-facts')).toHaveTextContent(/66,7\s*%/);
 
     await user.click(getByRole('button', { name: 'Rikiuoti pagal Žodis: nerikiuota' }));
     await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('alfa'));
@@ -101,7 +101,7 @@ describe('dataset workflow integration', () => {
     await user.click(getByRole('checkbox', { name: /Noun/ }));
     await waitFor(() => {
       expect(getByRole('button', { name: 'Išvalyti filtrus' })).toBeInTheDocument();
-      expect(container.querySelector('.fact-grid')).toHaveTextContent('„beta“: 100 %');
+      expect(container.querySelector('.coverage-facts')).toHaveTextContent(/„beta“ – 100\s%/);
     });
 
     await user.selectOptions(getByRole('combobox', { name: 'Šaltinis' }), 'second');
@@ -118,6 +118,20 @@ describe('dataset workflow integration', () => {
     expect(queryByText('kitas')).not.toBeInTheDocument();
   });
 
+  it('keeps each word\'s dataset rank when a search narrows the list', async () => {
+    installDatasetFetch({ 'catalog.json': workflowCatalog, 'first.json': firstDataset, 'second.json': secondDataset });
+    const user = userEvent.setup();
+    const { container, getByRole } = render(Page);
+
+    await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('beta'));
+    await user.type(getByRole('textbox'), 'alf');
+
+    await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(1));
+    const cells = container.querySelectorAll('.table-container tbody tr td');
+    expect(cells[0]).toHaveTextContent('2');
+    expect(cells[1]).toHaveTextContent('alfa');
+  });
+
   it('renders the actual published Utka dataset through the catalog-selected path', async () => {
     const catalog = JSON.parse(await readFile(path.join(repositoryRoot, 'static/datasets/catalog.json'), 'utf8'));
     const utka = JSON.parse(await readFile(path.join(repositoryRoot, 'static/datasets/utka-2018-lemmatized-totals.json'), 'utf8'));
@@ -128,6 +142,6 @@ describe('dataset workflow integration', () => {
     await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50), { timeout: 5_000 });
     expect(getByRole('combobox', { name: 'Šaltinis' })).toHaveValue(utka.id);
     expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50);
-    expect(container.querySelector('.dashboard')).toHaveTextContent(/922\s+949/);
+    expect(container.querySelector('.summary')).toHaveTextContent(/Pavartojimai: 922\s+949/);
   });
 });

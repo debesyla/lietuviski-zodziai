@@ -68,6 +68,6 @@ it('makes a no-result lookup explicit instead of inventing a zero', async () => 
   await user.type(getByLabelText('Tiksli žodžio forma'), 'nerasta');
   await user.click(getByRole('button', { name: 'Ieškoti' }));
 
-  await waitFor(() => expect(getByText('Forma nerasta')).toBeInTheDocument());
+  await waitFor(() => expect(getByText('Forma nerasta.')).toBeInTheDocument());
   expect(getByText(/nereiškia, kad jos nėra lietuvių kalboje/i)).toBeInTheDocument();
 });

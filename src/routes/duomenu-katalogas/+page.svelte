@@ -1,6 +1,8 @@
 <script lang="ts">
   import SectionHeading from '../../components/SectionHeading.svelte';
+  import PageMeta from '../../components/PageMeta.svelte';
   import { base } from '$app/paths';
+  import { datasetDescription, datasetTitle } from '$lib/dataset-labels';
   import { loadPublicDataProducts, type DataProductType, type PublicDataProduct } from '$lib/publication';
   import { site } from '$lib/site';
 
@@ -11,23 +13,6 @@
     'dadurkevicius-dml6-vs-jcl-comparison', 'utka-ccll2-war-ukraine-comparison',
     'utka-ccll-wordforms', 'vssa-2026-blkt-wordform-profile', 'rimkute-2019-alksnis-syntactic-context'
   ];
-  const entryCopy: Record<string, { title: string; description: string }> = {
-    'utka-2018-lemmatized-totals': { title: '1 mln. tekstyno lemos (2018)', description: 'Lemų dažniai ir kalbos dalių žymos.' },
-    'dadurkevicius-2020-jcl-lemmas': { title: 'JCL lemos (2020)', description: 'Jungtinio lietuvių kalbos tekstyno lemų dažniai ir kalbos dalys.' },
-    'petkevicius-2025-ccll-lemmas': { title: 'CCLL lemos (2025)', description: 'Dabartinės lietuvių kalbos tekstyno lemų dažnumo sąrašas.' },
-    'utka-ccll-wordforms': { title: 'CCLL žanrų profilis', description: 'Žodžio formos dažnis penkiuose tekstų žanruose.' },
-    'dadurkevicius-dml6-vs-jcl-comparison': { title: 'DML6 žodyno aprėptis', description: 'Kurios JCL žodžių formos aptinkamos žodyne?' },
-    'utka-ccll2-war-ukraine-comparison': { title: 'Karo meto vartosena', description: 'Žodžio forma CCLL2, karo meto žiniasklaidoje ir socialiniuose tinkluose.' },
-    'vssa-2026-blkt-wordform-profile': { title: 'BLKT žodžio profilis', description: 'Dažnis pagal teksto tipą ir laikotarpį; tik paskelbti suvestiniai duomenys.' },
-    'rimkute-2019-alksnis-syntactic-context': { title: 'ALKSNIS sintaksė', description: 'Lemų ryšiai ir sakinių pavyzdžiai.' },
-    'bielinskiene-2019-delfi-1grams': { title: 'Delfi.lt viengramiai', description: 'Atskirų tekstyno žetonų dažnumo sąrašas.' },
-    'rimkute-2024-matas-v3-frequencies': { title: 'MATAS v3.0 dažniai', description: 'Lemų ir žodžių formų dažniai iš anotuoto tekstyno.' },
-    'kapociute-dzikiene-2017-parliament-frequency-aggregates': { title: 'Parlamento kalbų dažniai', description: 'Viso tekstyno lemų ir žodžių formų suvestinės.' },
-    'zemriete-2025-lithuanian-homoforms': { title: 'Lietuvių homoformos', description: 'Vienodai rašomų formų analizės.' },
-    'raskinis-2025-foreign-name-transliterations': { title: 'Užsienio vardų atitikmenys', description: 'Vardų perteikimo poros ir atitikčių skaičiai.' },
-    'birvinskaite-2026-lithuanian-basketball-slang': { title: 'Krepšinio žargonas', description: 'Lietuviški krepšinio žargono įrašai.' },
-    'rimkute-morphemic-dictionary': { title: 'Morfemikos žodynas', description: '72 325 įrašai iš trijų 2011 m. žodyno tomų.' }
-  };
 
   let products = $state<PublicDataProduct[]>([]);
   let loading = $state(true);
@@ -38,8 +23,8 @@
     { id: 'metadata', title: 'Tik šaltinių aprašai', products: products.filter(product => product.publication.status === 'metadata-only') }
   ].filter(group => group.products.length));
 
-  function displayTitle(product: PublicDataProduct) { return entryCopy[product.id]?.title ?? product.title; }
-  function description(product: PublicDataProduct) { return entryCopy[product.id]?.description ?? product.publication.scope; }
+  function displayTitle(product: PublicDataProduct) { return datasetTitle(product.id, product.title); }
+  function description(product: PublicDataProduct) { return datasetDescription(product.id, product.publication.scope); }
   function explorerRank(product: PublicDataProduct) { const index = explorerOrder.indexOf(product.id); return index < 0 ? explorerOrder.length : index; }
 
   function limitation(product: PublicDataProduct) {
@@ -122,24 +107,21 @@
   });
 </script>
 
-<svelte:head>
-  <title>viešų duomenų katalogas // dažniausi žodžiai</title>
-  <meta name="description" content="Naršykite visus viešus lietuvių kalbos duomenų produktus: jų šaltinio apimtį, licenciją, prieigą ir interpretavimo ribas." />
-  <link rel="canonical" href={site.catalogueUrl} />
-  <meta property="og:title" content="Viešų duomenų katalogas // dažniausi žodžiai" />
-  <meta property="og:description" content="Viešų lietuvių kalbos duomenų produktų apimtis, licencijos, prieiga ir ribos vienoje vietoje." />
-  <meta property="og:url" content={site.catalogueUrl} />
-</svelte:head>
+<PageMeta
+  title="duomenų rinkiniai // dažniausi žodžiai"
+  description="Visi vieši lietuvių kalbos duomenų rinkiniai: šaltiniai, licencijos, prieiga ir interpretavimo ribos."
+  url={site.catalogueUrl}
+/>
 
-<main class="catalogue">
+<main>
   <header><SectionHeading>Duomenų rinkiniai</SectionHeading></header>
   {#if loading}
-    <p class="loading" role="status">Kraunami rinkiniai…</p>
+    <p class="note" role="status">Kraunami rinkiniai…</p>
   {:else if error}
-    <section class="error" role="alert">
-      <h3>Nepavyko įkelti katalogo</h3>
+    <div class="notice error" role="alert">
+      <p><strong>Nepavyko įkelti katalogo.</strong></p>
       <p>Pabandykite atnaujinti puslapį.</p>
-    </section>
+    </div>
   {:else if groups.length === 0}
     <p role="status">Rinkinių nėra.</p>
   {:else}
@@ -162,7 +144,7 @@
                 <details class="entry-details">
                   <summary class="text-button">Apie rinkinį</summary>
                   <div class="entry-details-content">
-                    <dl class="entry-facts">
+                    <dl class="facts">
                       <div><dt>Šaltinio pavadinimas</dt><dd>{product.title}</dd></div>
                       <div><dt>Licencija</dt><dd>{product.provenance.licence}</dd></div>
                     </dl>
@@ -189,22 +171,20 @@
 </main>
 
 <style>
-  .catalogue { display: grid; gap: 2rem; }
   .category { display: grid; gap: 2rem; }
   .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 2rem; }
-  .category > :global(.dago-section-heading), .entry-title { margin: 0; }
   .entries { display: grid; gap: 1.5rem; }
-  .catalogue-entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: .25rem; min-width: 0; }
+  .catalogue-entry { display: grid; gap: .25rem; }
   .catalogue-entry + .catalogue-entry { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }
   .catalogue-entry > p { margin: 0; }
-  .entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .25rem; }
-  .resource-link { display: inline-flex; align-items: center; gap: .5rem; }
-  .entry-details { display: contents; border: 0; }
+  .entry-actions { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .25rem; }
+  .resource-link { align-items: center; display: inline-flex; gap: .5rem; }
+  /* Inline text disclosure: the summary sits in the action row, details open below it. */
+  .entry-details { border: 0; display: contents; }
   .entry-details::details-content { flex-basis: 100%; min-width: 0; }
   .entry-details:not([open])::details-content { display: none; }
-  .entry-details > summary { padding: 0; border: 0; font-weight: inherit; }
-  .entry-details > summary:hover, .entry-details > summary:focus-visible { text-decoration-style: dashed; }
-  .entry-details-content { flex-basis: 100%; min-width: 0; margin-top: .5rem; border-left: 1px solid hsl(var(--theme) / .35); padding-left: 1rem; overflow-wrap: anywhere; }
-  .entry-facts { display: grid; gap: .75rem; margin-bottom: 1rem; }
-  .entry-facts dd { margin: .25rem 0 0; }
+  .entry-details > summary { border: 0; font-weight: inherit; padding: 0; }
+  .entry-details > summary:is(:hover, :focus-visible) { text-decoration-style: dashed; }
+  .entry-details-content { border-left: 1px solid hsl(var(--theme) / .35); display: grid; flex-basis: 100%; gap: 1rem; margin-top: .5rem; overflow-wrap: anywhere; padding-left: 1rem; }
+  .entry-details-content > * { margin: 0; }
 </style>

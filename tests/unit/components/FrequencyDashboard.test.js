@@ -9,42 +9,42 @@ const words = Array.from({ length: 25 }, (_, index) => ({
   frequency: 100 - index
 }));
 
-it('renders frequency concentration metrics and source-labelled POS composition', async () => {
-  const user = userEvent.setup();
-  const { getByText, getAllByText, getAllByRole } = render(FrequencyDashboard, {
+it('renders coverage facts, chart alternatives and source-labelled POS composition', () => {
+  const { container, getByRole, getAllByRole, getByText } = render(FrequencyDashboard, {
     words,
     typeLabels: { dkt: 'Daiktavardis', jng: 'Jungtukas' }
   });
 
-  expect(getByText('Aprėptis skaičiais')).toBeInTheDocument();
-  expect(getByText((_, element) => element?.tagName === 'DD' && element.textContent === 'žodis-1 (100)')).toBeInTheDocument();
+  expect(container.querySelector('.coverage-facts')).toHaveTextContent('„žodis-1“ – 4,5 % pavartojimų');
+  expect(container.querySelector('.coverage-facts')).toHaveTextContent('12 dažniausių žodžių (48 % sąrašo)');
   expect(getByText('Kalbos dalys')).toBeInTheDocument();
-  const posBar = getAllByText('Jungtukas (jng)')[0].closest('.bar-row')?.querySelector('.bar-fill');
-  expect(posBar).toHaveStyle({ width: '48%' });
-  expect(getAllByRole('img')).toHaveLength(4);
+  const conjunctionShare = getByRole('listitem', { name: /^Jungtukas \(jng\): 48\s%$/ }).querySelector('.bar');
+  expect(conjunctionShare).toHaveStyle({ width: '48%' });
+  expect(getAllByRole('img')).toHaveLength(2);
+  expect(getAllByRole('group').length).toBeGreaterThanOrEqual(3);
 });
 
 it('changes the top-word chart deterministically when its control changes', async () => {
   const user = userEvent.setup();
-  const { getByLabelText, getByRole, getByText } = render(FrequencyDashboard, { words });
-  const topChart = getByRole('img', { name: /Pavartojimų skaičius/ });
+  const { getByLabelText, getByRole } = render(FrequencyDashboard, { words });
+  const topChart = getByRole('list', { name: 'Dažniausi žodžiai' });
 
-  expect(topChart).not.toHaveAccessibleName(/žodis-11/);
+  expect(topChart.querySelectorAll('[role="listitem"]')).toHaveLength(10);
   await user.selectOptions(getByLabelText('Rodyti'), '20');
 
-  expect(topChart).toHaveAccessibleName(/žodis-20/);
-  expect(topChart).not.toHaveAccessibleName(/žodis-21/);
+  expect(topChart.querySelectorAll('[role="listitem"]')).toHaveLength(20);
+  expect(getByRole('listitem', { name: 'žodis-20: 81' })).toBeInTheDocument();
 });
 
 it('updates facts from the supplied active result set and omits POS composition when no POS values exist', async () => {
-  const { container, getByText, queryByText, rerender } = render(FrequencyDashboard, { words });
+  const { container, queryByText, rerender } = render(FrequencyDashboard, { words });
 
-  expect(container.querySelector('.fact-grid')).toHaveTextContent('žodis-1');
+  expect(container.querySelector('.coverage-facts')).toHaveTextContent('žodis-1');
   await rerender({ words: [{ word: 'vienas', frequency: 7 }] });
 
-  expect(getByText((_, element) => element?.tagName === 'DD' && element.textContent === 'vienas (7)')).toBeInTheDocument();
-  expect(container.querySelector('.fact-grid')).toHaveTextContent('„vienas“: 100 %');
-  expect(container.querySelector('.fact-grid')).toHaveTextContent('90 % pavartojimų Įrašų: 1');
-  expect(container.querySelector('.fact-grid')).toHaveTextContent('Įrašų: 0');
+  const facts = container.querySelector('.coverage-facts');
+  expect(facts).toHaveTextContent('„vienas“ – 100 % pavartojimų');
+  expect(facts).toHaveTextContent('90 % pavartojimų 1 dažniausias žodis (100 % sąrašo)');
+  expect(facts).toHaveTextContent('0 žodžių (0 % sąrašo)');
   expect(queryByText('Kalbos dalys')).not.toBeInTheDocument();
 });

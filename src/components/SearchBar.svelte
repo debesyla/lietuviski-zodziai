@@ -5,32 +5,14 @@
 
 <div class="search-bar">
   <label class="sr-only" for={inputId}>{t('searchWords')}</label>
-  <input id={inputId} bind:value type="text" placeholder="Žodis arba jo dalis" />
+  <input id={inputId} bind:value type="text" placeholder="Žodis arba jo dalis" autocomplete="off" spellcheck="false" />
   {#if value}
-  <button type="button" onclick={() => value = ''} aria-label={t('clearSearch')}>✕</button>
+    <button type="button" class="text-button" onclick={() => value = ''} aria-label={t('clearSearch')}>✕</button>
   {/if}
 </div>
 
 <style>
-  .search-bar {
-    min-width: 0;
-    position: relative;
-    width: 100%;
-  }
-
-  input {
-    font-size: 1rem;
-    padding: var(--sm) 3.25rem var(--sm) 0.75rem;
-    width: 100%;
-  }
-
-  button {
-    background: transparent;
-    min-width: 44px;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-  }
-
+  .search-bar { min-width: 0; position: relative; }
+  input { padding-right: 3rem; }
+  button { bottom: 0; min-width: 2.75rem; position: absolute; right: 0; text-decoration: none; top: 0; }
 </style>

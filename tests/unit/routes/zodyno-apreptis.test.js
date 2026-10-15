@@ -61,7 +61,7 @@ beforeEach(() => {
 
 it('loads the compact profile before requesting examples and exposes a native table', async () => {
   const user = userEvent.setup();
-  const { getByText, getAllByRole, getByRole } = render(Page);
+  const { container, getByText, getAllByRole, getByRole } = render(Page);
 
   expect(getByText('Kraunama aprėpties suvestinė…')).toBeInTheDocument();
   await waitFor(() => expect(getByText('Aprėptis dažnumo intervaluose')).toBeInTheDocument());
@@ -69,23 +69,36 @@ it('loads the compact profile before requesting examples and exposes a native ta
   expect(loadDml6CoverageProfile).toHaveBeenCalledTimes(1);
   expect(loadDml6CoverageDrilldown).not.toHaveBeenCalled();
   expect(getAllByRole('table')).toHaveLength(1);
+  expect(getByRole('listitem', { name: /^1\+: 66,7\s%$/ })).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 
-  await user.click(getByRole('button', { name: 'Pavyzdžiai (2)' }));
+  const examplesButton = getByRole('button', { name: /^2 – Pagrindinis įrašas, dažnumas 1\+: pavyzdžiai$/ });
+  await user.click(examplesButton);
 
   await waitFor(() => expect(getByText('pavyzdys')).toBeInTheDocument());
   expect(loadDml6CoverageDrilldown).toHaveBeenCalledWith(profile, 'one-plus', 1);
-  expect(getAllByRole('table')).toHaveLength(2);
-  expect(getByText('pavyzdys').closest('article')).toHaveAttribute('aria-labelledby', 'band-one-plus');
-  expect(getByRole('button', { name: 'Pavyzdžiai (2)' })).toHaveAttribute('aria-expanded', 'true');
+  expect(getByRole('heading', { name: 'Pavyzdžiai: Pagrindinis įrašas, dažnumas 1+' })).toBeInTheDocument();
+  expect(container.querySelectorAll('.examples li')).toHaveLength(2);
+  expect(examplesButton).toHaveAttribute('aria-pressed', 'true');
 });
 
-it('keeps failed example feedback inside the selected interval', async () => {
+it('switches every share between word forms and running words', async () => {
+  const user = userEvent.setup();
+  const { getByRole, getByLabelText } = render(Page);
+  await waitFor(() => expect(getByLabelText('visus pavartojimus')).toBeInTheDocument());
+
+  await user.click(getByLabelText('visus pavartojimus'));
+
+  expect(getByRole('listitem', { name: /^1\+: 95,2\s%$/ })).toBeInTheDocument();
+  expect(getByRole('button', { name: /^20 – Pagrindinis įrašas/ })).toBeInTheDocument();
+});
+
+it('keeps failed example feedback inside the selected examples', async () => {
   vi.mocked(loadDml6CoverageDrilldown).mockRejectedValueOnce(new Error('Nepavyko įkelti pavyzdžių.'));
   const user = userEvent.setup();
   const { getByRole, getByText } = render(Page);
   await waitFor(() => expect(getByText('Aprėptis dažnumo intervaluose')).toBeInTheDocument());
-  await user.click(getByRole('button', { name: 'Pavyzdžiai (2)' }));
+  await user.click(getByRole('button', { name: /^2 – Pagrindinis įrašas, dažnumas 1\+: pavyzdžiai$/ }));
   await waitFor(() => expect(getByRole('alert')).toHaveTextContent('Nepavyko įkelti pavyzdžių.'));
-  expect(getByRole('alert').closest('article')).toHaveAttribute('aria-labelledby', 'band-one-plus');
+  expect(getByRole('alert').closest('section')).toHaveAttribute('aria-labelledby', 'examples-title');
 });

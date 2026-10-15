@@ -1,5 +1,8 @@
 <script lang="ts">
   import SectionHeading from '../../components/SectionHeading.svelte';
+  import RateBars from '../../components/RateBars.svelte';
+  import PageMeta from '../../components/PageMeta.svelte';
+  import TableScroll from '../../components/TableScroll.svelte';
   import {
     coverageCategoryDefinitions,
     loadDml6CoverageDrilldown,
@@ -8,27 +11,42 @@
     type Dml6CoverageDrilldown,
     type Dml6CoverageProfile
   } from '$lib/dml6-coverage';
+  import { saveFile } from '$lib/download';
+  import { site } from '$lib/site';
+
+  type Band = Dml6CoverageProfile['summary']['bands'][number];
+  type Measure = 'types' | 'tokens';
+
+  const categoryNames: Record<string, string> = {
+    'not in DML6': 'Nerasta DML6',
+    'main entry': 'Pagrindinis įrašas',
+    'geographic name': 'Vietovardis',
+    abbreviation: 'Santrumpa'
+  };
+  const notFoundCode = 0;
 
   let profile = $state<Dml6CoverageProfile | null>(null);
   let error = $state<string | null>(null);
   let loading = $state(true);
+  let measure = $state<Measure>('types');
   let selection = $state<{ bandId: string; coverageCode: number } | null>(null);
   let drilldown = $state<Dml6CoverageDrilldown | null>(null);
   let drilldownLoading = $state(false);
   let drilldownError = $state<string | null>(null);
   let requestNumber = 0;
 
-  let categories = $derived<CoverageCategoryDefinition[]>(profile ? coverageCategoryDefinitions(profile).map(category => ({ ...category, label: ({ 'not in DML6': 'Nerasta DML6', 'main entry': 'Pagrindinis įrašas', 'geographic name': 'Vietovardis', 'abbreviation': 'Santrumpa' } as Record<string, string>)[category.label] ?? category.label })) : []);
+  let categories = $derived<CoverageCategoryDefinition[]>(profile
+    ? coverageCategoryDefinitions(profile).map((category) => ({ ...category, label: categoryNames[category.label] ?? category.label }))
+    : []);
   let selectedBand = $derived(profile?.summary.bands.find((band) => band.id === selection?.bandId) ?? null);
   let selectedCategory = $derived(selectedBand?.categories.find((category) => category.coverageCode === selection?.coverageCode) ?? null);
   let selectedCategoryLabel = $derived(categories.find((category) => category.code === selection?.coverageCode)?.label ?? '');
+  let examplesStatus = $derived(drilldownLoading ? 'Kraunami pavyzdžiai…'
+    : drilldown && selectedBand ? `Įkelta pavyzdžių: ${drilldown.records.length}. ${selectedCategoryLabel}, dažnumas ${bandLabel(selectedBand)}.`
+    : '');
 
   function formatNumber(value: number) {
     return value.toLocaleString('lt-LT');
-  }
-
-  function bandLabel(band: Dml6CoverageProfile['summary']['bands'][number]) {
-    return band.maximum === null ? `${formatNumber(band.minimum)}+` : band.minimum === band.maximum ? formatNumber(band.minimum) : `${formatNumber(band.minimum)}–${formatNumber(band.maximum)}`;
   }
 
   function formatPercent(value: number) {
@@ -36,12 +54,23 @@
     return new Intl.NumberFormat('lt-LT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
   }
 
-  function typeShare(typeCount: number, bandTypeCount: number) {
-    return bandTypeCount === 0 ? 0 : typeCount / bandTypeCount;
+  function bandLabel(band: Band) {
+    return band.maximum === null ? `${formatNumber(band.minimum)}+` : band.minimum === band.maximum ? formatNumber(band.minimum) : `${formatNumber(band.minimum)}–${formatNumber(band.maximum)}`;
   }
 
-  function tokenShare(tokenCount: number, bandTokenCount: number) {
-    return bandTokenCount === 0 ? 0 : tokenCount / bandTokenCount;
+  function count(item: { typeCount: number; tokenCount: number }, activeMeasure: Measure) {
+    return activeMeasure === 'types' ? item.typeCount : item.tokenCount;
+  }
+
+  function share(part: number, total: number) {
+    return total === 0 ? 0 : part / total;
+  }
+
+  function foundShare(band: Band, activeMeasure: Measure) {
+    const found = band.categories
+      .filter((category) => category.coverageCode !== notFoundCode)
+      .reduce((sum, category) => sum + count(category, activeMeasure), 0);
+    return share(found, count(band, activeMeasure));
   }
 
   async function showExamples(bandId: string, coverageCode: number) {
@@ -77,19 +106,13 @@
           band.label,
           category.label,
           summary?.typeCount ?? 0,
-          typeShare(summary?.typeCount ?? 0, band.typeCount),
+          share(summary?.typeCount ?? 0, band.typeCount),
           summary?.tokenCount ?? 0,
-          tokenShare(summary?.tokenCount ?? 0, band.tokenCount)
+          share(summary?.tokenCount ?? 0, band.tokenCount)
         ];
       }))
     ];
-    const csv = `\ufeff${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}\r\n`;
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'dml6-jcl-zodyno-apreptis-pagal-daznuma.csv';
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    saveFile(`﻿${rows.map((row) => row.map(csvCell).join(',')).join('\r\n')}\r\n`, 'dml6-jcl-zodyno-apreptis-pagal-daznuma.csv', 'text/csv;charset=utf-8');
   }
 
   $effect(() => {
@@ -110,249 +133,140 @@
   });
 </script>
 
-<svelte:head>
-  <title>žodyno aprėptis pagal dažnumą</title>
-  <meta name="description" content="Jungtinio lietuvių kalbos tekstyno žodžių formų aprėptis Dabartinės lietuvių kalbos žodyne pagal skaidrius dažnumo intervalus." />
-</svelte:head>
+<PageMeta
+  title="dml6 žodyno aprėptis // dažniausi žodžiai"
+  description="Kuri Jungtinio lietuvių kalbos tekstyno žodžių formų dalis aptinkama Dabartinės lietuvių kalbos žodyne (DML6), pagal dažnumą."
+  url={site.coverageProfileUrl}
+/>
 
 <main>
-  <header>
-  <SectionHeading>Žodyno aprėptis pagal dažnumą</SectionHeading>
-  <p class="intro">Kurios Jungtinio lietuvių kalbos tekstyno formos aptinkamos DML6 žodyne?</p>
+  <header class="stack">
+    <SectionHeading>Žodyno aprėptis pagal dažnumą</SectionHeading>
+    <p>Kurios Jungtinio lietuvių kalbos tekstyno (JCL) žodžių formos yra Dabartinės lietuvių kalbos žodyne (DML6)? Kuo forma dažnesnė, tuo dažniau ji žodyne randama.</p>
   </header>
 
   {#if loading}
-    <p class="status" role="status" aria-live="polite">Kraunama aprėpties suvestinė…</p>
+    <p class="note" role="status" aria-live="polite">Kraunama aprėpties suvestinė…</p>
   {:else if error}
-    <section class="error" role="alert" aria-labelledby="coverage-load-error">
-      <h2 id="coverage-load-error">Nepavyko įkelti aprėpties duomenų</h2>
+    <div class="notice error" role="alert">
+      <p><strong>Nepavyko įkelti aprėpties duomenų.</strong></p>
       <p>{error}</p>
-    </section>
+    </div>
   {:else if profile}
-    <section aria-labelledby="bands-title">
-      <div class="section-heading">
-        <div>
-          <SectionHeading id="bands-title">Aprėptis dažnumo intervaluose</SectionHeading>
-        </div>
+    <fieldset class="measure">
+      <legend>Skaičiuoti</legend>
+      <label><input type="radio" name="measure" value="types" bind:group={measure} /> skirtingas formas</label>
+      <label><input type="radio" name="measure" value="tokens" bind:group={measure} /> visus pavartojimus</label>
+    </fieldset>
+
+    <section class="stack" aria-labelledby="found-title">
+      <SectionHeading id="found-title">Rasta DML6 pagal dažnumą</SectionHeading>
+      <p class="note">Kiek {measure === 'types' ? 'formų' : 'pavartojimų'} kiekviename dažnumo intervale turi DML6 įrašą: pagrindinį, vietovardžio ar santrumpos.</p>
+      <RateBars
+        rows={profile.summary.bands.map((band) => ({ label: bandLabel(band), value: foundShare(band, measure) }))}
+        unit="Rasta DML6 pagal dažnumą"
+        max={1}
+        format={(value) => formatPercent(value ?? 0)}
+      />
+    </section>
+
+    <section class="stack" aria-labelledby="bands-title">
+      <div class="section-head">
+        <SectionHeading id="bands-title">Aprėptis dažnumo intervaluose</SectionHeading>
         <button type="button" class="text-button" onclick={downloadSummary}>Atsisiųsti CSV</button>
       </div>
-
-      <div class="bands">
-        {#each profile.summary.bands as band}
-          <article class="band" aria-labelledby={`band-${band.id}`}>
-            <header>
-              <SectionHeading level={3} id={`band-${band.id}`}>Dažnumas {bandLabel(band)}</SectionHeading>
-              <p>{formatNumber(band.typeCount)} formų <span class="inline-separator" aria-hidden="true">//</span> {formatNumber(band.tokenCount)} žetonų</p>
-            </header>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th scope="col">DML6 aprėptis</th>
-                    <th scope="col">Žodžių formos</th>
-                    <th scope="col">JCL žetonai</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {#each categories as category}
-                    {@const summary = band.categories.find((item) => item.coverageCode === category.code)}
+      <p class="note">Spustelėkite skaičių ir pamatysite dažniausias tos grupės formas.</p>
+      <TableScroll label="Aprėpties lentelė">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Dažnumas</th>
+              {#each categories as category}
+                <th scope="col" class="number">{category.label}</th>
+              {/each}
+            </tr>
+          </thead>
+          <tbody>
+            {#each profile.summary.bands as band (band.id)}
+              <tr>
+                <th scope="row">{bandLabel(band)}<span class="cell-note">{formatNumber(count(band, measure))}</span></th>
+                {#each categories as category}
+                  {@const summary = band.categories.find((item) => item.coverageCode === category.code)}
+                  <td class="number">
                     {#if summary}
-                      <tr>
-                        <th scope="row"><span>{category.label}</span><button type="button" class="text-button" aria-expanded={selection?.bandId === band.id && selection?.coverageCode === category.code} aria-controls={`examples-${band.id}`} disabled={summary.drilldown.records === 0} onclick={() => showExamples(band.id, category.code)}>Pavyzdžiai ({summary.drilldown.records})</button></th>
-                        <td>
-                          <strong>{formatNumber(summary.typeCount)}</strong>
-                          <span>{formatPercent(typeShare(summary.typeCount, band.typeCount))} intervalo formų</span>
-                        </td>
-                        <td>
-                          <strong>{formatNumber(summary.tokenCount)}</strong>
-                          <span>{formatPercent(tokenShare(summary.tokenCount, band.tokenCount))} intervalo žetonų</span>
-                        </td>
-                      </tr>
+                      <button
+                        type="button"
+                        class="text-button"
+                        aria-pressed={selection?.bandId === band.id && selection?.coverageCode === category.code}
+                        disabled={summary.drilldown.records === 0}
+                        onclick={() => showExamples(band.id, category.code)}
+                      >{formatNumber(count(summary, measure))}<span class="sr-only"> – {category.label}, dažnumas {bandLabel(band)}: pavyzdžiai</span></button>
+                      <span class="cell-note">{formatPercent(share(count(summary, measure), count(band, measure)))}</span>
+                    {:else}
+                      <span class="cell-note">–</span>
                     {/if}
-                  {/each}
-                </tbody>
-              </table>
-            </div>
-    {#if selection?.bandId === band.id && selectedBand && selectedCategory}
-      <section class="examples" id={`examples-${band.id}`} aria-labelledby="examples-title" aria-live="polite">
-        <SectionHeading level={3} id="examples-title">Pavyzdžiai: {selectedCategoryLabel}, dažnumas {bandLabel(selectedBand)}</SectionHeading>
-        <p>Iki {formatNumber(selectedCategory.drilldown.records)} formų nuo dažniausios iki rečiausios; ne visa kategorija.</p>
-        {#if drilldownLoading}
-          <p role="status">Kraunami pasirinktos kategorijos pavyzdžiai…</p>
-        {:else if drilldownError}
-          <p class="error-message" role="alert">{drilldownError}</p>
-        {:else if drilldown}
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th scope="col">Rangas</th><th scope="col">Žodžio forma</th><th scope="col">JCL žetonų skaičius</th></tr></thead>
-              <tbody>
-                {#each drilldown.records as record, index}
-                  <tr><td>{index + 1}</td><td>{record[0]}</td><td>{formatNumber(record[1])}</td></tr>
+                  </td>
                 {/each}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </TableScroll>
+    </section>
+
+    <p class="sr-only" role="status" aria-live="polite">{examplesStatus}</p>
+    {#if selectedBand && selectedCategory}
+      <section class="stack" aria-labelledby="examples-title">
+        <SectionHeading id="examples-title">Pavyzdžiai: {selectedCategoryLabel}, dažnumas {bandLabel(selectedBand)}</SectionHeading>
+        <p class="note">Iki {formatNumber(selectedCategory.drilldown.records)} formų nuo dažniausios; ne visa grupė. Skaičius – pavartojimai JCL.</p>
+        {#if drilldownLoading}
+          <p class="note" role="status">Kraunami pavyzdžiai…</p>
+        {:else if drilldownError}
+          <p class="notice error" role="alert">{drilldownError}</p>
+        {:else if drilldown}
+          <ol class="examples">
+            {#each drilldown.records as record}
+              <li>{record[0]} <span class="note">{formatNumber(record[1])}</span></li>
+            {/each}
+          </ol>
         {/if}
       </section>
     {/if}
 
-          </article>
-        {/each}
-      </div>
-    </section>
-
-    <details class="reading-notes"><summary>Kaip skaityti aprėptį</summary><div class="details-content">
-<p>{formatNumber(profile.summary.totalTypeCount)} formų ir {formatNumber(profile.summary.totalTokenCount)} JCL pavartojimų; šeši dažnumo intervalai.</p>
-      <p>Formų dalis ir pavartojimų dalis skiriasi: daug retų formų gali sudaryti mažą tekstyno dalį.</p>
-    <dl class="source-facts">
-      <div>
-        <dt>Duomenų vienetas</dt>
-        <dd>Žodžio forma</dd>
-      </div>
-      <div>
-        <dt>Dažnumo matas</dt>
-        <dd>JCL žetonų skaičius</dd>
-      </div>
-      <div>
-        <dt>Aprėpties šaltinis</dt>
-        <dd>Dabartinės lietuvių kalbos žodynas (DML6)</dd>
-      </div>
-      <div>
-        <dt>Licencija</dt>
-        <dd>{profile.provenance.licence}</dd>
-      </div>
-    </dl>
-
-
-      <ul>
-        <li>Aprėpties kodas yra kategorija: jo negalima vidurkinti ar sudėti kaip skaitinio balo.</li>
-        <li>Žodyne nerasta forma nebūtinai yra klaida, neologizmas ar nelietuviškas žodis.</li>
-        <li>Čia lyginamos žodžių formos ir vieno tekstyno žetonų skaičiai; rezultatas nėra bendras visų lietuvių kalbos tekstynų reitingas.</li>
-      </ul>
-      <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Atverti pirminį CLARIN-LT šaltinio įrašą</a> <span class="inline-separator" aria-hidden="true">//</span> {profile.provenance.citation}</p>
-    </div></details>
+    <div>
+      <details>
+        <summary>Kaip skaityti</summary>
+        <div class="details-body">
+          <p>{formatNumber(profile.summary.totalTypeCount)} žodžių formų ir {formatNumber(profile.summary.totalTokenCount)} JCL pavartojimų, suskirstytų į {profile.summary.bands.length} dažnumo intervalus.</p>
+          <ul>
+            <li>Formų dalis ir pavartojimų dalis skiriasi: daug retų formų gali sudaryti mažą tekstyno dalį.</li>
+            <li>Aprėpties kodas yra kategorija: jo negalima vidurkinti ar sudėti kaip balo.</li>
+            <li>Žodyne nerasta forma nebūtinai yra klaida, naujadaras ar nelietuviškas žodis.</li>
+            <li>Lyginamos vieno tekstyno žodžių formos; tai nėra visos lietuvių kalbos reitingas.</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Šaltinis ir licencija</summary>
+        <div class="details-body">
+          <p>{profile.provenance.citation}</p>
+          <p>Licencija: {profile.provenance.licence}</p>
+          <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis CLARIN-LT įrašas</a></p>
+        </div>
+      </details>
+    </div>
   {/if}
 </main>
 
 <style>
-  main {
-    display: grid;
-    gap: 2rem;
-  }
-
-
-  .intro,
-  .band header p,
-  .examples > p,
-  .reading-notes p {
-    color: color-mix(in srgb, var(--text-color) 78%, transparent);
-  }
-
-  .source-facts,
-  .band,
-  .examples,
-  .error,
-  .status {
-    border: 0;
-    padding: 0;
-  }
-
-  .band header p,
-  .examples > p,
-  .reading-notes p {
-    margin-top: var(--xs);
-  }
-
-  .source-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--sm);
-  }
-
-  .source-facts > div { min-width: 0; border: 0; padding-left: 0; }
-
-  dt {
-    color: color-mix(in srgb, var(--text-color) 68%, transparent);
-    font-size: 0.875em;
-  }
-
-  dd {
-    margin: 0;
-  }
-
-  .section-heading { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
-  .section-heading :global(.dago-section-heading) { margin: 0; }
-  .section-heading button { flex-shrink: 0; }
-  .bands {
-    display: grid;
-    gap: 2rem;
-    margin-top: 1.5rem;
-  }
-
-  .band {
-    overflow: hidden;
-  }
-
-  .band header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--sm);
-    justify-content: space-between;
-    margin-bottom: var(--sm);
-  }
-
-  .table-scroll {
-    overflow-x: auto;
-  }
-
-  table {
-    min-width: 32rem;
-  }
-
-  th,
-  td {
-    text-align: left;
-    vertical-align: top;
-  }
-
-  th .text-button { display: block; margin-top: .5rem; }
-  td strong,
-  td span {
-    display: block;
-  }
-
-  td span {
-    color: color-mix(in srgb, var(--text-color) 72%, transparent);
-    font-size: 0.875em;
-    margin-top: var(--xs);
-  }
-
-  .examples {
-    margin-top: 1.5rem;
-    display: grid;
-    gap: var(--sm);
-  }
-
-  .error {
-    border-color: var(--border-strong);
-  }
-
-  .error-message {
-    color: var(--text-color);
-  }
-
-  @media (max-width: 639px) {
-      .band header {
-      align-items: stretch;
-      flex-direction: column;
-    }
-
-    .source-facts {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    table {
-      min-width: 32rem;
-    }
-  }
+  .measure { border: 0; display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin: 0; padding: 0; }
+  .measure legend { float: left; font-weight: 700; margin-right: .5rem; padding: 0; }
+  .measure label { align-items: center; display: inline-flex; gap: .5rem; }
+  td, th { vertical-align: top; }
+  tbody th { background: hsl(var(--black)); left: 0; position: sticky; }
+  td .text-button { text-align: right; }
+  .cell-note { color: hsl(var(--theme) / .7); display: block; font-size: .875rem; font-weight: normal; }
+  .examples { column-gap: 2rem; column-width: 12rem; overflow-wrap: anywhere; }
+  .examples li { break-inside: avoid; }
+  .examples li + li { margin-top: .25rem; }
 </style>

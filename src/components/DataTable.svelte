@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/translations';
+  import TableScroll from './TableScroll.svelte';
   import { sortWords } from '$lib/utils';
   import type { WordSortKey } from '$lib/utils';
   interface Word {
@@ -49,22 +50,22 @@
   }
 </script>
 
-<div class="table-scroll">
+<TableScroll label="Žodžių lentelė">
   <table>
     <thead>
       <tr>
-        <th scope="col">{t('rank')}</th>
-        <th scope="col" aria-sort={sortState('word')} class="sortable">
+        <th scope="col" class="number">{t('rank')}</th>
+        <th scope="col" aria-sort={sortState('word')}>
           <button type="button" class="sort-button" onclick={() => sortBy('word')} aria-label={sortControlLabel('word')}>
             {t('word')} {#if sortKey === 'word'}<span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span>{/if}
           </button>
         </th>
-        <th scope="col" aria-sort={sortState('frequency')} class="sortable">
+        <th scope="col" class="number" aria-sort={sortState('frequency')}>
           <button type="button" class="sort-button" onclick={() => sortBy('frequency')} aria-label={sortControlLabel('frequency')}>
             {t('frequency')} {#if sortKey === 'frequency'}<span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span>{/if}
           </button>
         </th>
-        <th scope="col" aria-sort={sortState('type')} class="sortable">
+        <th scope="col" aria-sort={sortState('type')}>
           <button type="button" class="sort-button" onclick={() => sortBy('type')} aria-label={sortControlLabel('type')}>
             {t('type')} {#if sortKey === 'type'}<span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span>{/if}
           </button>
@@ -74,51 +75,21 @@
     <tbody>
       {#each sortedWords as word}
         <tr>
-          <td>{word.rank ?? ''}</td>
+          <td class="number">{word.rank?.toLocaleString('lt-LT') ?? ''}</td>
           <td>{word.word}</td>
-          <td>{word.frequency.toLocaleString('lt-LT')}</td>
+          <td class="number">{word.frequency.toLocaleString('lt-LT')}</td>
           <td>{displayType(word.type)}</td>
         </tr>
       {/each}
     </tbody>
   </table>
-</div>
+</TableScroll>
 
 <style>
-  .table-scroll {
-    contain: inline-size;
-    display: block;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    width: 100%;
-  }
-
-  tbody tr:hover {
-    background: var(--surface-color);
-  }
-
-  td:nth-child(1),
-  td:nth-child(3) {
-    font-variant-numeric: tabular-nums;
-  }
-
-  .sort-button {
-    background: transparent;
-    padding: 0;
-    text-align: left;
-    width: 100%;
-  }
-  .sort-button:hover {
-    text-decoration: underline dashed;
-    text-underline-offset: var(--xs);
-  }
-
-  @media (max-width: 767px) {
-    table {
-      min-width: 31rem;
-      white-space: nowrap;
-    }
-
+  tbody tr:hover { background: hsl(var(--theme) / .06); }
+  .sort-button { background: transparent; font-weight: inherit; padding: 0; text-align: inherit; width: 100%; }
+  .sort-button:is(:hover, :focus-visible) { text-decoration: underline dashed; text-decoration-color: hsl(var(--theme) / .5); text-underline-offset: .125em; }
+  @media (max-width: 40rem) {
+    table { min-width: 31rem; white-space: nowrap; }
   }
 </style>

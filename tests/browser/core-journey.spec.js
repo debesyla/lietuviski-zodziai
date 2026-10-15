@@ -161,7 +161,9 @@ test('completes the production visitor journey without browser-health or respons
   await expect(page.getByRole('checkbox', { name: 'Daiktavardis (dkt)' })).not.toBeChecked();
 
   await page.getByLabel('Rodyti').selectOption('20');
-  await expect(page.getByRole('img', { name: /Pavartojimų skaičius:/ })).toHaveAttribute('aria-label', expect.stringContaining('bandomas-020'));
+  const topWords = page.getByRole('list', { name: 'Dažniausi žodžiai' });
+  await expect(topWords.getByRole('listitem')).toHaveCount(20);
+  await expect(topWords.getByRole('listitem', { name: /^bandomas-020: / })).toBeVisible();
   const tableEquivalent = page.getByRole('region', { name: 'Dažnumo pasiskirstymas' }).locator('details');
   await tableEquivalent.locator('summary').click();
   await expect(tableEquivalent.locator('table')).toBeVisible();

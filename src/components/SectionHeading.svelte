@@ -7,5 +7,6 @@
 <svelte:element this={`h${level}`} {id} class="dago-section-heading"><span aria-hidden="true">//</span>{' '}{@render children()}</svelte:element>
 
 <style>
-  .dago-section-heading { opacity: .2; }
+  /* The dimmed // label used on dago.lt; spacing belongs to the container. */
+  .dago-section-heading { margin: 0; opacity: .2; }
 </style>

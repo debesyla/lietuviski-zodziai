@@ -59,7 +59,8 @@ it('loads only the lookup profile initially and exposes a keyboard-operable comp
   expect(lookupWarContrastWord).toHaveBeenCalledWith(profile, 'karas');
   expect(getAllByRole('table')).toHaveLength(1);
   expect(getAllByText('Neaptikta')).toHaveLength(3);
-  expect(getByText('+2 log₂')).toBeInTheDocument();
+  expect(getByText('4 karto dažniau')).toBeInTheDocument();
+  expect(getByText('(+2 log₂)')).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 });
 
@@ -72,6 +73,6 @@ it('makes the absent-data state explicit instead of presenting it as zero', asyn
   await user.type(getByLabelText('Žodžio forma'), 'nerasta');
   await user.click(getByRole('button', { name: 'Palyginti' }));
 
-  await waitFor(() => expect(getByText('Forma nerasta')).toBeInTheDocument());
+  await waitFor(() => expect(getByText('Forma nerasta.')).toBeInTheDocument());
   expect(getByText(/nereiškia, kad žodžio nėra lietuvių kalboje/i)).toBeInTheDocument();
 });

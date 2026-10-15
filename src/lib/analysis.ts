@@ -43,8 +43,16 @@ export interface FrequencyAnalysis {
   facts: FrequencyFacts;
 }
 
-function byFrequencyThenWord(a: Word, b: Word) {
-  return b.frequency - a.frequency || a.word.localeCompare(b.word, 'lt');
+const lithuanianCollator = new Intl.Collator('lt');
+
+/** Frequency descending, then Lithuanian alphabetical order for ties. */
+export function byFrequencyThenWord(a: Word, b: Word) {
+  return b.frequency - a.frequency || lithuanianCollator.compare(a.word, b.word);
+}
+
+/** Ranks every word once, so filtered views can keep each word's dataset rank. */
+export function rankWords<T extends Word>(words: T[]): (T & { rank: number })[] {
+  return [...words].sort(byFrequencyThenWord).map((word, index) => ({ ...word, rank: index + 1 }));
 }
 
 /**
@@ -52,9 +60,7 @@ function byFrequencyThenWord(a: Word, b: Word) {
  * being explored. It deliberately does not mutate the dataset's source rows.
  */
 export function analyseFrequency(words: Word[]): FrequencyAnalysis {
-  const rankedWords = [...words]
-    .sort(byFrequencyThenWord)
-    .map((word, index) => ({ ...word, rank: index + 1 }));
+  const rankedWords = rankWords(words);
   const totalFrequency = rankedWords.reduce((sum, word) => sum + word.frequency, 0);
 
   let cumulativeFrequency = 0;
