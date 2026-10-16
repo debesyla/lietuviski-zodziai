@@ -24,7 +24,10 @@ Every page uses the same column, `min(100%, 75ch)`, and the same parts:
    on the dago.lt tools; `Žodžiai` in the menu is the way home. The current menu
    section is filled amber, like the selected tab on asmens kodai, with a tight
    line height so the fill stays low; research pages count as `Žodžiai`
-   (`aria-current="true"`).
+   (`aria-current="true"`). Inside that section a smaller, dimmer second row
+   lists the five research pages by their short names (`Žanrai // Laikotarpiai
+   // Karo metas // Sintaksė // Žodynas`); the current one is bold without an
+   underline. The same short names are used in the "kitur" links.
 2. Page heading: `SectionHeading`, the `// Heading` label, followed by
    one plain sentence that says what the page answers.
 3. Main tool: the homepage explorer, or `WordLookup` on research pages.

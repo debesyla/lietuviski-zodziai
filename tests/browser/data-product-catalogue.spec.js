@@ -25,6 +25,8 @@ test('makes every public data product discoverable with scope, limits, and a saf
   await expect(page.getByRole('heading', { name: 'duomenų katalogas' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Tyrinėti naršyklėje' })).toHaveCount(0);
   await expect(page.locator('article.catalogue-entry')).toHaveCount(15);
+  // The research row belongs to the "Žodžiai" section only.
+  await expect(page.getByRole('navigation', { name: 'Žodžių tyrimai' })).toHaveCount(0);
 
   for (const heading of ['Rinkiniai JSON formatu']) {
     await expect(page.getByRole('heading', { name: heading })).toBeVisible();

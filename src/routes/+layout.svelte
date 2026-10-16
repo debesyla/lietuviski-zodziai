@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import '../app.css';
 	import { t } from '$lib/translations';
-	import { researchTools } from '$lib/research-tools';
+	import { menuLabel, researchTools, toolUrl } from '$lib/research-tools';
 
 	let { children } = $props();
 	const homeUrl = `${base}/`;
@@ -18,6 +18,9 @@
 		if (page.route.id === routes[0]) return 'page';
 		return routes.includes(page.route.id ?? '') ? 'true' : undefined;
 	}
+
+	// The research pages get their own quieter row, shown only inside the "Žodžiai" section.
+	const inWordsSection = $derived(navigation[0].routes.includes(page.route.id ?? ''));
 </script>
 
 <svelte:head>
@@ -40,6 +43,14 @@
 				<a href={item.href} aria-current={current(item.routes)}>{item.label}</a>
 			{/each}
 		</nav>
+		{#if inWordsSection}
+			<nav class="site-subnavigation" aria-label="Žodžių tyrimai">
+				{#each researchTools as tool, index (tool.id)}
+					{#if index > 0}<span class="inline-separator" aria-hidden="true">//</span>{/if}
+					<a href={toolUrl(tool)} aria-current={page.route.id === tool.path ? 'page' : undefined}>{menuLabel(tool)}</a>
+				{/each}
+			</nav>
+		{/if}
 	</header>
 
 	<div id="main-content">

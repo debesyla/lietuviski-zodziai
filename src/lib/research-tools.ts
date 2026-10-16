@@ -12,6 +12,7 @@ export type ResearchTool = {
   description: string;
   source: string;
   unit: 'žodžio forma' | 'lema' | null;
+  /** One or two lowercase words, used in the section menu and the "kitur" links. */
   shortLabel: string;
   example?: string;
 };
@@ -47,7 +48,7 @@ export const researchTools: ResearchTool[] = [
     description: 'Įprastas tekstynas, karo meto žiniasklaida ir socialiniai tinklai, perskaičiuoti tam pačiam žodžių kiekiui.',
     source: 'CCLL2',
     unit: 'žodžio forma',
-    shortLabel: 'karo meto tekstai',
+    shortLabel: 'karo metas',
     example: 'dronas'
   },
   {
@@ -69,7 +70,7 @@ export const researchTools: ResearchTool[] = [
     description: 'Jungtinio tekstyno formos, sutikrintos su Dabartinės lietuvių kalbos žodynu, pagal dažnumą.',
     source: 'JCL + DML6',
     unit: null,
-    shortLabel: 'žodyno aprėptis'
+    shortLabel: 'žodynas'
   }
 ];
 
@@ -77,6 +78,11 @@ export function researchTool(id: string) {
   const tool = researchTools.find((candidate) => candidate.id === id);
   if (!tool) throw new Error(`Unknown research tool: ${id}`);
   return tool;
+}
+
+/** "karo metas" → "Karo metas" for the menu. */
+export function menuLabel(tool: ResearchTool) {
+  return tool.shortLabel.charAt(0).toLocaleUpperCase('lt-LT') + tool.shortLabel.slice(1);
 }
 
 export function toolUrl(tool: ResearchTool, word?: string) {
