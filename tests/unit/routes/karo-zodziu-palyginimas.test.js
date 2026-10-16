@@ -76,3 +76,25 @@ it('makes the absent-data state explicit instead of presenting it as zero', asyn
   await waitFor(() => expect(getByText('Forma nerasta.')).toBeInTheDocument());
   expect(getByText(/nereiškia, kad žodžio nėra lietuvių kalboje/i)).toBeInTheDocument();
 });
+
+it('runs the lookup from a shared ?q= link', async () => {
+  window.history.replaceState(null, '', '/karo-zodziu-palyginimas?q=karas');
+  const { getByLabelText, getByRole } = render(Page);
+
+  await waitFor(() => expect(getByRole('heading', { name: 'KARAS' })).toBeInTheDocument());
+  expect(lookupWarContrastWord).toHaveBeenLastCalledWith(profile, 'karas');
+  expect(getByLabelText('Žodžio forma')).toHaveValue('karas');
+});
+
+it('keeps each lookup in ?q= under the page path', async () => {
+  const user = userEvent.setup();
+  window.history.replaceState(null, '', '/lietuviski-zodziai/karo-zodziu-palyginimas');
+  const { getByLabelText, getByRole } = render(Page);
+
+  await waitFor(() => expect(getByRole('button', { name: 'Palyginti' })).toBeInTheDocument());
+  await user.type(getByLabelText('Žodžio forma'), ' okupantai ');
+  await user.click(getByRole('button', { name: 'Palyginti' }));
+
+  expect(window.location.pathname).toBe('/lietuviski-zodziai/karo-zodziu-palyginimas');
+  expect(window.location.search).toBe('?q=okupantai');
+});

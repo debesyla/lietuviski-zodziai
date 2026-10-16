@@ -44,6 +44,9 @@ at 1rem. Grid gaps own the spacing, so direct children have no margins.
 | `TableScroll` | Wraps wide tables; becomes a focusable, labelled region only when it overflows. |
 | `DataLoader`, `FrequencyDashboard`, `DataTable` | The homepage explorer. |
 
+Research pages keep the last lookup in `?q=` (`$lib/word-query`), so a copied
+link opens the same word. Only a `?q=` on load triggers a data request.
+
 Shared CSS classes: `.stack`, `.section-head` (heading plus an action on one
 line), `.note` (secondary text), `.notice` and `.notice.error` (left-ruled
 messages, as in the dago.lt tools), `.facts` (label and value grid),
