@@ -6,6 +6,7 @@
   import WordElsewhere from '../../components/WordElsewhere.svelte';
   import Headline from '../../components/Headline.svelte';
   import TableScroll from '../../components/TableScroll.svelte';
+  import ResultDownloads from '../../components/ResultDownloads.svelte';
   import {
     loadWarContrastProfile,
     logRatioForPair,
@@ -13,10 +14,11 @@
     type WarContrastLookupResult,
     type WarContrastProfile
   } from '$lib/war-contrast';
+  import { saveCsv, saveJson } from '$lib/download';
   import { site } from '$lib/site';
   import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
-  import { pairReadout, timesPhrase } from '$lib/readout';
+  import { pairReadout, timesPhrase, unobservedReferenceReadout } from '$lib/readout';
   import { formatNumber } from '$lib/utils';
 
   const tool = researchTool('karo-zodziu-palyginimas');
@@ -35,15 +37,34 @@
     ? profile.contrast.pairs.map((pair) => ({ pair, logRatio: logRatioForPair(profile!, result!, pair.id) }))
     : []);
 
-  // The headline restates the largest of the contrasts shown below.
+  // The ordinary corpus is the source the wartime ones are measured against.
+  let referenceId = $derived.by(() => {
+    if (!profile) return null;
+    const counts = new Map<string, number>();
+    for (const pair of profile.contrast.pairs) counts.set(pair.denominatorSource, (counts.get(pair.denominatorSource) ?? 0) + 1);
+    return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  });
+
+  // The headline answers the page's question: the largest contrast against the
+  // ordinary corpus first. If the form was not observed there, it says so
+  // rather than stating a ratio; only then does a wartime-only pair stand in.
   let readout = $derived.by(() => {
     if (!profile || !result) return null;
-    const strongest = contrasts
-      .filter((contrast): contrast is { pair: typeof contrast.pair; logRatio: number } => contrast.logRatio !== null)
-      .sort((a, b) => Math.abs(b.logRatio) - Math.abs(a.logRatio))[0];
-    if (!strongest) return null;
+    const word = result.word.toLocaleLowerCase('lt-LT');
     const label = (id: string) => profile!.sources.find((source) => source.id === id)?.label ?? id;
-    return pairReadout(result.word.toLocaleLowerCase('lt-LT'), label(strongest.pair.numeratorSource), label(strongest.pair.denominatorSource), strongest.logRatio);
+    const computed = contrasts
+      .filter((contrast): contrast is { pair: typeof contrast.pair; logRatio: number } => contrast.logRatio !== null)
+      .sort((a, b) => Math.abs(b.logRatio) - Math.abs(a.logRatio));
+    const strongest = computed.find((contrast) => contrast.pair.denominatorSource === referenceId) ?? null;
+    if (strongest) return pairReadout(word, label(strongest.pair.numeratorSource), label(strongest.pair.denominatorSource), strongest.logRatio);
+    if (referenceId && (result.metrics[referenceId]?.tokenCount ?? null) === null) {
+      const others = profile.sources.filter((source) => source.id !== referenceId)
+        .map((source) => ({ label: source.label, value: result!.metrics[source.id]?.tokenCount ?? null }));
+      const unobserved = unobservedReferenceReadout(word, label(referenceId), others, '100 mln. žodžių');
+      if (unobserved) return unobserved;
+    }
+    const fallback = computed[0];
+    return fallback ? pairReadout(word, label(fallback.pair.numeratorSource), label(fallback.pair.denominatorSource), fallback.logRatio) : null;
   });
 
   function formatRate(value: number | null) {
@@ -58,6 +79,51 @@
     const multiplier = Math.pow(2, Math.abs(value));
     if (multiplier < 1.05) return 'maždaug tiek pat';
     return `${timesPhrase(multiplier)} ${value >= 0 ? 'dažniau' : 'rečiau'}`;
+  }
+
+  function downloadCsv() {
+    const activeProfile = profile;
+    const activeResult = result;
+    if (!activeProfile || !activeResult) return;
+    const word = activeResult.word.toLocaleLowerCase('lt-LT');
+    saveCsv(
+      [`Šaltinis: ${activeProfile.provenance.citation}`, `Licencija: ${activeProfile.provenance.licence}`, `Pirminis įrašas: ${activeProfile.provenance.sourceUrl}`, `Žodžio forma: ${word}`, `Perskaičiuota: ${activeProfile.contrast.targetTokens} šaltinio žodžių`],
+      ['Šaltinis', 'Pavartojimai', 'Dokumentai', 'Šaltinio žodžiai'],
+      activeProfile.sources.map((source) => [
+        source.label,
+        activeResult.metrics[source.id]?.tokenCount ?? null,
+        activeResult.metrics[source.id]?.documentCount ?? null,
+        source.tokenField.normalization.sourceTokens
+      ]),
+      `karo-meto-vartosena-${encodeURIComponent(word)}.csv`
+    );
+  }
+
+  function downloadJson() {
+    const activeProfile = profile;
+    const activeResult = result;
+    if (!activeProfile || !activeResult) return;
+    saveJson({
+      schemaVersion: 1,
+      productId: activeProfile.productId,
+      profileId: activeProfile.profileId,
+      query: activeResult.word,
+      normalizedWord: activeResult.normalizedWord,
+      targetTokens: activeProfile.contrast.targetTokens,
+      sources: activeProfile.sources.map((source) => ({
+        id: source.id,
+        label: source.label,
+        sourceTokens: source.tokenField.normalization.sourceTokens,
+        tokenCount: activeResult.metrics[source.id]?.tokenCount ?? null,
+        documentCount: activeResult.metrics[source.id]?.documentCount ?? null
+      })),
+      contrast: {
+        formula: activeProfile.contrast.formula,
+        minimumRate: activeProfile.contrast.minimumRate,
+        pairs: contrasts.map(({ pair, logRatio }) => ({ ...pair, logRatio }))
+      },
+      provenance: activeProfile.provenance
+    }, `karo-meto-vartosena-${encodeURIComponent(activeResult.word.toLocaleLowerCase('lt-LT'))}.json`);
   }
 
   async function search(value: string) {
@@ -138,14 +204,19 @@
     {:else if searched && !result}
       <p class="notice" role="status"><strong>Forma nerasta.</strong> Ji neaptikta šiuose šaltiniuose. Tai nereiškia, kad žodžio nėra lietuvių kalboje ar kad jo dažnis yra nulis.</p>
     {/if}
+    <!-- One short sentence for screen readers instead of announcing the whole result. -->
+    <p class="sr-only" role="status" aria-live="polite">{result ? (readout?.text ?? result.word.toLocaleLowerCase('lt-LT')) : ''}</p>
 
     <div class="sections">
       {#if result}
-        <section class="sections" aria-labelledby="result-title" aria-live="polite">
+        <section class="sections" aria-labelledby="result-title">
           <div class="stack">
             <div>
-              <!-- The source stores forms in capitals; show them like the other research pages. -->
-              <h2 id="result-title">{result.word.toLocaleLowerCase('lt-LT')}</h2>
+              <div class="section-head">
+                <!-- The source stores forms in capitals; show them like the other research pages. -->
+                <h2 id="result-title">{result.word.toLocaleLowerCase('lt-LT')}</h2>
+                <ResultDownloads oncsv={downloadCsv} onjson={downloadJson} />
+              </div>
               {#if result.word !== result.normalizedWord}<p class="note">Normalizuota forma: {result.normalizedWord}</p>{/if}
             </div>
             {#if readout}<Headline figure={readout.figure} text={readout.text} />{/if}

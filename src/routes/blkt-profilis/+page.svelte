@@ -6,15 +6,17 @@
   import WordElsewhere from '../../components/WordElsewhere.svelte';
   import Headline from '../../components/Headline.svelte';
   import TableScroll from '../../components/TableScroll.svelte';
+  import ResultDownloads from '../../components/ResultDownloads.svelte';
   import { base } from '$app/paths';
   import {
     loadBlktWordformProfile,
     loadBlktLicenceTexts,
     lookupBlktWordform,
+    type BlktScopeResult,
     type BlktWordformResult,
     type LoadedBlktWordformProfile
   } from '$lib/blkt-wordform-profile';
-  import { saveJson } from '$lib/download';
+  import { saveCsv, saveJson, type CsvCell } from '$lib/download';
   import { site } from '$lib/site';
   import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
@@ -79,6 +81,34 @@
     } finally {
       if (request === requestNumber) lookupLoading = false;
     }
+  }
+
+  // Only the published aggregates on screen; a withheld slice family is named, not filled in.
+  function downloadCsv() {
+    if (!result || !profile) return;
+    const { metadata, manifest } = profile;
+    const row = (slice: string, label: string, item: BlktScopeResult): CsvCell[] =>
+      [slice, label, item.tokenCount, item.documentCount, item.ratePerMillion, item.documents, item.derivedTokens];
+    const rows = [row('Visas tekstynas', '', result.corpus)];
+    for (const slice of slices) {
+      for (const item of slice.items ?? []) rows.push(row(slice.column, item.label, item));
+    }
+    const licenceFile = (file: string) => `${window.location.origin}${base}/data-products/${manifest.id}/${file}`;
+    saveCsv(
+      [
+        `Šaltinis: ${manifest.provenance.citation}`,
+        `Pirminis įrašas: ${manifest.provenance.sourceUrl}`,
+        ...metadata.rights.licences.map((licence) => `Licencija: ${licence.name} (${licence.url}; pilnas tekstas ${licenceFile(licence.file)})`),
+        metadata.rights.modificationNotice,
+        ...metadata.rights.attributionNotices,
+        ...metadata.rights.downstreamRequirements,
+        `Žodžio forma: ${result.word}`,
+        ...slices.filter((slice) => !slice.items).map((slice) => slice.withheld)
+      ],
+      ['Pjūvis', 'Reikšmė', 'Pavartojimai', 'Dokumentai su žodžiu', 'Milijonui žodžių', 'Visi dokumentai', 'Visi žodžiai'],
+      rows,
+      `blkt-${result.word}.csv`
+    );
   }
 
   async function downloadResult() {
@@ -180,7 +210,7 @@
           <div class="stack">
             <div class="section-head">
               <h2 id="result-title">{result.word}</h2>
-              <button type="button" class="text-button" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti JSON'}</button>
+              <ResultDownloads oncsv={downloadCsv} onjson={() => void downloadResult()} busy={downloadLoading} />
             </div>
             {#if downloadError}<p class="notice error" role="alert">{downloadError}</p>{/if}
             {#if readout}<Headline figure={readout.figure} text={readout.text} note={readout.note} />{/if}

@@ -62,7 +62,7 @@ describe('Page', () => {
     expect(getByRole('link', { name: 'Ar visi dažni žodžiai yra žodyne?' })).toHaveAttribute('href', '/zodyno-apreptis');
     expect(getByRole('link', { name: 'Ar žodis dažnesnis karo meto tekstuose?' })).toHaveAttribute('href', '/karo-zodziu-palyginimas');
     expect(getByRole('link', { name: 'Kur žodis dažnesnis: romanuose ar laikraščiuose?' })).toHaveAttribute('href', '/zanru-profilis');
-    expect(getByRole('link', { name: 'dronas' })).toHaveAttribute('href', '/karo-zodziu-palyginimas?q=dronas');
+    expect(getByRole('link', { name: 'okupantai' })).toHaveAttribute('href', '/karo-zodziu-palyginimas?q=okupantai');
     expect(getByRole('link', { name: 'Kokie duomenys čia yra?' })).toHaveAttribute('href', '/duomenu-katalogas');
   });
 

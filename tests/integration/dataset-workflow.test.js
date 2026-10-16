@@ -137,11 +137,49 @@ describe('dataset workflow integration', () => {
     const utka = JSON.parse(await readFile(path.join(repositoryRoot, 'static/datasets/utka-2018-lemmatized-totals.json'), 'utf8'));
     installDatasetFetch({ 'catalog.json': catalog, 'utka-2018-lemmatized-totals.json': utka });
 
-    const { container, getByRole } = render(Page);
+    const { container, getByRole, getByText } = render(Page);
 
     await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(20), { timeout: 5_000 });
     expect(getByRole('combobox', { name: 'Šaltinis' })).toHaveValue(utka.id);
     expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(20);
-    expect(container.querySelector('.totals')).toHaveTextContent('Pavartojimai: 922949');
+    // The headline note gives the whole source; the totals line appears only for a search or filter.
+    expect(getByText(/^Iš 41977 žodžių ir 922949 pavartojimų\. Šaltinis – 1 mln\. žodžių dabartinės lietuvių kalbos tekstynas/)).toBeInTheDocument();
+    expect(container.querySelector('.totals')).toBeNull();
+  });
+
+  it('says where an exactly matched word ranks and labels what the other pages search', async () => {
+    const catalog = JSON.parse(await readFile(path.join(repositoryRoot, 'static/datasets/catalog.json'), 'utf8'));
+    const utka = JSON.parse(await readFile(path.join(repositoryRoot, 'static/datasets/utka-2018-lemmatized-totals.json'), 'utf8'));
+    installDatasetFetch({ 'catalog.json': catalog, 'utka-2018-lemmatized-totals.json': utka });
+    const user = userEvent.setup();
+    const { container, getByRole, getByText } = render(Page);
+
+    await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(20), { timeout: 5_000 });
+    await user.type(getByRole('textbox'), 'meilė');
+
+    // "meilė" shares its 281 uses with one other word, so it holds places 484–485.
+    await waitFor(() => expect(getByText('„meilė“ – vieta pagal dažnumą: 484–485 iš 41977. Į pusę pavartojimų sudarančių žodžių sąrašą nepatenka.')).toBeInTheDocument());
+    expect(container.querySelector('.totals')).toHaveTextContent('Pavartojimai: 289');
+
+    const elsewhere = getByRole('navigation', { name: '„meilė“ kituose šaltiniuose' });
+    expect(elsewhere).toHaveTextContent(/kaip žodžio forma:.*žanrai.*laikotarpiai.*karo metas.*kaip lema:.*sintaksė/);
+  });
+
+  it('gives a tied frequency as a range of places', async () => {
+    installDatasetFetch({ 'catalog.json': workflowCatalog, 'first.json': { ...firstDataset, summary: { sourceRows: 3, entryCount: 3, totalFrequency: 20, duplicateEntries: 0 }, words: [
+      { word: 'beta', type: 'noun', frequency: 10 },
+      { word: 'alfa', type: 'verb', frequency: 5 },
+      { word: 'gama', type: 'verb', frequency: 5 }
+    ] }, 'second.json': secondDataset });
+    const user = userEvent.setup();
+    const { container, getByRole, getByText } = render(Page);
+
+    await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('beta'));
+    await user.type(getByRole('textbox'), 'gama');
+    await waitFor(() => expect(getByText(/^„gama“ – vieta pagal dažnumą: 2–3 iš 3\./)).toBeInTheDocument());
+
+    await user.clear(getByRole('textbox'));
+    await user.type(getByRole('textbox'), 'beta');
+    await waitFor(() => expect(getByText('„beta“ – vieta pagal dažnumą: 1 iš 3. Patenka į pusę pavartojimų sudarančių žodžių sąrašą.')).toBeInTheDocument());
   });
 });

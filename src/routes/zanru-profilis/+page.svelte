@@ -6,6 +6,7 @@
   import WordElsewhere from '../../components/WordElsewhere.svelte';
   import Headline from '../../components/Headline.svelte';
   import TableScroll from '../../components/TableScroll.svelte';
+  import ResultDownloads from '../../components/ResultDownloads.svelte';
   import {
     loadCcllGenreProfile,
     lookupCcllGenreWord,
@@ -13,11 +14,11 @@
     type CcllGenreProfile,
     type GenreProfileLookupResult
   } from '$lib/ccll-genre-profile';
-  import { saveJson } from '$lib/download';
+  import { saveCsv, saveJson } from '$lib/download';
   import { site } from '$lib/site';
   import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
-  import { spreadReadout } from '$lib/readout';
+  import { namedPairSentence, spreadReadout } from '$lib/readout';
   import { formatNumber } from '$lib/utils';
 
   const tool = researchTool('zanru-profilis');
@@ -32,9 +33,18 @@
   let searched = $state(false);
   let requestNumber = 0;
 
-  let readout = $derived(profile && result
-    ? spreadReadout(result.word, profile.sources.map((source) => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) })), (label) => `žanre „${label}“`, 'vartojama')
-    : null);
+  // The page asks "romanuose ar laikraščiuose?", so those two genres get their own sentence.
+  const QUESTION_GENRES = ['fiction', 'periodicals'];
+
+  let readout = $derived.by(() => {
+    if (!profile || !result) return null;
+    const place = (label: string) => `žanre „${label}“`;
+    const rows = profile.sources.map((source) => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) }));
+    const spread = spreadReadout(result.word, rows, place, 'vartojama');
+    const [first, second] = QUESTION_GENRES.map((id) => profile!.sources.find((source) => source.id === id)?.label ?? '');
+    const pair = namedPairSentence(rows, first, second, place);
+    return spread && pair ? { ...spread, text: `${spread.text} ${pair}` } : spread;
+  });
 
   function formatRate(value: number | null) {
     return value === null ? 'Neaptikta' : formatNumber(value, { maximumFractionDigits: 2 });
@@ -58,6 +68,18 @@
     } finally {
       if (request === requestNumber) lookupLoading = false;
     }
+  }
+
+  function downloadCsv() {
+    const activeProfile = profile;
+    const activeResult = result;
+    if (!activeProfile || !activeResult) return;
+    saveCsv(
+      [`Šaltinis: ${activeProfile.provenance.citation}`, `Licencija: ${activeProfile.provenance.licence}`, `Pirminis įrašas: ${activeProfile.provenance.sourceUrl}`, `Žodžio forma: ${activeResult.word}`],
+      ['Žanras', 'Pavartojimai', 'Milijonui žodžių', 'Žanro žodžiai'],
+      activeProfile.sources.map((source) => [source.label, activeResult.rawCounts[source.id], ratePerMillion(activeProfile, activeResult, source.id), source.sourceTokens]),
+      `ccll-zanru-profilis-${encodeURIComponent(activeResult.word)}.csv`
+    );
   }
 
   function downloadResult() {
@@ -138,14 +160,16 @@
     {:else if searched && !result}
       <p class="notice" role="status"><strong>Forma nerasta.</strong> Ji neaptikta šiuose žanruose. Tai nereiškia, kad jos nėra lietuvių kalboje ar kad jos dažnis lygus nuliui.</p>
     {/if}
+    <!-- One short sentence for screen readers instead of announcing the whole result. -->
+    <p class="sr-only" role="status" aria-live="polite">{result ? (readout?.text ?? result.word) : ''}</p>
 
     <div class="sections">
       {#if result}
-        <section class="sections" aria-labelledby="result-title" aria-live="polite">
+        <section class="sections" aria-labelledby="result-title">
           <div class="stack">
             <div class="section-head">
               <h2 id="result-title">{result.word}</h2>
-              <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti JSON</button>
+              <ResultDownloads oncsv={downloadCsv} onjson={downloadResult} />
             </div>
             {#if readout}<Headline figure={readout.figure} text={readout.text} />{/if}
             <WordElsewhere word={result.word} current="zanru-profilis" />

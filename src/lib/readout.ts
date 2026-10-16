@@ -29,6 +29,21 @@ function sentence(text: string) {
 /** Below this multiplier two rates read as "about the same". */
 const SAME_RATE = 1.05;
 
+function capitalise(text: string) {
+  return text.charAt(0).toLocaleUpperCase('lt-LT') + text.slice(1);
+}
+
+function isObserved(row: RateRow): row is { label: string; value: number } {
+  return row.value !== null && row.value > 0;
+}
+
+/** "2548 pavartojimai", but "1 pavartojimas" and "2,5 pavartojimo". */
+function usesPhrase(value: number) {
+  const formatted = formatNumber(value, { maximumFractionDigits: 2 });
+  if (formatted.includes(',')) return `${formatted} pavartojimo`;
+  return `${formatted} ${pluralLt(Math.round(value), ['pavartojimas', 'pavartojimai', 'pavartojimų'])}`;
+}
+
 /** Wartime-style contrast between two named sources, from log2(numerator / denominator). */
 export function pairReadout(word: string, numerator: string, denominator: string, logRatio: number): Readout {
   const ratio = Math.pow(2, Math.abs(logRatio));
@@ -39,6 +54,20 @@ export function pairReadout(word: string, numerator: string, denominator: string
   return {
     figure: `${formatRatio(ratio)}×`,
     text: `Šaltinyje „${numerator}“ forma „${word}“ pavartota ${timesPhrase(ratio)} ${direction} nei šaltinyje „${denominator}“.`
+  };
+}
+
+/**
+ * When the reference source has no value, there is no ratio to state: the form
+ * was not observed there, which is not zero. Name that and the highest rate
+ * elsewhere instead.
+ */
+export function unobservedReferenceReadout(word: string, reference: string, rows: RateRow[], unit: string): Readout | null {
+  const top = rows.filter(isObserved).sort((a, b) => b.value - a.value)[0];
+  if (!top) return null;
+  return {
+    figure: formatRate(top.value),
+    text: `Šaltinyje „${reference}“ forma „${word}“ neaptikta, o šaltinyje „${top.label}“ – ${usesPhrase(top.value)} ${unit}.`
   };
 }
 
@@ -67,4 +96,25 @@ export function spreadReadout(word: string, rows: RateRow[], place: (label: stri
     text += ` ${sentence(`Beveik tiek pat – ${place(runnerUp.label)}`)}`;
   }
   return { figure: `${formatRatio(ratio)}×`, text };
+}
+
+/**
+ * A follow-up sentence for the two slices a page's question names, such as
+ * fiction and periodicals. It is left out when either slice was not observed,
+ * or when the pair is already the most and least frequent slice, which
+ * `spreadReadout` states.
+ */
+export function namedPairSentence(rows: RateRow[], firstLabel: string, secondLabel: string, place: (label: string) => string): string | null {
+  const first = rows.find((row) => row.label === firstLabel);
+  const second = rows.find((row) => row.label === secondLabel);
+  if (!first || !second || !isObserved(first) || !isObserved(second)) return null;
+
+  const observed = rows.filter(isObserved).sort((a, b) => b.value - a.value);
+  const extremes = [observed[0].label, observed[observed.length - 1].label];
+  if (extremes.includes(firstLabel) && extremes.includes(secondLabel)) return null;
+
+  const [high, low] = first.value >= second.value ? [first, second] : [second, first];
+  const ratio = high.value / low.value;
+  if (ratio < SAME_RATE) return sentence(`${capitalise(place(firstLabel))} ir ${place(secondLabel)} – maždaug vienodai`);
+  return sentence(`${capitalise(place(high.label))} – ${timesPhrase(ratio)} dažniau nei ${place(low.label)}`);
 }

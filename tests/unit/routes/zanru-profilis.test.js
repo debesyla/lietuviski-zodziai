@@ -56,6 +56,10 @@ it('loads only profile metadata initially and exposes a keyboard-operable, denom
   expect(getAllByText('Neaptikta')).toHaveLength(3);
   expect(getByText('100')).toBeInTheDocument();
   expect(getByRole('button', { name: 'Atsisiųsti JSON' })).toBeInTheDocument();
+  expect(getByRole('button', { name: 'Atsisiųsti CSV' })).toBeInTheDocument();
+  // The page asks about novels and newspapers, so the readout compares those two as well.
+  expect(getByRole('status')).toHaveTextContent('Žanre „Grožinė literatūra“ – 2,5 karto dažniau nei žanre „Periodika“.');
+  expect(getByRole('heading', { name: 'karas' }).closest('section')).not.toHaveAttribute('aria-live');
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 });
 

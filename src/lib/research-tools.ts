@@ -6,6 +6,8 @@ import { base } from '$app/paths';
 export type ResearchTool = {
   id: string;
   path: string;
+  /** The published data product the page explores, as listed in the data catalogue. */
+  productId: string;
   question: string;
   /** Short lowercase name for the page <title>. */
   pageTitle: string;
@@ -21,6 +23,7 @@ export const researchTools: ResearchTool[] = [
   {
     id: 'zanru-profilis',
     path: '/zanru-profilis',
+    productId: 'utka-ccll-wordforms',
     question: 'Kur žodis dažnesnis: romanuose ar laikraščiuose?',
     pageTitle: 'žodis pagal žanrą',
     description: 'Grožinė ir negrožinė literatūra, periodika, administraciniai tekstai ir sakytinė kalba.',
@@ -32,6 +35,7 @@ export const researchTools: ResearchTool[] = [
   {
     id: 'blkt-profilis',
     path: '/blkt-profilis',
+    productId: 'vssa-2026-blkt-wordform-profile',
     question: 'Kaip žodžio vartosena keitėsi nuo 1922 metų?',
     pageTitle: 'žodis nuo 1922 metų',
     description: 'Keturi laikotarpiai nuo tarpukario iki šių dienų ir penki teksto tipai.',
@@ -43,17 +47,20 @@ export const researchTools: ResearchTool[] = [
   {
     id: 'karo-zodziu-palyginimas',
     path: '/karo-zodziu-palyginimas',
+    productId: 'utka-ccll2-war-ukraine-comparison',
     question: 'Ar žodis dažnesnis karo meto tekstuose?',
     pageTitle: 'karo meto vartosena',
     description: 'Įprastas tekstynas, karo meto žiniasklaida ir socialiniai tinklai, perskaičiuoti tam pačiam žodžių kiekiui.',
     source: 'CCLL2',
     unit: 'žodžio forma',
     shortLabel: 'karo metas',
-    example: 'dronas'
+    // CCLL2 has no "dronas", so that example could only compare the two wartime sources.
+    example: 'okupantai'
   },
   {
     id: 'sintakse',
     path: '/sintakse',
+    productId: 'rimkute-2019-alksnis-syntactic-context',
     question: 'Su kuo žodis jungiasi sakinyje?',
     pageTitle: 'žodžio ryšiai sakinyje',
     description: 'Ranka tikrinti sakiniai: kuris žodis kurį pažymi, papildo ar valdo.',
@@ -65,6 +72,7 @@ export const researchTools: ResearchTool[] = [
   {
     id: 'zodyno-apreptis',
     path: '/zodyno-apreptis',
+    productId: 'dadurkevicius-dml6-vs-jcl-comparison',
     question: 'Ar visi dažni žodžiai yra žodyne?',
     pageTitle: 'ar dažni žodžiai yra žodyne',
     description: 'Jungtinio tekstyno formos, sutikrintos su Dabartinės lietuvių kalbos žodynu, pagal dažnumą.',

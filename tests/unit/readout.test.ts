@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pairReadout, spreadReadout, timesPhrase } from '../../src/lib/readout';
+import { namedPairSentence, pairReadout, spreadReadout, timesPhrase, unobservedReferenceReadout } from '../../src/lib/readout';
 
 const genre = (label: string) => `žanre „${label}“`;
 
@@ -52,6 +52,51 @@ describe('spreadReadout', () => {
     expect(spreadReadout('x', [{ label: 'A', value: 4 }, { label: 'B', value: null }], genre, 'vartojama')?.text)
       .toBe('Forma „x“ aptikta tik žanre „A“: 4 milijonui žodžių.');
     expect(spreadReadout('x', [{ label: 'A', value: null }], genre, 'vartojama')).toBeNull();
+  });
+});
+
+describe('unobservedReferenceReadout', () => {
+  it('names the missing reference instead of a ratio and gives the highest rate elsewhere', () => {
+    expect(unobservedReferenceReadout('dronas', 'CCLL2', [
+      { label: 'Karo meto žiniasklaida', value: 2548 },
+      { label: 'Karo meto socialiniai tinklai', value: 3813 }
+    ], '100 mln. žodžių')).toEqual({
+      figure: '3813',
+      text: 'Šaltinyje „CCLL2“ forma „dronas“ neaptikta, o šaltinyje „Karo meto socialiniai tinklai“ – 3813 pavartojimų 100 mln. žodžių.'
+    });
+  });
+
+  it('agrees the noun with the number and gives nothing when no source has a value', () => {
+    expect(unobservedReferenceReadout('x', 'A', [{ label: 'B', value: 21 }], 'u')?.text).toContain('21 pavartojimas u.');
+    expect(unobservedReferenceReadout('x', 'A', [{ label: 'B', value: 2.5 }], 'u')?.text).toContain('2,5 pavartojimo u.');
+    expect(unobservedReferenceReadout('x', 'A', [{ label: 'B', value: null }], 'u')).toBeNull();
+  });
+});
+
+describe('namedPairSentence', () => {
+  const rows = [
+    { label: 'Grožinė literatūra', value: 132.79 },
+    { label: 'Negrožinė literatūra', value: 132.25 },
+    { label: 'Periodika', value: 88.72 },
+    { label: 'Sakytinė kalba', value: 36.73 }
+  ];
+
+  it('compares the two slices a question names', () => {
+    expect(namedPairSentence(rows, 'Grožinė literatūra', 'Periodika', genre))
+      .toBe('Žanre „Grožinė literatūra“ – 1,5 karto dažniau nei žanre „Periodika“.');
+    expect(namedPairSentence(rows, 'Periodika', 'Grožinė literatūra', genre))
+      .toBe('Žanre „Grožinė literatūra“ – 1,5 karto dažniau nei žanre „Periodika“.');
+  });
+
+  it('calls a near-equal pair about the same', () => {
+    expect(namedPairSentence(rows, 'Grožinė literatūra', 'Negrožinė literatūra', genre))
+      .toBe('Žanre „Grožinė literatūra“ ir žanre „Negrožinė literatūra“ – maždaug vienodai.');
+  });
+
+  it('leaves out a pair the spread readout already states, and unobserved slices', () => {
+    expect(namedPairSentence(rows, 'Grožinė literatūra', 'Sakytinė kalba', genre)).toBeNull();
+    expect(namedPairSentence([...rows, { label: 'Administraciniai tekstai', value: null }], 'Administraciniai tekstai', 'Periodika', genre)).toBeNull();
+    expect(namedPairSentence(rows, 'Nėra', 'Periodika', genre)).toBeNull();
   });
 });
 

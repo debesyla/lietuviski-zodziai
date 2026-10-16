@@ -52,12 +52,49 @@
 
   // The headline describes the whole source, so searching and filtering leave it alone.
   let halfCoverageEntries = $derived(entriesToCoverage(rankedWords, 0.5));
+  let sourceFrequency = $derived(rankedWords.reduce((sum, word) => sum + word.frequency, 0));
+
+  // The totals line describes a search or filter; the headline note already gives the whole source.
+  let filtering = $derived(appliedSearchQuery.trim() !== '' || selectedTypes.length > 0);
 
   // A whole-word match can be carried to the research pages; a partial query cannot.
   let exactMatch = $derived.by(() => {
     const query = appliedSearchQuery.trim().toLocaleLowerCase('lt-LT');
     return query ? filteredWords.find((word) => word.word.toLocaleLowerCase('lt-LT') === query) : undefined;
   });
+
+  // Words with the same frequency share their places, so a tie reads as a range
+  // ("25398–41977") rather than an arbitrary single rank.
+  let exactMatchPlaces = $derived.by(() => {
+    if (!exactMatch) return null;
+    const frequency = exactMatch.frequency;
+    let first = 1;
+    let last = 0;
+    for (const word of rankedWords) {
+      if (word.frequency > frequency) first++;
+      if (word.frequency >= frequency) last++;
+    }
+    return { first, last };
+  });
+
+  let exactMatchReadout = $derived.by(() => {
+    if (!exactMatch || !exactMatchPlaces) return '';
+    const { first, last } = exactMatchPlaces;
+    const places = first === last ? formatNumber(first) : `${formatNumber(first)}–${formatNumber(last)}`;
+    let text = `„${exactMatch.word}“ – vieta pagal dažnumą: ${places} iš ${formatNumber(rankedWords.length)}.`;
+    // The headline's half-coverage list; a tie across its edge gets no verdict.
+    if (halfCoverageEntries !== null) {
+      if (last <= halfCoverageEntries) text += ' Patenka į pusę pavartojimų sudarančių žodžių sąrašą.';
+      else if (first > halfCoverageEntries) text += ' Į pusę pavartojimų sudarančių žodžių sąrašą nepatenka.';
+    }
+    return text;
+  });
+
+  // The source picker shows the short name; the headline note says what the source is.
+  function sourceDescription(source: Dataset) {
+    const description = datasetDescription(source.id, `${source.title} (${source.year})`);
+    return description.endsWith('.') ? description : `${description}.`;
+  }
 
   function clearFilters() {
     selectedTypes = [];
@@ -129,7 +166,7 @@
     <Headline
       figure={formatNumber(halfCoverageEntries)}
       text={`${pluralLt(halfCoverageEntries, ['dažniausias žodis', 'dažniausi žodžiai', 'dažniausių žodžių'])} sudaro pusę pavartojimų.`}
-      note={`Iš ${formatNumber(rankedWords.length)} žodžių šaltinyje „${datasetTitle(dataset.id, `${dataset.title} (${dataset.year})`)}“. Skaičiai aprašo tik šį šaltinį, ne visą lietuvių kalbą.`}
+      note={`Iš ${formatNumber(rankedWords.length)} žodžių ir ${formatNumber(sourceFrequency)} ${pluralLt(sourceFrequency, ['pavartojimo', 'pavartojimų', 'pavartojimų'])}. Šaltinis – ${sourceDescription(dataset)} Skaičiai aprašo tik šį šaltinį, ne visą lietuvių kalbą.`}
     />
   {/if}
 </div>
@@ -163,16 +200,20 @@
       </div>
     </details>
   {/if}
-  {#if dataset}<p class="note wide">{datasetDescription(dataset.id, dataset.title)}</p>{/if}
   {#if searchPending}
     <p class="note wide" role="status" aria-live="polite">{t('updatingResults')}</p>
-  {:else if dataset}
+  {:else if dataset && filtering}
     <p class="totals wide">
       <span>{t('entries')}: <strong>{formatNumber(filteredWords.length)}</strong></span>
       <span class="inline-separator" aria-hidden="true">//</span>
       <span>{t('totalFrequency')}: <strong>{formatNumber(filteredFrequency)}</strong></span>
     </p>
-    {#if exactMatch}<div class="wide"><WordElsewhere word={exactMatch.word} /></div>{/if}
+    {#if exactMatch}
+      <div class="wide stack">
+        <p>{exactMatchReadout}</p>
+        <WordElsewhere word={exactMatch.word} />
+      </div>
+    {/if}
   {/if}
 </div>
 

@@ -27,7 +27,8 @@ Every page uses the same column, `min(100%, 75ch)`, and the same parts:
    (`aria-current="true"`). Inside that section a smaller, dimmer second row
    lists the five research pages by their short names (`Žanrai // Laikotarpiai
    // Karo metas // Sintaksė // Žodynas`); the current one is bold without an
-   underline. The same short names are used in the "kitur" links.
+   underline. The same short names are used in the "kitur" links, which are
+   grouped by what each page searches (`kaip žodžio forma`, `kaip lema`).
 2. Page heading: `SectionHeading`, the `// Heading` label, followed by
    one plain sentence that says what the page answers.
 3. Main tool: the homepage explorer, or `WordLookup` on research pages.
@@ -57,11 +58,14 @@ Grid gaps own the spacing, so direct children have no margins.
 | `SectionHeading` | The `//` section label (`h2` or `h3`). The text is full colour for contrast; only the decorative `//` is dimmed (35%). |
 | `WordLookup` | Label, text input, primary button, hint and clickable example words. |
 | `RateBars` | Every horizontal bar chart: labelled rows, value on the right, `Neaptikta` for missing data. |
+| `ResultDownloads` | `Atsisiųsti CSV // JSON` next to a research result's word. |
 | `TableScroll` | Wraps wide tables; becomes a focusable, labelled region only when it overflows. |
 | `DataLoader`, `FrequencyDashboard`, `DataTable` | The homepage explorer. |
 
 Research pages keep the last lookup in `?q=` (`$lib/word-query`), so a copied
-link opens the same word. Only a `?q=` on load triggers a data request.
+link opens the same word. Only a `?q=` on load triggers a data request. Each
+result announces one short sentence, its readout, through a persistent
+`.sr-only` status; the result itself is not a live region.
 
 Shared CSS classes: `.stack`, `.sections`, `.section-head` (heading plus an action on one
 line), `.note` (secondary text), `.notice` and `.notice.error` (left-ruled
@@ -76,6 +80,7 @@ messages, as in the dago.lt tools), `.facts` (label and value grid),
 | Empty result | A `.notice` that says what was not found and that absence is not zero. |
 | Error | A `.notice.error` with `role="alert"` and a short recovery hint. |
 | Search pending | The homepage shows `Ieškoma…` in place of the totals line. |
+| Search or filter active | The homepage totals line (`Įrašai // Pavartojimai`) appears; without one, the headline note gives the whole source. An exact match adds its place by frequency, as a range when tied. |
 
 On screens up to 40rem, buttons, selects and inputs are at least 44px tall,
 and text buttons at least 44px wide. Pages must never scroll horizontally; only
@@ -88,6 +93,8 @@ tables scroll inside `TableScroll`.
 - Units stay explicit: pavartojimai, žodžių formos, lemos, dokumentai.
 - Logarithmic axes are labelled and explained in one sentence above the chart.
 - Missing measurements stay `Neaptikta`; they are never drawn as zero.
-- Every chart has a table equivalent and every result set can be downloaded.
+- Every chart has a table equivalent and every result set can be downloaded,
+  as CSV first and JSON with full provenance. An empty CSV cell means not
+  observed, never zero.
 - The homepage table keeps each word's rank in the whole dataset, so a search
   does not renumber results. Charts rank within the active filters.

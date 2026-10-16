@@ -107,16 +107,17 @@ describe('Public data catalogue page', () => {
     expect(getByText('Kraunami rinkiniai…')).toBeInTheDocument();
     await waitFor(() => expect(queryByText('Kraunami rinkiniai…')).not.toBeInTheDocument());
 
-    for (const heading of ['Rinkiniai JSON formatu', 'Tik šaltinių aprašai']) {
+    for (const heading of ['Tyrinėti naršyklėje', 'Rinkiniai JSON formatu', 'Tik šaltinių aprašai']) {
       expect(getByRole('heading', { name: heading })).toBeInTheDocument();
     }
 
     expect(queryByText('duomenų katalogas')).not.toBeInTheDocument();
-    expect(queryByRole('heading', { name: 'Tyrinėti naršyklėje' })).not.toBeInTheDocument();
 
     const lexicalCard = getByRole('article', { name: 'Leksinis bandomasis rinkinys' });
     expect(within(lexicalCard).getByText('Leksinis šaltinis.')).toBeInTheDocument();
     expect(within(lexicalCard).getByText('CC BY 4.0')).toBeInTheDocument();
+    // The licence is readable without opening the details.
+    expect(within(lexicalCard).getByText('Licencija: CC BY 4.0')).toBeVisible();
     expect(within(lexicalCard).getByText(/Tai nėra dažnumo sąrašas/)).toBeInTheDocument();
     expect(within(lexicalCard).getByRole('link', { name: 'Leksinis bandomasis rinkinys' })).toHaveAttribute(
       'href',
@@ -131,14 +132,15 @@ describe('Public data catalogue page', () => {
     expect(within(morphemicCard).getByText(/72325 įrašai/)).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/61 eilute daugiau.*tik kontekstui.*ne kaip išgavimo tikslas/i)).toBeInTheDocument();
 
-    const comparisonCard = getByRole('article', { name: 'DML6 žodyno aprėptis' });
-    expect(within(comparisonCard).getByRole('link', { name: 'DML6 žodyno aprėptis' })).toHaveAttribute('href', '/zodyno-apreptis');
+    // Products with a research page are named by that page's question, as in the menu and on the homepage.
+    const comparisonCard = getByRole('article', { name: 'Ar visi dažni žodžiai yra žodyne?' });
+    expect(within(comparisonCard).getByRole('link', { name: 'Ar visi dažni žodžiai yra žodyne?' })).toHaveAttribute('href', '/zodyno-apreptis');
 
-    const ccllCard = getByRole('article', { name: 'CCLL žanrų profilis' });
-    expect(within(ccllCard).getByRole('link', { name: 'CCLL žanrų profilis' })).toHaveAttribute('href', '/zanru-profilis');
+    const ccllCard = getByRole('article', { name: 'Kur žodis dažnesnis: romanuose ar laikraščiuose?' });
+    expect(within(ccllCard).getByRole('link', { name: 'Kur žodis dažnesnis: romanuose ar laikraščiuose?' })).toHaveAttribute('href', '/zanru-profilis');
 
-    const syntaxCard = getByRole('article', { name: 'ALKSNIS sintaksė' });
-    expect(within(syntaxCard).getByRole('link', { name: 'ALKSNIS sintaksė' })).toHaveAttribute('href', '/sintakse');
+    const syntaxCard = getByRole('article', { name: 'Su kuo žodis jungiasi sakinyje?' });
+    expect(within(syntaxCard).getByRole('link', { name: 'Su kuo žodis jungiasi sakinyje?' })).toHaveAttribute('href', '/sintakse');
 
     const blockedCard = getByRole('article', { name: 'Ribotas bandomasis šaltinis' });
     expect(within(blockedCard).getByText('Tik aprašas; duomenų eilutės neskelbiamos.')).toBeInTheDocument();

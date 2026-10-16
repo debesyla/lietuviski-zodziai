@@ -5,6 +5,7 @@
   import { datasetDescription, datasetTitle } from '$lib/dataset-labels';
   import { loadPublicDataProducts, type DataProductType, type PublicDataProduct } from '$lib/publication';
   import { site } from '$lib/site';
+  import { researchTools } from '$lib/research-tools';
 
   type PrimaryAction = { href: string; label: string } | null;
   const homeUrl = `${base}/`;
@@ -23,7 +24,10 @@
     { id: 'metadata', title: 'Tik šaltinių aprašai', products: products.filter(product => product.publication.status === 'metadata-only') }
   ].filter(group => group.products.length));
 
-  function displayTitle(product: PublicDataProduct) { return datasetTitle(product.id, product.title); }
+  // A product with its own research page is named by that page's question, as in the menu and the homepage cards.
+  function displayTitle(product: PublicDataProduct) {
+    return researchTools.find((tool) => tool.productId === product.id)?.question ?? datasetTitle(product.id, product.title);
+  }
   function description(product: PublicDataProduct) { return datasetDescription(product.id, product.publication.scope); }
   function explorerRank(product: PublicDataProduct) { const index = explorerOrder.indexOf(product.id); return index < 0 ? explorerOrder.length : index; }
 
@@ -127,7 +131,7 @@
   {:else}
     {#each groups as group}
       <section class="category" aria-label={group.title}>
-        {#if group.id !== 'explore'}<SectionHeading level={3}>{group.title}</SectionHeading>{/if}
+        <SectionHeading level={3}>{group.title}</SectionHeading>
         <div class="entries">
           {#each group.products as product (product.id)}
             {@const action = explorerAction(product)}
@@ -140,6 +144,8 @@
                   <span class="resource-link"><a href={product.manifestUrl}>JSON</a><span class="inline-separator" aria-hidden="true">//</span></span>
                 {/if}
                 <a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Šaltinis</a>
+                <span class="inline-separator" aria-hidden="true">//</span>
+                <span>Licencija: {product.provenance.licence}</span>
                 <span class="inline-separator" aria-hidden="true">//</span>
                 <details class="entry-details">
                   <summary class="text-button">Apie rinkinį</summary>

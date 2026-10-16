@@ -94,6 +94,19 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
     expect(JSON.stringify(downloadedProfile)).not.toContain(`\"${prohibitedKey}\"`);
   }
 
+  // The CSV carries the same published aggregates with both licences and the attribution notices.
+  const csvPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Atsisiųsti CSV' }).click();
+  const csvDownload = await csvPromise;
+  expect(csvDownload.suggestedFilename()).toBe('blkt-ir.csv');
+  const csv = await downloadText(csvDownload);
+  expect(csv).toContain('# Licencija: NewGenLTU OpenRAIL-D v1.0');
+  expect(csv).toContain('# Licencija: Creative Commons Attribution-ShareAlike 4.0 International');
+  expect(csv).toContain('# Wikipedia contributors.');
+  expect(csv).toContain('Pjūvis,Reikšmė,Pavartojimai,Dokumentai su žodžiu,Milijonui žodžių,Visi dokumentai,Visi žodžiai');
+  expect(csv).toMatch(/\r\nVisas tekstynas,,\d+,\d+,/);
+  expect(csv).toMatch(/\r\nLaikotarpis,1922–1940,\d+,/);
+
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   assertHealthy();
 });
