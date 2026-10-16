@@ -213,7 +213,7 @@ jobs:
 
           # This extensionless route depends on the deployed Apache rewrite.
           fetch "$SITE/apie" /tmp/zodziai-apie.html
-          grep -q 'Metodika ir šaltiniai' /tmp/zodziai-apie.html \
+          grep -q 'metodika ir šaltiniai' /tmp/zodziai-apie.html \
             || { echo "::error::methodology page did not serve expected content"; exit 1; }
 
           fetch "$SITE/data-products/catalog.json" /tmp/zodziai-catalog.json
