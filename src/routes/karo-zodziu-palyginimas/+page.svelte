@@ -1,14 +1,18 @@
 <script lang="ts">
   import SectionHeading from '../../components/SectionHeading.svelte';
   import RateBars from '../../components/RateBars.svelte';
+  import WordLookup from '../../components/WordLookup.svelte';
+  import PageMeta from '../../components/PageMeta.svelte';
+  import TableScroll from '../../components/TableScroll.svelte';
   import {
-    contrastPair,
     loadWarContrastProfile,
     logRatioForPair,
     lookupWarContrastWord,
     type WarContrastLookupResult,
     type WarContrastProfile
   } from '$lib/war-contrast';
+  import { site } from '$lib/site';
+  import { readWordQuery, writeWordQuery } from '$lib/word-query';
 
   let profile = $state<WarContrastProfile | null>(null);
   let loading = $state(true);
@@ -18,11 +22,11 @@
   let lookupError = $state<string | null>(null);
   let lookupLoading = $state(false);
   let searched = $state(false);
-  let selectedPairId = $state('');
   let requestNumber = 0;
 
-  let selectedPair = $derived(profile ? contrastPair(profile, selectedPairId) : null);
-  let logRatio = $derived(profile && result && selectedPair ? logRatioForPair(profile, result, selectedPair.id) : null);
+  let contrasts = $derived(profile && result
+    ? profile.contrast.pairs.map((pair) => ({ pair, logRatio: logRatioForPair(profile!, result!, pair.id) }))
+    : []);
 
   function formatNumber(value: number) {
     return value.toLocaleString('lt-LT');
@@ -33,22 +37,25 @@
   }
 
   function formatLogRatio(value: number) {
-    return `${value >= 0 ? '+' : ''}${value.toLocaleString('lt-LT', { maximumFractionDigits: 2 })}`;
+    return `${value >= 0 ? '+' : ''}${value.toLocaleString('lt-LT', { maximumFractionDigits: 2 })} log₂`;
   }
 
-  function formatMultiplier(value: number) {
-    return Math.pow(2, Math.abs(value)).toLocaleString('lt-LT', { maximumFractionDigits: 1 });
+  function describeRatio(value: number) {
+    const multiplier = Math.pow(2, Math.abs(value));
+    if (multiplier < 1.05) return 'maždaug tiek pat';
+    return `${multiplier.toLocaleString('lt-LT', { maximumFractionDigits: 1 })} karto ${value >= 0 ? 'dažniau' : 'rečiau'}`;
   }
 
-  async function search() {
-    if (!profile || !query.trim()) return;
+  async function search(value: string) {
+    if (!profile || !value.trim()) return;
+    writeWordQuery(value);
     searched = true;
     result = null;
     lookupError = null;
     lookupLoading = true;
     const request = ++requestNumber;
     try {
-      const loaded = await lookupWarContrastWord(profile, query);
+      const loaded = await lookupWarContrastWord(profile, value);
       if (request !== requestNumber) return;
       result = loaded;
     } catch (cause) {
@@ -59,18 +66,14 @@
     }
   }
 
-  function submitSearch(event: SubmitEvent) {
-    event.preventDefault();
-    void search();
-  }
-
   $effect(() => {
     let cancelled = false;
     loadWarContrastProfile().then((loaded) => {
       if (cancelled) return;
       profile = loaded;
-      selectedPairId = loaded.contrast.pairs[0]?.id ?? '';
       loading = false;
+      query = readWordQuery();
+      if (query) void search(query);
     }).catch((cause) => {
       if (cancelled) return;
       loadError = cause instanceof Error ? cause.message : String(cause);
@@ -83,270 +86,136 @@
   });
 </script>
 
-<svelte:head>
-  <title>karo laikotarpio žodžių palyginimas</title>
-  <meta name="description" content="Paieška ir skaidrus CCLL2, karo meto žiniasklaidos bei socialinių tinklų žodžių formų dažnumo palyginimas." />
-</svelte:head>
+<PageMeta
+  title="karo meto vartosena // dažniausi žodžiai"
+  description="Žodžio formos dažnis CCLL2 tekstyne, karo meto žiniasklaidoje ir socialiniuose tinkluose, perskaičiuotas 100 mln. žodžių."
+  url={site.wartimeContrastUrl}
+/>
 
 <main>
-  <header>
-  <SectionHeading>Karo laikotarpio žodžių palyginimas</SectionHeading>
-  <p class="intro">Žodžio vartosena CCLL2, karo meto žiniasklaidoje ir socialiniuose tinkluose. Rodikliai perskaičiuoti 100 mln. kiekvieno šaltinio žodžių.</p>
+  <header class="stack">
+    <SectionHeading>Karo laikotarpio žodžių palyginimas</SectionHeading>
+    <p>Kaip dažnai žodžio forma vartojama CCLL2 tekstyne, karo meto žiniasklaidoje ir socialiniuose tinkluose. Skaičiai perskaičiuoti 100 mln. kiekvieno šaltinio žodžių.</p>
   </header>
 
   {#if loading}
-    <p class="status" role="status" aria-live="polite">Kraunama paieškos suvestinė…</p>
+    <p class="note" role="status" aria-live="polite">Kraunama paieškos suvestinė…</p>
   {:else if loadError}
-    <section class="error" role="alert" aria-labelledby="profile-load-error">
-      <h2 id="profile-load-error">Nepavyko įkelti palyginimo duomenų</h2>
+    <div class="notice error" role="alert">
+      <p><strong>Nepavyko įkelti palyginimo duomenų.</strong></p>
       <p>{loadError}</p>
-    </section>
+    </div>
   {:else if profile}
-    <form class="lookup" onsubmit={submitSearch}>
-      <label for="word-query">Žodžio forma</label>
-      <div class="lookup-controls">
-        <input id="word-query" bind:value={query} autocomplete="off" spellcheck="false" placeholder="pvz., karas" required />
-        <button type="submit" class="primary-button" disabled={lookupLoading}>{lookupLoading ? 'Ieškoma…' : 'Palyginti'}</button>
-      </div>
-    </form>
-
+    <WordLookup
+      id="word-query"
+      label="Žodžio forma"
+      placeholder="pvz., karas"
+      submitLabel="Palyginti"
+      busy={lookupLoading}
+      examples={['karas', 'taika', 'dronas', 'okupantai']}
+      bind:value={query}
+      onsearch={search}
+    />
 
     {#if lookupLoading}
-      <p class="status" role="status" aria-live="polite">Ieškoma pasirinktos žodžio formos…</p>
+      <p class="note" role="status" aria-live="polite">Ieškoma žodžio formos…</p>
     {:else if lookupError}
-      <p class="error-message" role="alert">{lookupError}</p>
+      <p class="notice error" role="alert">{lookupError}</p>
     {:else if searched && !result}
-      <section class="empty" aria-live="polite">
-        <h2>Forma nerasta</h2>
-        <p>Forma neaptikta šiuose šaltiniuose. Tai nereiškia, kad žodžio nėra lietuvių kalboje ar kad jo dažnis yra nulis.</p>
-      </section>
+      <p class="notice" role="status"><strong>Forma nerasta.</strong> Ji neaptikta šiuose šaltiniuose. Tai nereiškia, kad žodžio nėra lietuvių kalboje ar kad jo dažnis yra nulis.</p>
     {:else if result}
-      <section class="result" aria-labelledby="result-title" aria-live="polite">
-        <div class="result-heading">
-          <div>
-            <h2 id="result-title">{result.word}</h2>
-            {#if result.word !== result.normalizedWord}<p>Normalizuota forma: {result.normalizedWord}</p>{/if}
-          </div>
-          {#if result.sourceRows.length > 1}
-            <p class="merge-note">Sujungtos {result.sourceRows.length} to paties įvedimo šaltinio eilutės; nesutampančios reikšmės nebūtų sujungiamos.</p>
-          {/if}
+      <section class="stack" aria-labelledby="result-title" aria-live="polite">
+        <div>
+          <h2 id="result-title">{result.word}</h2>
+          {#if result.word !== result.normalizedWord}<p class="note">Normalizuota forma: {result.normalizedWord}</p>{/if}
         </div>
 
-        <SectionHeading level={3}>Pavartojimai / 100 mln. žodžių</SectionHeading>
-        <RateBars rows={profile.sources.map(source => ({ label: source.label, value: result!.metrics[source.id]?.tokenCount ?? null }))} unit="Pavartojimai / 100 mln. žodžių" />
-        <details><summary>Lentelė</summary><div class="table-scroll"><table>
-          <thead>
-            <tr>
-              <th scope="col">Matas</th>
-              {#each profile.sources as source}
-                <th scope="col">{source.label}<span>{formatNumber(source.tokenField.normalization.sourceTokens)} šaltinio žodžių</span></th>
-              {/each}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Žetonai / 100 mln.</th>
-              {#each profile.sources as source}
-                {@const value = result.metrics[source.id]?.tokenCount ?? null}
-                <td class:absent={value === null}>{formatRate(value)}</td>
-              {/each}
-            </tr>
-            <tr>
-              <th scope="row">Dokumentai / 100 mln.</th>
-              {#each profile.sources as source}
-                {@const value = result.metrics[source.id]?.documentCount ?? null}
-                <td class:absent={value === null}>{formatRate(value)}</td>
-              {/each}
-            </tr>
-          </tbody>
-        </table></div></details>
-      </section>
+        <SectionHeading level={3}>Pavartojimai 100 mln. žodžių</SectionHeading>
+        <RateBars rows={profile.sources.map(source => ({ label: source.label, value: result!.metrics[source.id]?.tokenCount ?? null }))} unit="Pavartojimai 100 mln. žodžių" />
 
-      <section class="contrast" aria-labelledby="contrast-title">
-        <SectionHeading id="contrast-title">Santykinis kontrastas</SectionHeading>
-        <label for="contrast-pair">Lyginama pora</label>
-        <select id="contrast-pair" bind:value={selectedPairId}>
-          {#each profile.contrast.pairs as pair}
-            <option value={pair.id}>{pair.label}</option>
+        <SectionHeading level={3}>Santykinis skirtumas</SectionHeading>
+        <dl class="facts">
+          {#each contrasts as { pair, logRatio } (pair.id)}
+            <div>
+              <dt>{pair.label}</dt>
+              {#if logRatio === null}
+                <dd class="note">Per mažai duomenų</dd>
+              {:else}
+                <dd><strong>{describeRatio(logRatio)}</strong> <span class="note">({formatLogRatio(logRatio)})</span></dd>
+              {/if}
+            </div>
           {/each}
-        </select>
-        {#if selectedPair && logRatio !== null}
-          <p><strong>{formatLogRatio(logRatio)} log₂</strong> <span class="inline-separator" aria-hidden="true">//</span> {selectedPair.label} rodiklis yra maždaug {formatMultiplier(logRatio)} karto {logRatio >= 0 ? 'didesnis' : 'mažesnis'} pagal normalizuotą žetonų dažnį.</p>
-        {:else if selectedPair}
-          <p>Kontrastas nerodomas: abiejų šaltinių žetonų rodikliai turi būti aptikti ir siekti bent {formatNumber(profile.contrast.minimumRate)} / 100 mln.</p>
+        </dl>
+        {#if contrasts.some(({ logRatio }) => logRatio === null)}
+          <p class="note">Skirtumas skaičiuojamas, kai abiejuose šaltiniuose forma aptikta bent {formatNumber(profile.contrast.minimumRate)} kartų 100 mln. žodžių.</p>
         {/if}
-        <p class="method-note">Formulė: log₂(skaitiklio normalizuotas žetonų rodiklis / vardiklio normalizuotas žetonų rodiklis). Tai palyginimo priemonė, ne statistinio reikšmingumo testas.</p>
+        {#if result.sourceRows.length > 1}
+          <p class="note">Sujungtos {result.sourceRows.length} to paties įvedimo šaltinio eilutės.</p>
+        {/if}
+
+        <details>
+          <summary>Lentelė</summary>
+          <TableScroll label="Rezultatai pagal šaltinį">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">100 mln. žodžių</th>
+                  {#each profile.sources as source}
+                    <th scope="col" class="number">{source.label}</th>
+                  {/each}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Pavartojimai</th>
+                  {#each profile.sources as source}
+                    <td class="number">{formatRate(result.metrics[source.id]?.tokenCount ?? null)}</td>
+                  {/each}
+                </tr>
+                <tr>
+                  <th scope="row">Dokumentai</th>
+                  {#each profile.sources as source}
+                    <td class="number">{formatRate(result.metrics[source.id]?.documentCount ?? null)}</td>
+                  {/each}
+                </tr>
+                <tr>
+                  <th scope="row">Šaltinio žodžiai</th>
+                  {#each profile.sources as source}
+                    <td class="number">{formatNumber(source.tokenField.normalization.sourceTokens)}</td>
+                  {/each}
+                </tr>
+              </tbody>
+            </table>
+          </TableScroll>
+        </details>
       </section>
     {/if}
 
-    <details class="reading-notes">
-      <summary>Kaip skaityti palyginimą</summary><div class="details-content">
-    <dl class="source-facts">
-      <div>
-        <dt>Duomenų vienetas</dt>
-        <dd>Žodžio forma</dd>
-      </div>
-      <div>
-        <dt>Normalizavimo tikslas</dt>
-        <dd>{formatNumber(profile.contrast.targetTokens)} šaltinio žodžių</dd>
-      </div>
-      <div>
-        <dt>Paieškos formos</dt>
-        <dd>{formatNumber(profile.summary.uniqueNormalizedWordForms)}</dd>
-      </div>
-      <div>
-        <dt>Licencija</dt>
-        <dd>{profile.provenance.licence}</dd>
-      </div>
-    </dl>
-
-
-      <ul>
-        <li>„Neaptikta“ reiškia šaltinio <code>null</code>, o ne nulinį dažnį.</li>
-        <li>Žetonų ir dokumentų rodikliai yra skirtingi ir čia nėra sudedami į vieną bendrą balą.</li>
-        <li>Skirtingi šaltinių laikotarpiai, žanrai ir apimtys gali paaiškinti kontrastą; jis nėra kalbinis ar socialinis vertinimas.</li>
-      </ul>
-      <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Atverti pirminį CLARIN-LT šaltinio įrašą</a> <span class="inline-separator" aria-hidden="true">//</span> {profile.provenance.citation}</p>
-    </div></details>
+    <div>
+      <details>
+        <summary>Kaip skaityti</summary>
+        <div class="details-body">
+          <dl class="facts">
+            <div><dt>Duomenų vienetas</dt><dd>Žodžio forma</dd></div>
+            <div><dt>Perskaičiuota</dt><dd>{formatNumber(profile.contrast.targetTokens)} šaltinio žodžių</dd></div>
+            <div><dt>Paieškos formų</dt><dd>{formatNumber(profile.summary.uniqueNormalizedWordForms)}</dd></div>
+          </dl>
+          <ul>
+            <li>„Neaptikta“ reiškia, kad šaltinyje formos nėra, o ne nulinį dažnį.</li>
+            <li>Santykinis skirtumas = log₂(vieno šaltinio rodiklis / kito šaltinio rodiklis). Tai palyginimo priemonė, ne statistinio reikšmingumo testas.</li>
+            <li>Pavartojimų ir dokumentų rodikliai nesudedami į vieną balą.</li>
+            <li>Šaltinių laikotarpiai, žanrai ir apimtys skiriasi, todėl skirtumas nėra kalbinis ar socialinis vertinimas.</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>Šaltinis ir licencija</summary>
+        <div class="details-body">
+          <p>{profile.provenance.citation}</p>
+          <p>Licencija: {profile.provenance.licence}</p>
+          <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis CLARIN-LT įrašas</a></p>
+        </div>
+      </details>
+    </div>
   {/if}
 </main>
-
-<style>
-  main,
-  .lookup,
-  .result,
-  .contrast,
-    .empty,
-  .error,
-  .status {
-    display: grid;
-    gap: var(--md);
-  }
-
-  main {
-    min-width: 0;
-    gap: 2rem;
-  }
-
-
-  .intro,
-  .result-heading > div > p,
-  .merge-note,
-  .method-note,
-  .reading-notes p {
-    color: color-mix(in srgb, var(--text-color) 78%, transparent);
-  }
-
-  .lookup,
-  .source-facts,
-  .result,
-  .contrast,
-    .empty,
-  .error,
-  .status {
-    border: 0;
-    padding: 0;
-  }
-
-  .lookup label { font-weight: 700; }
-  .lookup-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .lookup-controls { align-items: stretch; gap: 1rem; }
-
-  input {
-    flex: 1 1 18ch;
-    max-width: 100%;
-    min-width: 0;
-  }
-
-  .source-facts {
-    display: grid;
-    gap: var(--sm);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .source-facts > div { min-width: 0; border: 0; padding-left: 0; }
-
-  dt {
-    color: color-mix(in srgb, var(--text-color) 68%, transparent);
-    font-size: 0.875em;
-  }
-
-  dd {
-    margin: 0;
-    overflow-wrap: anywhere;
-  }
-
-  .result-heading {
-    align-items: start;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--md);
-    justify-content: space-between;
-  }
-
-  .merge-note {
-    flex: 0 1 26ch;
-    font-size: 0.875em;
-  }
-
-  table {
-    min-width: 42rem;
-  }
-
-  th,
-  td {
-    overflow-wrap: anywhere;
-    text-align: left;
-    vertical-align: top;
-  }
-
-  thead th span {
-    color: color-mix(in srgb, var(--text-color) 68%, transparent);
-    display: block;
-    font-size: 0.8em;
-    font-weight: normal;
-    margin-top: var(--xs);
-  }
-
-  .absent {
-    color: color-mix(in srgb, var(--text-color) 65%, transparent);
-    font-style: italic;
-  }
-
-  .result :global(.dago-section-heading) { margin: 0; }
-  .lookup, .intro, .source-facts, .reading-notes { max-width: 75ch; }
-  .contrast label {
-    margin-top: var(--xs);
-  }
-
-  .contrast select {
-    max-width: 100%;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .error {
-    border-color: var(--border-strong);
-  }
-
-  .error-message {
-    border: 1px solid var(--border-strong);
-    color: var(--text-color);
-    padding: var(--md);
-  }
-
-  @media (max-width: 639px) {
-    .source-facts {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .result-heading {
-      display: grid;
-    }
-  }
-</style>

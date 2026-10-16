@@ -1,20 +1,24 @@
 <script lang="ts">
   import SectionHeading from '../components/SectionHeading.svelte';
   import DataLoader from '../components/DataLoader.svelte';
+  import PageMeta from '../components/PageMeta.svelte';
   import { base } from '$app/paths';
   import { t } from '$lib/translations';
   import { loadCatalog, type DatasetCatalog } from '$lib/data';
   import { site } from '$lib/site';
 
+  const researchTools = [
+    { href: `${base}/zodyno-apreptis`, title: 'DML6 žodyno aprėptis', description: 'Kurios dažnos formos patenka į žodyną?' },
+    { href: `${base}/karo-zodziu-palyginimas`, title: 'Karo meto vartosena', description: 'Žodžio forma trijuose laikotarpių šaltiniuose.' },
+    { href: `${base}/zanru-profilis`, title: 'CCLL žanrų profilis', description: 'Žodžio dažnis pagal tekstų žanrą.' },
+    { href: `${base}/blkt-profilis`, title: 'BLKT profilis', description: 'Žodžio forma pagal teksto tipą ir laikotarpį.' },
+    { href: `${base}/sintakse`, title: 'ALKSNIS sintaksė', description: 'Lemų ryšiai ir sakinių kontekstai.' }
+  ];
+
   let catalog = $state<DatasetCatalog | null>(null);
   let catalogLoading = $state(true);
   let catalogError = $state<string | null>(null);
   let selectedDatasetId = $state('');
-  const coverageProfile = `${base}/zodyno-apreptis`;
-  const wartimeContrast = `${base}/karo-zodziu-palyginimas`;
-  const genreProfile = `${base}/zanru-profilis`;
-  const blktProfile = `${base}/blkt-profilis`;
-  const syntaxExplorerUrl = `${base}/sintakse`;
 
   let selectedDataset = $derived(catalog?.datasets.find((dataset) => dataset.id === selectedDatasetId));
 
@@ -45,54 +49,34 @@
   });
 </script>
 
-<svelte:head>
-  <title>dažniausi žodžiai // dago</title>
-  <meta name="description" content={site.description} />
-  <link rel="canonical" href={site.homeUrl} />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="lt_LT" />
-  <meta property="og:site_name" content={site.name} />
-  <meta property="og:title" content="dažniausi žodžiai // dago" />
-  <meta property="og:description" content={site.description} />
-  <meta property="og:url" content={site.homeUrl} />
-  <meta property="og:image" content={site.socialImageUrl} />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Lietuviški žodžiai – viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="dažniausi žodžiai // dago" />
-  <meta name="twitter:description" content={site.description} />
-  <meta name="twitter:image" content={site.socialImageUrl} />
-  <meta name="twitter:image:alt" content="Lietuviški žodžiai – viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas" />
-</svelte:head>
+<PageMeta title="dažniausi žodžiai // dago" url={site.homeUrl} />
 
-<main class="home-page">
-  <p class="intro">Dažnumo sąrašai iš lietuvių kalbos tekstynų.</p>
-  <section class="primary-explorer" aria-label="Žodžių paieška">
+<main>
+  <p>Dažnumo sąrašai iš lietuvių kalbos tekstynų: ieškokite žodžio, filtruokite pagal kalbos dalį, atsisiųskite CSV.</p>
+
+  <section class="explorer" aria-label="Žodžių paieška">
     {#if catalogLoading}
-      <p class="loading" role="status">{t('loadingCatalog')}</p>
+      <p class="note" role="status">{t('loadingCatalog')}</p>
     {:else if catalogError}
-      <p class="error" role="alert">{catalogError}</p>
+      <p class="notice error" role="alert">{catalogError}</p>
     {:else if catalog && catalog.datasets.length > 0}
       {#if selectedDataset}<DataLoader filename={selectedDataset.file} datasets={catalog.datasets} {selectedDatasetId} onselectDataset={selectDataset} />{/if}
-    {:else}<p role="status">{t('noDatasets')}</p>{/if}
+    {:else}
+      <p role="status">{t('noDatasets')}</p>
+    {/if}
   </section>
-  <section class="research-tools">
-    <SectionHeading>Kiti tyrinėjimo būdai</SectionHeading>
-    <ul>
-      <li><a href={coverageProfile}><strong>DML6 žodyno aprėptis</strong></a><p>Kurios dažnos formos patenka į žodyną?</p></li>
-      <li><a href={wartimeContrast}><strong>Karo meto vartosena</strong></a><p>Žodžio forma trijuose laikotarpių šaltiniuose.</p></li>
-      <li><a href={genreProfile}><strong>CCLL žanrų profilis</strong></a><p>Žodžio dažnis pagal tekstų žanrą.</p></li>
-      <li><a href={blktProfile}><strong>BLKT profilis</strong></a><p>Žodžio forma pagal teksto tipą ir laikotarpį.</p></li>
-      <li><a href={syntaxExplorerUrl}><strong>ALKSNIS sintaksė</strong></a><p>Lemų ryšiai ir sakinių kontekstai.</p></li>
+
+  <section class="stack" aria-labelledby="research-tools-title">
+    <SectionHeading id="research-tools-title">Kiti tyrinėjimo būdai</SectionHeading>
+    <ul class="research-tools">
+      {#each researchTools as tool}
+        <li><a href={tool.href}><strong>{tool.title}</strong></a> <span class="note">– {tool.description}</span></li>
+      {/each}
     </ul>
   </section>
 </main>
+
 <style>
-.home-page { display: grid; gap: 2rem; max-width: 100ch; }
-.intro, .research-tools { max-width: 75ch; }
-.research-tools { margin-top: 1rem; }
-.research-tools :global(.dago-section-heading) { margin: 0 0 1rem; }
-.research-tools li + li { margin-top: 1.5rem; }
-.research-tools li p { margin-top: .25rem; }
+  .explorer { display: grid; gap: 3rem; grid-template-columns: minmax(0, 1fr); }
+  .research-tools li + li { margin-top: .75rem; }
 </style>

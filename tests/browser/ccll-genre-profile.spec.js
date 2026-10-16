@@ -56,6 +56,6 @@ test('does not turn a missing exact wordform into zero', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
   await page.getByLabel('Tiksli žodžio forma').fill('visiškai-nerasta-forma');
   await page.getByRole('button', { name: 'Ieškoti' }).click();
-  await expect(page.getByRole('heading', { name: 'Forma nerasta' })).toBeVisible();
+  await expect(page.getByText('Forma nerasta.')).toBeVisible();
   await expect(page.getByText(/nereiškia, kad jos nėra lietuvių kalboje/i)).toBeVisible();
 });

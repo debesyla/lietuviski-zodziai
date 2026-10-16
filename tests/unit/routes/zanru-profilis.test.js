@@ -68,6 +68,25 @@ it('makes a no-result lookup explicit instead of inventing a zero', async () => 
   await user.type(getByLabelText('Tiksli žodžio forma'), 'nerasta');
   await user.click(getByRole('button', { name: 'Ieškoti' }));
 
-  await waitFor(() => expect(getByText('Forma nerasta')).toBeInTheDocument());
+  await waitFor(() => expect(getByText('Forma nerasta.')).toBeInTheDocument());
   expect(getByText(/nereiškia, kad jos nėra lietuvių kalboje/i)).toBeInTheDocument();
+});
+
+it('runs the lookup from a shared ?q= link', async () => {
+  window.history.replaceState(null, '', '/zanru-profilis?q=karas');
+  const { getByLabelText, getByRole } = render(Page);
+
+  await waitFor(() => expect(getByRole('heading', { name: 'karas' })).toBeInTheDocument());
+  expect(lookupCcllGenreWord).toHaveBeenLastCalledWith(profile, 'karas');
+  expect(getByLabelText('Tiksli žodžio forma')).toHaveValue('karas');
+});
+
+it('keeps each lookup in ?q= so it can be shared', async () => {
+  const user = userEvent.setup();
+  const { getByRole } = render(Page);
+
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
+  await user.click(getByRole('button', { name: 'meilė' }));
+
+  expect(new URLSearchParams(window.location.search).get('q')).toBe('meilė');
 });

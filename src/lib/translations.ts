@@ -1,117 +1,86 @@
-// Lithuanian translations for the application
+// Lithuanian interface copy for the word-frequency explorer.
 export const translations = {
   lt: {
-    // SearchBar component
-    searchPlaceholder: 'Ieškoti žodžių...',
+    siteNavigation: 'Pagrindinė navigacija',
+
+    // Homepage and source picker
+    loadingCatalog: 'Kraunama…',
+    noDatasets: 'Duomenų kataloge nėra rinkinių.',
+    loading: 'Kraunama…',
+    errorLoadingData: 'Nepavyko įkelti duomenų',
+    updatingResults: 'Ieškoma…',
+
+    // Search and filters
     searchWords: 'Ieškoti žodžių',
     clearSearch: 'Išvalyti paiešką',
-    
-    // DataTable component
+    clearFilters: 'Išvalyti filtrus',
+    noMatchingWords: 'Žodžių nerasta.',
+
+    // Word list
+    wordList: 'Visas sąrašas',
+    rank: 'Rangas',
     word: 'Žodis',
     type: 'Tipas',
     frequency: 'Dažnumas',
     sortBy: 'Rikiuoti pagal',
     unsorted: 'nerikiuota',
-    
-    // DataLoader component
-    loading: 'Kraunama…',
-    errorLoadingData: 'Klaida Kraunant Duomenis',
-    author: 'Autorius',
-    year: 'Metai',
-    entryKind: 'Duomenų vienetas',
-    lemma: 'Lema',
-    wordform: 'Žodžio forma',
-    licence: 'Licencija',
-    citation: 'Citata',
-    source: 'Šaltinis',
-    sourceDetails: 'Šaltinis ir citata',
-    openSource: 'Atverti pirminį šaltinį',
-    words: 'Žodžiai',
-    searchHint: 'Ieškokite viso žodžio arba jo dalies.',
-    filterByType: 'Filtruoti pagal kalbos dalį',
-    posScheme: 'Kalbos dalių žymėjimas',
-    clearFilters: 'Išvalyti filtrus',
-    updatingResults: 'Ieškoma…',
-    noMatchingWords: 'Žodžių nerasta.',
+    ascending: 'didėjančia tvarka',
+    descending: 'mažėjančia tvarka',
     showingResults: 'Rodomi {start}–{end} iš {total}',
     pagination: 'Rezultatų puslapiai',
     previousPage: 'Ankstesnis',
     nextPage: 'Kitas',
     pageOf: '{page} iš {total}',
-    
-    // DownloadButton component
+
+    // CSV export
     downloadData: 'Atsisiųsti CSV',
-    ascending: 'didėjančia tvarka',
-    descending: 'mažėjančia tvarka',
     exported: 'Eksportuota',
     query: 'Paieška',
     types: 'Tipai',
     all: 'visi',
     sortOrder: 'Rikiavimas',
 
-    // Frequency dashboard
-    frequencyDashboard: 'Dažnumo vaizdas',
-    analysisForActiveFilters: 'Skaičiavimai atnaujinami pagal pasirinktą rinkinį ir aktyvius filtrus.',
-    showAnalysis: 'Rodyti grafikus ir įžvalgas',
-    headlineMetrics: 'Pagrindiniai dažnumo rodikliai',
+    // Source details
+    aboutSource: 'Apie šaltinį',
+    source: 'Šaltinis',
+    author: 'Autorius',
+    year: 'Metai',
+    entryKind: 'Duomenų vienetas',
+    lemma: 'Lema',
+    wordform: 'Žodžio forma',
+    licence: 'Licencija',
+    posScheme: 'Kalbos dalių žymėjimas',
+    openSource: 'Atverti pirminį šaltinį',
+
+    // Charts
     entries: 'Įrašai',
-    totalFrequency: 'Pavartojimų',
-    mostFrequent: 'Dažniausias',
-    availableDimensions: 'Turimi matmenys',
-    wordAndFrequency: 'Žodis · dažnumas',
-    wordFrequencyAndPos: 'Žodis · dažnumas · kalbos dalis',
-    frequencyFacts: 'Aprėptis skaičiais',
-    frequencyFactsDescription: 'Faktai apskaičiuoti tik iš pasirinkto šaltinio ir aktyvius filtrus atitinkančių įrašų.',
-    leadingEntryShare: 'Dažniausio įrašo dalis',
-    leadingEntryFact: '„{word}“: {share} pavartojimų.',
-    halfCoverage: '50 % pavartojimų',
-    ninetyCoverage: '90 % pavartojimų',
-    coverageMilestoneFact: 'Įrašų: {entries} ({entryShare} sąrašo).',
-    singletonTail: 'Vieną kartą pavartoti įrašai',
-    singletonFact: 'Įrašų: {entries} ({entryShare} sąrašo); pavartojimų: {tokenShare}.',
-    topWords: 'Pavartojimų skaičius',
-    topWordsDescription: 'Pavartojimų skaičius.',
+    totalFrequency: 'Pavartojimai',
+    topWords: 'Dažniausi žodžiai',
     showTop: 'Rodyti',
     tableEquivalent: 'Lentelė',
-    rank: 'Rangas',
     rankFrequency: 'Dažnumo pasiskirstymas',
-    rankFrequencyDescription: 'Žodžiai surikiuoti nuo dažniausio iki rečiausio: kairėje – dažniausi, dešinėje – reti. Abi ašys logaritminės: vienodas tarpas reiškia dešimteriopą skirtumą.',
-    rankFrequencyText: 'Iš {count} atrinktų įrašų pirmo rango dažnumas yra {first}, o paskutinio — {last}.',
+    rankFrequencyDescription: 'Žodžiai nuo dažniausio (kairėje) iki rečiausio (dešinėje). Abi ašys logaritminės: vienodas tarpas reiškia dešimteriopą skirtumą.',
+    rankFrequencyText: 'Iš {count} atrinktų įrašų pirmo rango dažnumas yra {first}, o paskutinio – {last}.',
     rankLogScale: 'Rangas (log skalė)',
     frequencyLogScale: 'Dažnumas (log skalė)',
     cumulativeCoverage: 'Aprėptis',
-    coverageDescription: 'Kokią visų pavartojimų dalį sudaro dažniausi žodžiai kartu? Pavyzdžiui, ties 100 kreivė rodo pirmųjų 100 žodžių dalį.',
+    coverageDescription: 'Kokią visų pavartojimų dalį sudaro dažniausi žodžiai kartu. Taškai žymi, kiek žodžių sudaro pusę ir 90 % pavartojimų.',
     coverageText: 'Pirmi dešimt įrašų sudaro {topTen} atrinktų pavartojimų.',
     cumulativeFrequency: 'Sukauptas dažnumas',
     tokenCoverage: 'Pavartojimų dalis',
+    leadingEntryShare: 'Dažniausias žodis',
+    halfCoverage: 'Pusė pavartojimų',
+    ninetyCoverage: '90 % pavartojimų',
+    singletonTail: 'Pavartoti tik kartą',
     posComposition: 'Kalbos dalys',
-    posCompositionDescription: 'Dalis pagal pavartojimų skaičių.',
-    
-    // Main page
-    pageTitle: 'Lietuviški žodžiai',
-    exploreData: 'Tyrinėti duomenis',
-    dataProductsCatalogue: 'Duomenų katalogas',
-    methodologyAndSources: 'Metodika ir šaltiniai',
-    siteNavigation: 'Pagrindinė navigacija',
-    siteIntroduction: 'Pasirinkite šaltinį, įrašykite žodį ir pamatykite jo dažnį.',
-    openMethodology: 'Apie metodiką ir šaltinius',
-    selectDataset: 'Pasirinkite duomenis',
-    loadingCatalog: 'Kraunama…',
-    errorLoadingCatalog: 'Klaida kraunant duomenų katalogą',
-    noDatasets: 'Duomenų kataloge nėra rinkinių.',
-    dataProductsTitle: 'Vieši duomenų produktai',
-    dataProductsDescription: 'Palyginimai, žanrai, sintaksė ir visi vieši rinkiniai.',
-    openDataProducts: 'Naršyti viešų duomenų katalogą',
-    openDataProductsJson: 'Atverti mašininiu būdu nuskaitomą katalogą (JSON)',
-    footerText: 'Pastabos ar pasiūlymai? ',
-    footerEmail: 'labas@dago.lt',
+    posCompositionDescription: 'Kiek visų pavartojimų tenka kiekvienai kalbos daliai.'
   }
 };
 
 export function t(key: string, parameters: Record<string, string | number> = {}): string {
   const keys = key.split('.');
   let value: any = translations.lt;
-  
+
   for (const k of keys) {
     value = value[k];
     if (value === undefined) {
@@ -119,7 +88,7 @@ export function t(key: string, parameters: Record<string, string | number> = {})
       return key;
     }
   }
-  
+
   return Object.entries(parameters).reduce((text, [name, parameter]) => {
     return text.replaceAll(`{${name}}`, String(parameter));
   }, value);

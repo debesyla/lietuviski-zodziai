@@ -1,22 +1,29 @@
 <script lang="ts">
   import SectionHeading from './SectionHeading.svelte';
+  import RateBars from './RateBars.svelte';
+  import TableScroll from './TableScroll.svelte';
   import { analyseFrequency, sampleByRank } from '$lib/analysis';
+  import { pluralLt } from '$lib/utils';
   import { t } from '$lib/translations';
   import type { Word } from '$lib/data';
 
-  let dashboardWidth = $state(640);
-  const chartWidth = $derived(Math.max(300, dashboardWidth));
-  const chartHeight = 250;
-  const chartLeft = 56;
-  const chartRight = 18;
-  const chartTop = 18;
-  const chartBottom = 46;
-  const chartInnerWidth = $derived(chartWidth - chartLeft - chartRight);
-  const chartInnerHeight = chartHeight - chartTop - chartBottom;
-  const topNOptions = [10, 20, 50];
-
   let { words, typeLabels = {} }: { words: Word[]; typeLabels?: Record<string, string> } = $props();
+
+  const topNOptions = [10, 20, 50];
+  const chartHeight = 260;
+  const chartLeft = 52;
+  const chartRight = 16;
+  const chartTop = 28;
+  const chartBottom = 40;
+  const plotBottom = chartHeight - chartBottom;
+  const chartInnerHeight = plotBottom - chartTop;
+  const coverageTicks = [0, 0.25, 0.5, 0.75, 1];
+
+  let dashboardWidth = $state(640);
   let topN = $state(10);
+  const chartWidth = $derived(Math.max(300, dashboardWidth));
+  const chartInnerWidth = $derived(chartWidth - chartLeft - chartRight);
+
   let analysis = $derived(analyseFrequency(words));
   let topWords = $derived(analysis.rankedWords.slice(0, topN));
   let rankFrequencySeries = $derived(sampleByRank(analysis.rankedWords));
@@ -28,7 +35,7 @@
   let coveragePath = $derived(linePath(coverageSeries, (point) => logRankX(point.rank), (point) => coverageY(point.coverage)));
   let rankTicks = $derived(logTicks(maximumRank));
   let frequencyTicks = $derived(logTicks(maximumFrequency, minimumFrequency));
-  let coverageTicks = [0, 0.25, 0.5, 0.75, 1];
+  let milestones = $derived([analysis.facts.halfCoverage, analysis.facts.ninetyCoverage].filter((milestone) => milestone !== null));
 
   function formatNumber(value: number) {
     return value.toLocaleString('lt-LT');
@@ -39,12 +46,16 @@
     return new Intl.NumberFormat('lt-LT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
   }
 
-  function formatFactPercent(value: number) {
-    return new Intl.NumberFormat('lt-LT', { style: 'percent', maximumFractionDigits: 3 }).format(value);
-  }
-
   function displayType(type: string) {
     return typeLabels[type] ? `${typeLabels[type]} (${type})` : type;
+  }
+
+  function topWordsPhrase(count: number) {
+    return `${formatNumber(count)} ${pluralLt(count, ['dažniausias žodis', 'dažniausi žodžiai', 'dažniausių žodžių'])}`;
+  }
+
+  function wordsPhrase(count: number) {
+    return `${formatNumber(count)} ${pluralLt(count, ['žodis', 'žodžiai', 'žodžių'])}`;
   }
 
   function logRankX(rank: number) {
@@ -75,388 +86,152 @@
     return ticks.length > 0 ? ticks : [minimum, maximum];
   }
 
-  function barWidth(frequency: number) {
-    return `${(frequency / maximumFrequency) * 100}%`;
-  }
-
-  function percentWidth(value: number) {
-    return `${value * 100}%`;
-  }
-
   function selectTopN(event: Event) {
     topN = Number((event.currentTarget as HTMLSelectElement).value);
   }
 </script>
 
-<section class="dashboard" aria-label="Žodžių dažnumo grafikai" bind:clientWidth={dashboardWidth}>
+<div class="dashboard" bind:clientWidth={dashboardWidth}>
+  <section class="stack" aria-labelledby="top-words-title">
+    <div class="section-head">
+      <SectionHeading id="top-words-title">{t('topWords')}</SectionHeading>
+      <label class="top-n">
+        {t('showTop')}
+        <select value={topN} onchange={selectTopN}>
+          {#each topNOptions as count}
+            <option value={count}>{count}</option>
+          {/each}
+        </select>
+      </label>
+    </div>
+    <RateBars rows={topWords.map((word) => ({ label: word.word, value: word.frequency }))} unit={t('topWords')} format={(value) => formatNumber(value ?? 0)} />
+  </section>
 
-  {#if analysis.entryCount === 0}
-    <p class="empty-analysis" role="status">{t('noMatchingWords')}</p>
-  {:else}
-    <div class="advanced-analysis">
-      <div class="analysis-content">
-      <section class="chart-section" aria-labelledby="top-words-title">
-      <div class="chart-heading">
-        <div>
-          <SectionHeading id="top-words-title">{t('topWords')}</SectionHeading>
-        </div>
-        <label>
-          {t('showTop')}
-          <select value={topN} onchange={selectTopN} aria-label={t('showTop')}>
-            {#each topNOptions as count}
-              <option value={count}>{count}</option>
-            {/each}
-          </select>
-        </label>
-      </div>
-      <div class="bar-chart" role="img" aria-label={`${t('topWords')}: ${topWords.map((word) => `${word.word} ${formatNumber(word.frequency)}`).join(', ')}`}>
-        {#each topWords as word}
-          <div class="bar-row">
-            <span class="bar-label">{word.word}</span>
-            <div class="bar-track" aria-hidden="true"><div class="bar-fill" style={`width: ${barWidth(word.frequency)}`}></div></div>
-            <span class="bar-value">{formatNumber(word.frequency)}</span>
-          </div>
-        {/each}
-      </div>
-
-      </section>
-
-      <section class="chart-section" aria-labelledby="rank-frequency-title">
-      <SectionHeading id="rank-frequency-title">{t('rankFrequency')}</SectionHeading>
-      <p>{t('rankFrequencyDescription')}</p>
-      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="rank-frequency-title rank-frequency-description" class="line-chart">
-        <desc id="rank-frequency-description">{t('rankFrequencyText', { first: formatNumber(analysis.topWord?.frequency ?? 0), last: formatNumber(minimumFrequency), count: formatNumber(analysis.entryCount) })}</desc>
-        {#each frequencyTicks as tick}
-          <line class="grid-line" x1={chartLeft} x2={chartWidth - chartRight} y1={logFrequencyY(tick)} y2={logFrequencyY(tick)} />
-          <text class="axis-label" x={chartLeft - 8} y={logFrequencyY(tick) + 4} text-anchor="end">{formatNumber(tick)}</text>
-        {/each}
-        {#each rankTicks as tick}
-          <line class="grid-line" x1={logRankX(tick)} x2={logRankX(tick)} y1={chartTop} y2={chartHeight - chartBottom} />
-          <text class="axis-label" x={logRankX(tick)} y={chartHeight - 26} text-anchor="middle">{formatNumber(tick)}</text>
-        {/each}
-        <line class="axis-line" x1={chartLeft} x2={chartWidth - chartRight} y1={chartHeight - chartBottom} y2={chartHeight - chartBottom} />
-        <line class="axis-line" x1={chartLeft} x2={chartLeft} y1={chartTop} y2={chartHeight - chartBottom} />
-        <path class="series-line" d={rankFrequencyPath} />
-        {#if rankFrequencySeries.length === 1}<circle class="series-point" cx={logRankX(1)} cy={logFrequencyY(maximumFrequency)} r="3" />{/if}
-        <text class="axis-title" x={chartWidth / 2} y={chartHeight - 8} text-anchor="middle">{t('rankLogScale')}</text>
-        <text class="axis-title" transform={`translate(13 ${chartHeight / 2}) rotate(-90)`} text-anchor="middle">{t('frequencyLogScale')}</text>
-      </svg>
-      <details>
-        <summary>{t('tableEquivalent')}</summary>
+  <section class="stack" aria-labelledby="rank-frequency-title">
+    <SectionHeading id="rank-frequency-title">{t('rankFrequency')}</SectionHeading>
+    <p class="note">{t('rankFrequencyDescription')}</p>
+    <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="rank-frequency-title rank-frequency-description" class="line-chart">
+      <desc id="rank-frequency-description">{t('rankFrequencyText', { first: formatNumber(maximumFrequency), last: formatNumber(minimumFrequency), count: formatNumber(analysis.entryCount) })}</desc>
+      <text class="axis-title" x={chartLeft} y="12">{t('frequencyLogScale')}</text>
+      {#each frequencyTicks as tick}
+        <line class="grid-line" x1={chartLeft} x2={chartWidth - chartRight} y1={logFrequencyY(tick)} y2={logFrequencyY(tick)} />
+        <text class="axis-label" x={chartLeft - 8} y={logFrequencyY(tick) + 4} text-anchor="end">{formatNumber(tick)}</text>
+      {/each}
+      {#each rankTicks as tick}
+        <line class="grid-line" x1={logRankX(tick)} x2={logRankX(tick)} y1={chartTop} y2={plotBottom} />
+        <text class="axis-label" x={logRankX(tick)} y={plotBottom + 16} text-anchor="middle">{formatNumber(tick)}</text>
+      {/each}
+      <line class="axis-line" x1={chartLeft} x2={chartWidth - chartRight} y1={plotBottom} y2={plotBottom} />
+      <line class="axis-line" x1={chartLeft} x2={chartLeft} y1={chartTop} y2={plotBottom} />
+      <path class="series-line" d={rankFrequencyPath} />
+      {#if rankFrequencySeries.length === 1}<circle class="series-point" cx={logRankX(1)} cy={logFrequencyY(maximumFrequency)} r="3" />{/if}
+      <text class="axis-title" x={chartWidth - chartRight} y={chartHeight - 4} text-anchor="end">{t('rankLogScale')}</text>
+    </svg>
+    <details>
+      <summary>{t('tableEquivalent')}</summary>
+      <TableScroll label={`${t('rankFrequency')}: ${t('tableEquivalent').toLowerCase()}`}>
         <table>
-          <thead><tr><th>{t('rank')}</th><th>{t('word')}</th><th>{t('frequency')}</th></tr></thead>
+          <thead><tr><th scope="col" class="number">{t('rank')}</th><th scope="col">{t('word')}</th><th scope="col" class="number">{t('frequency')}</th></tr></thead>
           <tbody>
             {#each rankFrequencySeries as word}
-              <tr><td>{formatNumber(word.rank)}</td><td>{word.word}</td><td>{formatNumber(word.frequency)}</td></tr>
+              <tr><td class="number">{formatNumber(word.rank)}</td><td>{word.word}</td><td class="number">{formatNumber(word.frequency)}</td></tr>
             {/each}
           </tbody>
         </table>
-      </details>
-      </section>
+      </TableScroll>
+    </details>
+  </section>
 
-      <section class="chart-section" aria-labelledby="coverage-title">
-      <SectionHeading id="coverage-title">{t('cumulativeCoverage')}</SectionHeading>
-      <p>{t('coverageDescription')}</p>
-      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="coverage-title coverage-description" class="line-chart">
-        <desc id="coverage-description">{t('coverageText', { topTen: formatPercent(analysis.coverage[Math.min(9, analysis.coverage.length - 1)]?.coverage ?? 0) })}</desc>
-        {#each coverageTicks as tick}
-          <line class="grid-line" x1={chartLeft} x2={chartWidth - chartRight} y1={coverageY(tick)} y2={coverageY(tick)} />
-          <text class="axis-label" x={chartLeft - 8} y={coverageY(tick) + 4} text-anchor="end">{formatPercent(tick)}</text>
-        {/each}
-        {#each rankTicks as tick}
-          <line class="grid-line" x1={logRankX(tick)} x2={logRankX(tick)} y1={chartTop} y2={chartHeight - chartBottom} />
-          <text class="axis-label" x={logRankX(tick)} y={chartHeight - 26} text-anchor="middle">{formatNumber(tick)}</text>
-        {/each}
-        <line class="axis-line" x1={chartLeft} x2={chartWidth - chartRight} y1={chartHeight - chartBottom} y2={chartHeight - chartBottom} />
-        <line class="axis-line" x1={chartLeft} x2={chartLeft} y1={chartTop} y2={chartHeight - chartBottom} />
-        <path class="series-line" d={coveragePath} />
-        {#if coverageSeries.length === 1}<circle class="series-point" cx={logRankX(1)} cy={coverageY(1)} r="3" />{/if}
-        <text class="axis-title" x={chartWidth / 2} y={chartHeight - 8} text-anchor="middle">{t('rankLogScale')}</text>
-        <text class="axis-title" transform={`translate(13 ${chartHeight / 2}) rotate(-90)`} text-anchor="middle">{t('tokenCoverage')}</text>
-      </svg>
-      <details>
-        <summary>{t('tableEquivalent')}</summary>
+  <section class="stack" aria-labelledby="coverage-title">
+    <SectionHeading id="coverage-title">{t('cumulativeCoverage')}</SectionHeading>
+    <p class="note">{t('coverageDescription')}</p>
+    <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-labelledby="coverage-title coverage-description" class="line-chart">
+      <desc id="coverage-description">{t('coverageText', { topTen: formatPercent(analysis.coverage[Math.min(9, analysis.coverage.length - 1)]?.coverage ?? 0) })}</desc>
+      <text class="axis-title" x={chartLeft} y="12">{t('tokenCoverage')}</text>
+      {#each coverageTicks as tick}
+        <line class="grid-line" x1={chartLeft} x2={chartWidth - chartRight} y1={coverageY(tick)} y2={coverageY(tick)} />
+        <text class="axis-label" x={chartLeft - 8} y={coverageY(tick) + 4} text-anchor="end">{formatPercent(tick)}</text>
+      {/each}
+      {#each rankTicks as tick}
+        <line class="grid-line" x1={logRankX(tick)} x2={logRankX(tick)} y1={chartTop} y2={plotBottom} />
+        <text class="axis-label" x={logRankX(tick)} y={plotBottom + 16} text-anchor="middle">{formatNumber(tick)}</text>
+      {/each}
+      <line class="axis-line" x1={chartLeft} x2={chartWidth - chartRight} y1={plotBottom} y2={plotBottom} />
+      <line class="axis-line" x1={chartLeft} x2={chartLeft} y1={chartTop} y2={plotBottom} />
+      {#each milestones as milestone}
+        {@const x = logRankX(milestone.entries)}
+        {@const y = coverageY(milestone.threshold)}
+        <line class="marker-line" x1={chartLeft} x2={x} y1={y} y2={y} />
+        <line class="marker-line" x1={x} x2={x} y1={y} y2={plotBottom} />
+        <text class="marker-label" x={x + 6} y={y + 16}>{formatNumber(milestone.entries)}</text>
+      {/each}
+      <path class="series-line" d={coveragePath} />
+      {#if coverageSeries.length === 1}<circle class="series-point" cx={logRankX(1)} cy={coverageY(1)} r="3" />{/if}
+      {#each milestones as milestone}
+        <circle class="series-point" cx={logRankX(milestone.entries)} cy={coverageY(milestone.threshold)} r="3.5" />
+      {/each}
+      <text class="axis-title" x={chartWidth - chartRight} y={chartHeight - 4} text-anchor="end">{t('rankLogScale')}</text>
+    </svg>
+    <dl class="facts coverage-facts">
+      {#if analysis.topWord}
+        <div><dt>{t('leadingEntryShare')}</dt><dd>„{analysis.topWord.word}“ – {formatPercent(analysis.facts.topEntryShare)} pavartojimų</dd></div>
+      {/if}
+      {#each milestones as milestone}
+        <div>
+          <dt>{milestone.threshold === 0.5 ? t('halfCoverage') : t('ninetyCoverage')}</dt>
+          <dd>{topWordsPhrase(milestone.entries)} ({formatPercent(milestone.entryShare)} sąrašo)</dd>
+        </div>
+      {/each}
+      <div><dt>{t('singletonTail')}</dt><dd>{wordsPhrase(analysis.facts.singletonEntries)} ({formatPercent(analysis.facts.singletonEntryShare)} sąrašo)</dd></div>
+    </dl>
+    <details>
+      <summary>{t('tableEquivalent')}</summary>
+      <TableScroll label={`${t('cumulativeCoverage')}: ${t('tableEquivalent').toLowerCase()}`}>
         <table>
-          <thead><tr><th>{t('rank')}</th><th>{t('cumulativeFrequency')}</th><th>{t('tokenCoverage')}</th></tr></thead>
+          <thead><tr><th scope="col" class="number">{t('rank')}</th><th scope="col" class="number">{t('cumulativeFrequency')}</th><th scope="col" class="number">{t('tokenCoverage')}</th></tr></thead>
           <tbody>
             {#each coverageSeries as point}
-              <tr><td>{formatNumber(point.rank)}</td><td>{formatNumber(point.cumulativeFrequency)}</td><td>{formatPercent(point.coverage)}</td></tr>
+              <tr><td class="number">{formatNumber(point.rank)}</td><td class="number">{formatNumber(point.cumulativeFrequency)}</td><td class="number">{formatPercent(point.coverage)}</td></tr>
             {/each}
           </tbody>
         </table>
-      </details>
-      </section>
+      </TableScroll>
+    </details>
+  </section>
 
-    {#if analysis.partOfSpeech.length > 0}
-        <section class="chart-section" aria-labelledby="pos-title">
-        <SectionHeading id="pos-title">{t('posComposition')}</SectionHeading>
-        <div class="bar-chart" role="img" aria-label={`${t('posComposition')}: ${analysis.partOfSpeech.map((part) => `${displayType(part.type)} ${formatPercent(part.share)}`).join(', ')}`}>
-          {#each analysis.partOfSpeech as part}
-            <div class="bar-row">
-              <span class="bar-label">{displayType(part.type)}</span>
-              <div class="bar-track" aria-hidden="true"><div class="bar-fill" style={`width: ${percentWidth(part.share)}`}></div></div>
-              <span class="bar-value">{formatPercent(part.share)}</span>
-            </div>
-          {/each}
-        </div>
-        <details>
-          <summary>{t('tableEquivalent')}</summary>
+  {#if analysis.partOfSpeech.length > 0}
+    <section class="stack" aria-labelledby="pos-title">
+      <SectionHeading id="pos-title">{t('posComposition')}</SectionHeading>
+      <p class="note">{t('posCompositionDescription')}</p>
+      <RateBars rows={analysis.partOfSpeech.map((part) => ({ label: displayType(part.type), value: part.share }))} unit={t('posComposition')} max={1} format={(value) => formatPercent(value ?? 0)} />
+      <details>
+        <summary>{t('tableEquivalent')}</summary>
+        <TableScroll label={`${t('posComposition')}: ${t('tableEquivalent').toLowerCase()}`}>
           <table>
-            <thead><tr><th>{t('type')}</th><th>{t('frequency')}</th><th>{t('entries')}</th><th>{t('tokenCoverage')}</th></tr></thead>
+            <thead><tr><th scope="col">{t('type')}</th><th scope="col" class="number">{t('frequency')}</th><th scope="col" class="number">{t('entries')}</th><th scope="col" class="number">{t('tokenCoverage')}</th></tr></thead>
             <tbody>
               {#each analysis.partOfSpeech as part}
-                <tr><td>{displayType(part.type)}</td><td>{formatNumber(part.frequency)}</td><td>{formatNumber(part.entries)}</td><td>{formatPercent(part.share)}</td></tr>
+                <tr><td>{displayType(part.type)}</td><td class="number">{formatNumber(part.frequency)}</td><td class="number">{formatNumber(part.entries)}</td><td class="number">{formatPercent(part.share)}</td></tr>
               {/each}
             </tbody>
           </table>
-        </details>
-        </section>
-    {/if}
-    <dl class="headline-metrics" aria-label={t('headlineMetrics')}>
-      <div>
-        <dt>{t('entries')}</dt>
-        <dd>{formatNumber(analysis.entryCount)}</dd>
-      </div>
-      <div>
-        <dt>{t('totalFrequency')}</dt>
-        <dd>{formatNumber(analysis.totalFrequency)}</dd>
-      </div>
-      <div>
-        <dt>{t('mostFrequent')}</dt>
-        <dd>{analysis.topWord?.word} <span>({formatNumber(analysis.topWord?.frequency ?? 0)})</span></dd>
-      </div>
-
-    </dl>
-
-      <section class="facts-section" aria-labelledby="frequency-facts-title">
-      <SectionHeading id="frequency-facts-title">{t('frequencyFacts')}</SectionHeading>
-      <dl class="fact-grid">
-        <div>
-          <dt>{t('leadingEntryShare')}</dt>
-          <dd>{t('leadingEntryFact', {
-            word: analysis.topWord?.word ?? '',
-            share: formatFactPercent(analysis.facts.topEntryShare)
-          })}</dd>
-        </div>
-        {#if analysis.facts.halfCoverage}
-          <div>
-            <dt>{t('halfCoverage')}</dt>
-            <dd>{t('coverageMilestoneFact', {
-              entries: formatNumber(analysis.facts.halfCoverage.entries),
-              coverage: formatPercent(analysis.facts.halfCoverage.threshold),
-              entryShare: formatFactPercent(analysis.facts.halfCoverage.entryShare)
-            })}</dd>
-          </div>
-        {/if}
-        {#if analysis.facts.ninetyCoverage}
-          <div>
-            <dt>{t('ninetyCoverage')}</dt>
-            <dd>{t('coverageMilestoneFact', {
-              entries: formatNumber(analysis.facts.ninetyCoverage.entries),
-              coverage: formatPercent(analysis.facts.ninetyCoverage.threshold),
-              entryShare: formatFactPercent(analysis.facts.ninetyCoverage.entryShare)
-            })}</dd>
-          </div>
-        {/if}
-        <div>
-          <dt>{t('singletonTail')}</dt>
-          <dd>{t('singletonFact', {
-            entries: formatNumber(analysis.facts.singletonEntries),
-            entryShare: formatFactPercent(analysis.facts.singletonEntryShare),
-            tokenShare: formatFactPercent(analysis.facts.singletonTokenShare)
-          })}</dd>
-        </div>
-      </dl>
-      </section>
-
-      </div>
-    </div>
+        </TableScroll>
+      </details>
+    </section>
   {/if}
-</section>
+</div>
 
 <style>
-  .dashboard {
-    contain: inline-size;
-    min-width: 0;
-    padding-top: 0;
-  }
-
-  .chart-heading {
-    display: flex;
-    align-items: baseline;
-    gap: var(--sm);
-    justify-content: space-between;
-  }
-
-  .chart-section > p {
-    color: color-mix(in srgb, var(--text-color) 72%, transparent);
-  }
-
-  .headline-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.5rem 2rem;
-    margin: 0;
-  }
-
-  .headline-metrics > div { border: 0; padding: 0; }
-
-  .advanced-analysis {
-    max-width: 100%;
-    min-width: 0;
-    margin: 0;
-  }
-
-  .analysis-content {
-    display: grid;
-    gap: 3rem;
-    margin-top: 0;
-  }
-
-  .chart-section, .facts-section {
-    display: grid;
-    gap: 0.75rem;
-    min-width: 0;
-  }
-
-  .chart-section :global(.dago-section-heading),
-  .facts-section :global(.dago-section-heading) {
-    margin: 0;
-  }
-
-
-  .fact-grid {
-    display: grid;
-    gap: 1.5rem 2rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 0;
-  }
-
-  .fact-grid > div { min-width: 0; }
-
-  .fact-grid dd {
-    font-size: 1em;
-    line-height: 1.5;
-  }
-
-  dt {
-    color: color-mix(in srgb, var(--text-color) 72%, transparent);
-  }
-
-  dd {
-    font-size: 1em;
-    margin: var(--xs) 0 0;
-  }
-
-  dd span {
-    font-size: .85em;
-  }
-
-
-  .chart-heading label {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    white-space: nowrap;
-  }
-
-  .chart-heading select { width: 4.5rem; height: 36px; min-height: 36px; padding: .25rem .5rem; }
-
-  .series-point { fill: var(--text-color); }
-
-  .bar-chart {
-    display: grid;
-    gap: var(--xs);
-    margin: 0;
-  }
-
-  .bar-row {
-    align-items: center;
-    display: grid;
-    gap: var(--sm);
-    grid-template-columns: minmax(10em, 1.25fr) minmax(4em, 3fr) 10ch;
-  }
-
-  .bar-label {
-    overflow-wrap: anywhere;
-  }
-
-  .bar-track {
-    background: color-mix(in srgb, var(--text-color) 12%, transparent);
-    height: .9em;
-  }
-
-  .bar-fill {
-    background: var(--text-color);
-    height: 100%;
-  }
-
-  .bar-value {
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-  }
-
-  .line-chart {
-    height: auto;
-    margin: 0;
-    overflow: visible;
-    width: 100%;
-  }
-
-  .grid-line {
-    stroke: color-mix(in srgb, var(--text-color) 18%, transparent);
-    stroke-width: 1;
-  }
-
-  .axis-line {
-    stroke: var(--text-color);
-    stroke-width: 1;
-  }
-
-  .series-line {
-    fill: none;
-    stroke: var(--text-color);
-    stroke-width: 2;
-  }
-
-  .axis-label,
-  .axis-title {
-    fill: var(--text-color);
-    font-family: inherit;
-    font-size: 12px;
-  }
-
-  .axis-title {
-    font-size: 13px;
-  }
-
-  details {
-    contain: inline-size;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-  }
-
-  details table {
-    margin-top: var(--sm);
-  }
-
-
-  @media (max-width: 639px) {
-      .chart-heading {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-
-    .chart-heading select { height: 44px; min-height: 44px; }
-
-    .headline-metrics,
-    .fact-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .bar-row {
-      grid-template-columns: minmax(0, 1fr) minmax(3em, 1.2fr) 10ch;
-    }
-  }
+  .dashboard { contain: inline-size; display: grid; gap: 3rem; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+  .coverage-facts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+  .top-n { align-items: center; display: flex; gap: .75rem; white-space: nowrap; }
+  .line-chart { height: auto; overflow: visible; width: 100%; }
+  .grid-line { stroke: hsl(var(--theme) / .15); }
+  .axis-line { stroke: hsl(var(--theme) / .55); }
+  .marker-line { stroke: hsl(var(--theme) / .55); stroke-dasharray: 3 4; }
+  .series-line { fill: none; stroke: hsl(var(--theme)); stroke-width: 2; }
+  .series-point { fill: hsl(var(--theme)); }
+  .axis-label, .axis-title, .marker-label { fill: hsl(var(--theme)); font-family: inherit; font-size: 12px; }
+  .axis-title { fill: hsl(var(--theme) / .7); }
+  .marker-label { font-weight: 700; }
 </style>

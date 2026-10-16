@@ -26,12 +26,12 @@ it('keeps the initial page quiet, then searches and shows only the selected lemm
   expect(queryByText('Atitikmenų nerasta.')).not.toBeInTheDocument();
   await user.type(getByLabelText('Lemos pradžia'), 'kalb');
   await user.click(getByRole('button', { name: 'Ieškoti' }));
-  await waitFor(() => expect(getByRole('button', { name: 'kalba Pavartojimai: 2' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('button', { name: 'kalba 2' })).toBeInTheDocument());
   expect(loadSyntaxContexts).not.toHaveBeenCalled();
   let resolveFirst;
   vi.mocked(loadSyntaxContexts).mockReturnValueOnce(new Promise(resolve => { resolveFirst = resolve; })).mockResolvedValueOnce([context('Naujas sakinys.')]);
-  await user.click(getByRole('button', { name: 'kalba Pavartojimai: 2' }));
-  await user.click(getByRole('button', { name: 'kalbėti Pavartojimai: 2' }));
+  await user.click(getByRole('button', { name: 'kalba 2' }));
+  await user.click(getByRole('button', { name: 'kalbėti 2' }));
   await waitFor(() => expect(queryByText('Naujas sakinys.')).toBeInTheDocument());
   resolveFirst([context('Pasenęs sakinys.')]);
   await waitFor(() => expect(getByRole('heading', { name: 'Sakinių kontekstai: kalbėti' })).toBeInTheDocument());
@@ -49,8 +49,48 @@ it('reports empty searches and context failures without inventing examples', asy
   await user.click(getByRole('button', { name: 'Ieškoti' }));
   await waitFor(() => expect(getByText('Atitikmenų nerasta.')).toBeInTheDocument());
   await user.click(getByRole('button', { name: 'Ieškoti' }));
-  await waitFor(() => expect(getByRole('button', { name: 'kalba Pavartojimai: 2' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('button', { name: 'kalba 2' })).toBeInTheDocument());
   vi.mocked(loadSyntaxContexts).mockRejectedValueOnce(new Error('Nepavyko įkelti sakinių.'));
-  await user.click(getByRole('button', { name: 'kalba Pavartojimai: 2' }));
+  await user.click(getByRole('button', { name: 'kalba 2' }));
   await waitFor(() => expect(getByRole('alert')).toHaveTextContent('Nepavyko įkelti sakinių.'));
+});
+
+it('opens contexts straight away when the query is an exact lemma', async () => {
+  const user = userEvent.setup();
+  vi.mocked(loadSyntaxContexts).mockResolvedValueOnce([{ ...context('Lietuvių kalba gyvuoja ( dar ) .'), headForm: 'kalba' }]);
+  const { container, getByRole, getByText } = render(SyntaxExplorer);
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
+  await user.click(getByRole('button', { name: 'darbas' }));
+  expect(searchSyntaxLemmas).toHaveBeenCalledWith(expect.anything(), 'darbas');
+  vi.mocked(searchSyntaxLemmas).mockResolvedValueOnce({ matches: [lemma('kalba'), lemma('kalbėti')], total: 2 });
+  await user.clear(getByRole('textbox', { name: 'Lemos pradžia' }));
+  await user.type(getByRole('textbox', { name: 'Lemos pradžia' }), 'Kalba');
+  await user.click(getByRole('button', { name: 'Ieškoti' }));
+  await waitFor(() => expect(getByRole('heading', { name: 'Sakinių kontekstai: kalba' })).toBeInTheDocument());
+  expect(loadSyntaxContexts).toHaveBeenCalledWith(expect.anything(), 'kalba');
+  expect(getByRole('button', { name: 'kalba 2' })).toHaveAttribute('aria-pressed', 'true');
+  expect(getByText('kalba', { selector: 'mark' })).toBeInTheDocument();
+  expect(container.querySelector('blockquote')).toHaveTextContent(/^Lietuvių kalba gyvuoja \(dar\)\.$/);
+});
+
+it('runs the lookup from a shared ?q= link and opens an exact lemma', async () => {
+  vi.mocked(loadSyntaxContexts).mockResolvedValueOnce([context('Lietuvių kalba gyvuoja .')]);
+  window.history.replaceState(null, '', '/sintakse?q=kalba');
+  const { getByRole } = render(SyntaxExplorer);
+
+  await waitFor(() => expect(getByRole('heading', { name: 'Sakinių kontekstai: kalba' })).toBeInTheDocument());
+  expect(searchSyntaxLemmas).toHaveBeenCalledOnce();
+  expect(searchSyntaxLemmas).toHaveBeenCalledWith(expect.anything(), 'kalba');
+  expect(getByRole('textbox', { name: 'Lemos pradžia' })).toHaveValue('kalba');
+});
+
+it('keeps each lookup in ?q= so it can be shared', async () => {
+  const user = userEvent.setup();
+  const { getByRole, getByLabelText } = render(SyntaxExplorer);
+
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
+  await user.type(getByLabelText('Lemos pradžia'), 'kalb');
+  await user.click(getByRole('button', { name: 'Ieškoti' }));
+
+  expect(window.location.search).toBe('?q=kalb');
 });

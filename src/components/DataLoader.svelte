@@ -1,8 +1,11 @@
 <script lang="ts">
   import { loadDataset, type Dataset } from '$lib/data';
-  import { filterWords, paginate, RESULTS_PER_PAGE, sortWords } from '$lib/utils';
+  import { rankWords } from '$lib/analysis';
+  import { datasetTitle } from '$lib/dataset-labels';
+  import { filterWords, paginate, sortWords } from '$lib/utils';
   import type { WordSortKey } from '$lib/utils';
   import { t } from '$lib/translations';
+  import SectionHeading from './SectionHeading.svelte';
   import SearchBar from './SearchBar.svelte';
   import DataTable from './DataTable.svelte';
   import DownloadButton from './DownloadButton.svelte';
@@ -26,21 +29,22 @@
   let sortAsc = $state(false);
   let currentPage = $state(1);
 
-  let uniqueTypes = $derived((dataset
-    ? [...new Set(dataset.words.map((word) => word.type).filter((type): type is string => type !== undefined))]
-    : []).sort((a,b) => (dataset?.provenance.partOfSpeech?.labels[a] ?? a).localeCompare(dataset?.provenance.partOfSpeech?.labels[b] ?? b, 'lt')));
-
   let typeLabels = $derived(dataset?.provenance.partOfSpeech?.labels ?? {});
 
-  let filteredWords = $derived(dataset?.words ? filterWords(dataset.words, appliedSearchQuery, selectedTypes) : []);
+  let uniqueTypes = $derived((dataset
+    ? [...new Set(dataset.words.map((word) => word.type).filter((type): type is string => type !== undefined))]
+    : []).sort((a, b) => (typeLabels[a] ?? a).localeCompare(typeLabels[b] ?? b, 'lt')));
 
-  let rankedFilteredWords = $derived(sortWords(filteredWords, 'frequency', false).map((word, index) => ({ ...word, rank: index + 1 })));
+  // Ranks describe the whole dataset, so a searched word keeps its real place.
+  let rankedWords = $derived(dataset ? rankWords(dataset.words) : []);
 
-  let sortedFilteredWords = $derived(sortWords(rankedFilteredWords, sortKey, sortAsc));
+  let filteredWords = $derived(filterWords(rankedWords, appliedSearchQuery, selectedTypes));
+
+  let sortedFilteredWords = $derived(sortWords(filteredWords, sortKey, sortAsc));
 
   let resultPage = $derived(paginate(sortedFilteredWords, currentPage));
 
-  let hasActiveFilters = $derived(selectedTypes.length > 0);
+  let filteredFrequency = $derived(filteredWords.reduce((sum, word) => sum + word.frequency, 0));
 
   function clearFilters() {
     selectedTypes = [];
@@ -107,124 +111,121 @@
   });
 </script>
 
-    <section class="search-panel" aria-label="Žodžių paieška">
-      {#if datasets.length}
-        <div class="source-control">
-          <label for="dataset-select">Šaltinis</label>
-          <select id="dataset-select" value={selectedDatasetId} onchange={onselectDataset}>
-            {#each datasets as source}<option value={source.id}>{source.title} ({source.year})</option>{/each}
-          </select>
-        </div>
-      {/if}
-      <div class="search-and-clear">
-        <SearchBar bind:value={searchQuery} />
+<div class="controls">
+  {#if datasets.length}
+    <div class="source-control">
+      <label for="dataset-select">Šaltinis</label>
+      <select id="dataset-select" value={selectedDatasetId} onchange={onselectDataset}>
+        {#each datasets as source}<option value={source.id}>{datasetTitle(source.id, `${source.title} (${source.year})`)}</option>{/each}
+      </select>
+    </div>
+  {/if}
+  <SearchBar bind:value={searchQuery} />
+  {#if uniqueTypes.length > 0}
+    <details class="type-filter">
+      <summary>Filtrai{#if selectedTypes.length > 0}{' '}({selectedTypes.length}){/if}</summary>
+      <div class="type-options">
+        {#each uniqueTypes as type}
+          <label>
+            <input
+              type="checkbox"
+              bind:group={selectedTypes}
+              value={type}
+              aria-label={typeLabels[type] ? `${typeLabels[type]} (${type})` : type}
+            />
+            <span>{typeLabels[type] ?? type}{#if typeLabels[type]}&nbsp;({type}){/if}</span>
+          </label>
+        {/each}
+        {#if selectedTypes.length > 0}<button type="button" onclick={clearFilters} class="text-button">{t('clearFilters')}</button>{/if}
       </div>
-      {#if searchPending}
-        <p class="updating-results" role="status" aria-live="polite">{t('updatingResults')}</p>
-      {/if}
-      {#if uniqueTypes.length > 0}
-        <details class="type-filter">
-          <summary>Filtrai{#if selectedTypes.length > 0}{' '}({selectedTypes.length}){/if}</summary>
-          {#if dataset && dataset.provenance.partOfSpeech}
-            <p class="type-note">{t('posScheme')}: {dataset.provenance.partOfSpeech.name}</p>
-          {/if}
-          <div class="type-options">
-            {#each uniqueTypes as type}
-              <label>
-                <input
-                  type="checkbox"
-                  bind:group={selectedTypes}
-                  value={type}
-                  aria-label={typeLabels[type] ? `${typeLabels[type]} (${type})` : type}
-                />
-                <span>{typeLabels[type] ?? type}{#if typeLabels[type]}&nbsp;({type}){/if}</span>
-              </label>
-            {/each}
-            {#if hasActiveFilters}<button onclick={clearFilters} class="clear-filters text-button">{t('clearFilters')}</button>{/if}
-          </div>
-        </details>
-      {/if}
-    </section>
+    </details>
+  {/if}
+  {#if searchPending}
+    <p class="note wide" role="status" aria-live="polite">{t('updatingResults')}</p>
+  {:else if dataset}
+    <p class="totals wide">
+      <span>{t('entries')}: <strong>{filteredWords.length.toLocaleString('lt-LT')}</strong></span>
+      <span class="inline-separator" aria-hidden="true">//</span>
+      <span>{t('totalFrequency')}: <strong>{filteredFrequency.toLocaleString('lt-LT')}</strong></span>
+    </p>
+  {/if}
+</div>
 
 {#if loading}
-  <div class="loading" role="status" aria-live="polite">{t('loading')}</div>
+  <p class="note" role="status" aria-live="polite">{t('loading')}</p>
 {:else if error}
-  <div class="error" role="alert">
-    <h3>{t('errorLoadingData')}</h3>
+  <div class="notice error" role="alert">
+    <p><strong>{t('errorLoadingData')}</strong></p>
     <p>{error}</p>
   </div>
 {:else if dataset}
-  <article class="dataset">
+  {#if sortedFilteredWords.length > 0}
+    <FrequencyDashboard words={filteredWords} {typeLabels} />
+  {/if}
 
-
-    {#if sortedFilteredWords.length > 0}
-      <FrequencyDashboard words={filteredWords} typeLabels={typeLabels} />
-    {/if}
-
-    <div class="table-container">
-      {#if sortedFilteredWords.length === 0}
-        <p class="empty-state" role="status" aria-live="polite">{t('noMatchingWords')}</p>
-      {:else}
-        {#key filename}
-          <div class="result-toolbar">
-            <p class="result-count" role="status" aria-live="polite">{t('showingResults', { start: resultPage.start.toLocaleString('lt-LT'), end: resultPage.end.toLocaleString('lt-LT'), total: sortedFilteredWords.length.toLocaleString('lt-LT') })}</p>
-            <DownloadButton
-              words={sortedFilteredWords}
-              metadata={{ id: dataset.id, title: dataset.title, author: dataset.author, year: dataset.year }}
-              exploration={{ query: appliedSearchQuery, types: selectedTypes, sortKey, sortAsc }}
-            />
-          </div>
-          <DataTable words={resultPage.items} typeLabels={typeLabels} bind:sortKey bind:sortAsc />
-        {/key}
-        {#if resultPage.totalPages > 1}
-          <nav class="pagination" aria-label={t('pagination')}>
-            <button class="text-button" onclick={previousPage} disabled={resultPage.currentPage === 1}>{t('previousPage')}</button>
-            <span>{t('pageOf', { page: resultPage.currentPage, total: resultPage.totalPages })}</span>
-            <button class="text-button" onclick={nextPage} disabled={resultPage.currentPage === resultPage.totalPages}>{t('nextPage')}</button>
-          </nav>
-        {/if}
+  <section class="table-container stack" aria-labelledby="word-list-title">
+    <div class="section-head">
+      <SectionHeading id="word-list-title">{t('wordList')}</SectionHeading>
+      {#if sortedFilteredWords.length > 0}
+        <DownloadButton
+          words={sortedFilteredWords}
+          metadata={{ id: dataset.id, title: dataset.title, author: dataset.author, year: dataset.year }}
+          exploration={{ query: appliedSearchQuery, types: selectedTypes, sortKey, sortAsc }}
+        />
       {/if}
     </div>
-    <details class="source-metadata"><summary>Apie šaltinį</summary><div class="source-body">
-      <dl class="dataset-facts">
+    {#if sortedFilteredWords.length === 0}
+      <p class="notice empty-state" role="status" aria-live="polite">{t('noMatchingWords')}</p>
+    {:else}
+      <p class="note" role="status" aria-live="polite">{t('showingResults', { start: resultPage.start.toLocaleString('lt-LT'), end: resultPage.end.toLocaleString('lt-LT'), total: sortedFilteredWords.length.toLocaleString('lt-LT') })}</p>
+      {#key filename}
+        <DataTable words={resultPage.items} {typeLabels} bind:sortKey bind:sortAsc />
+      {/key}
+      {#if resultPage.totalPages > 1}
+        <nav class="pagination" aria-label={t('pagination')}>
+          <button type="button" class="text-button" onclick={previousPage} disabled={resultPage.currentPage === 1}>{t('previousPage')}</button>
+          <span>{t('pageOf', { page: resultPage.currentPage, total: resultPage.totalPages })}</span>
+          <button type="button" class="text-button" onclick={nextPage} disabled={resultPage.currentPage === resultPage.totalPages}>{t('nextPage')}</button>
+        </nav>
+      {/if}
+    {/if}
+  </section>
+
+  <details>
+    <summary>{t('aboutSource')}</summary>
+    <div class="details-body">
+      <dl class="facts">
         <div><dt>{t('author')}</dt><dd>{dataset.author}</dd></div>
         <div><dt>{t('year')}</dt><dd>{dataset.year}</dd></div>
         <div><dt>{t('entryKind')}</dt><dd>{dataset.entryKind === 'lemma' ? t('lemma') : t('wordform')}</dd></div>
         {#if dataset.provenance.licence}
           <div><dt>{t('licence')}</dt><dd>{dataset.provenance.licence}</dd></div>
         {/if}
+        {#if dataset.provenance.partOfSpeech}
+          <div><dt>{t('posScheme')}</dt><dd>{dataset.provenance.partOfSpeech.name}</dd></div>
+        {/if}
       </dl>
       {#if dataset.provenance.citation}<p>{dataset.provenance.citation}</p>{/if}
-      {#if dataset.provenance.sourceUrl}<p><a href={dataset.provenance.sourceUrl} target="_blank" rel="noreferrer">Atverti pirminį šaltinį</a></p>{/if}
-    </div></details>
-
-
-  </article>
+      {#if dataset.provenance.sourceUrl}<p><a href={dataset.provenance.sourceUrl} target="_blank" rel="noreferrer">{t('openSource')}</a></p>{/if}
+    </div>
+  </details>
 {/if}
 
 <style>
-.dataset { display: grid; gap: 1.5rem; min-width: 0; width: 100%; }
-.search-panel { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr) auto; gap: 1rem; align-items: end; margin-bottom: 1.5rem; }
-.source-control { min-width: 0; }
-.source-control label { display: block; font-size: .875rem; margin-bottom: .5rem; }
-.source-control select { width: 100%; height: 44px; }
-.type-filter { position: relative; min-width: 0; }
-.type-filter summary { white-space: nowrap; min-height: 42px; padding: .5rem .75rem; }
-.type-filter[open] .type-options { position: absolute; top: 100%; right: 0; width: min(32rem,80vw); background: hsl(var(--black)); border: 1px solid hsl(var(--theme) / .35); z-index: 2; }
-.type-note { display: none; }
-.updating-results { grid-column: 1 / -1; }
-.search-and-clear { min-width: 0; }
-.type-options { display: flex; flex-wrap: wrap; gap: 0 1.5rem; padding: .5rem 1rem; }
-.type-options label { display: flex; align-items: center; gap: .25rem; min-height: 44px; }
-.type-note { padding: .75rem 1rem 0; font-size: .875rem; color: var(--muted-color); }
-.table-container { min-width: 0; width: 100%; }
-.result-toolbar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .75rem; }
-.result-count, .updating-results { font-size: .875rem; color: var(--muted-color); }
-.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: .75rem; margin-top: 1rem; }
-.source-metadata { max-width: 75ch; }
-.source-body { padding: 1rem; }
-.dataset-facts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; margin-bottom: 1rem; }
-.dataset-facts dt { font-size: .875rem; color: var(--muted-color); }
-.dataset-facts dd { margin: 0; overflow-wrap: anywhere; }
-@media(max-width:50rem) { .search-panel { grid-template-columns: 1fr; } .type-filter[open] .type-options { position: static; width: auto; border: 0; } }
+  .controls { align-items: end; display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto; }
+  .source-control label { display: block; font-size: .875rem; margin-bottom: .5rem; }
+  .source-control select { width: 100%; }
+  .wide { grid-column: 1 / -1; }
+  .totals { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+  .type-filter { position: relative; }
+  .type-filter summary { padding-block: .65rem; white-space: nowrap; }
+  .type-filter[open] summary { border-bottom: 0; }
+  .type-options { display: flex; flex-wrap: wrap; gap: 0 1.5rem; padding: .5rem .85rem; }
+  .type-filter[open] .type-options { background: hsl(var(--black)); border: 1px solid hsl(var(--theme) / .35); position: absolute; right: -1px; top: 100%; width: min(32rem, 80vw); z-index: 2; }
+  .type-options label { align-items: center; display: flex; gap: .5rem; min-height: 2.75rem; }
+  .pagination { align-items: center; display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; }
+  @media (max-width: 40rem) {
+    .controls { grid-template-columns: minmax(0, 1fr); }
+    .type-filter[open] .type-options { border: 0; position: static; width: auto; }
+  }
 </style>

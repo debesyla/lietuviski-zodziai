@@ -2,11 +2,8 @@
   import pkg from 'papaparse';
   import type { WordSortKey } from '$lib/utils';
   import { t } from '$lib/translations';
+  import { saveFile } from '$lib/download';
   const { unparse } = pkg;
-  // Keep the Blob URL alive long enough for the browser to start its native
-  // download. Revoking it in the same task can cancel downloads in browsers
-  // that resolve the link asynchronously.
-  const BLOB_URL_REVOKE_DELAY_MS = 1_000;
 
   interface Word {
     word: string;
@@ -64,17 +61,8 @@
       fields: [t('word'), t('type'), t('frequency')],
       data: rows
     }, { newline: '\r\n' })}`;
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename(metadata.id, date);
-    a.style.display = 'none';
-    document.body.append(a);
-    a.click();
-    a.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), BLOB_URL_REVOKE_DELAY_MS);
+    saveFile(csv, filename(metadata.id, date), 'text/csv;charset=utf-8');
   }
 </script>
 
-<button class="text-button" onclick={downloadCSV}>{t('downloadData')}</button>
+<button type="button" class="text-button" onclick={downloadCSV}>{t('downloadData')}</button>
