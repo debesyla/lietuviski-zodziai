@@ -37,7 +37,7 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   });
 
   await page.goto('blkt-profilis');
-  await expect(page.getByRole('heading', { name: 'BLKT žodžio profilis' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kaip žodžio vartosena keitėsi nuo 1922 metų?' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Ieškoti' })).toBeVisible();
   await page.getByText('Kaip skaityti', { exact: true }).click();
   await expect(page.getByText(/BLKT nėra reprezentatyvus visos lietuvių kalbos portretas/)).toBeVisible();
@@ -55,8 +55,9 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   await expect(page.getByRole('heading', { name: 'Visas tekstynas' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pagal teksto tipą' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pagal laikotarpį' })).toBeVisible();
-  await page.locator('.result details summary').nth(0).click();
-  await page.locator('.result details summary').nth(1).click();
+  const result = page.getByRole('article', { name: 'ir', exact: true });
+  await result.locator('details summary').nth(0).click();
+  await result.locator('details summary').nth(1).click();
   await expect(page.getByRole('table')).toHaveCount(2);
   expect(profileRequests.filter((url) => url.includes('/chunks/'))).toHaveLength(1);
   expect(profileRequests.filter((url) => url.includes('/routing/'))).toHaveLength(1);
@@ -92,6 +93,19 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   for (const prohibitedKey of ['rawText', 'documentId', 'sourceId', 'title', 'author', 'excerpt', 'context']) {
     expect(JSON.stringify(downloadedProfile)).not.toContain(`\"${prohibitedKey}\"`);
   }
+
+  // The CSV carries the same published aggregates with both licences and the attribution notices.
+  const csvPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Atsisiųsti CSV' }).click();
+  const csvDownload = await csvPromise;
+  expect(csvDownload.suggestedFilename()).toBe('blkt-ir.csv');
+  const csv = await downloadText(csvDownload);
+  expect(csv).toContain('# Licencija: NewGenLTU OpenRAIL-D v1.0');
+  expect(csv).toContain('# Licencija: Creative Commons Attribution-ShareAlike 4.0 International');
+  expect(csv).toContain('# Wikipedia contributors.');
+  expect(csv).toContain('Pjūvis,Reikšmė,Pavartojimai,Dokumentai su žodžiu,Milijonui žodžių,Visi dokumentai,Visi žodžiai');
+  expect(csv).toMatch(/\r\nVisas tekstynas,,\d+,\d+,/);
+  expect(csv).toMatch(/\r\nLaikotarpis,1922–1940,\d+,/);
 
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   assertHealthy();

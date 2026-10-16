@@ -26,7 +26,7 @@ vi.mock('../../../src/lib/war-contrast', () => ({
   lookupWarContrastWord: vi.fn()
 }));
 
-import { loadWarContrastProfile, lookupWarContrastWord } from '../../../src/lib/war-contrast';
+import { loadWarContrastProfile, logRatioForPair, lookupWarContrastWord } from '../../../src/lib/war-contrast';
 import Page from '../../../src/routes/karo-zodziu-palyginimas/+page.svelte';
 
 beforeEach(() => {
@@ -55,13 +55,46 @@ it('loads only the lookup profile initially and exposes a keyboard-operable comp
   await user.type(getByLabelText('Žodžio forma'), 'karas');
   await user.click(getByRole('button', { name: 'Palyginti' }));
 
-  await waitFor(() => expect(getByText('KARAS')).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('heading', { name: 'karas' })).toBeInTheDocument());
   expect(lookupWarContrastWord).toHaveBeenCalledWith(profile, 'karas');
   expect(getAllByRole('table')).toHaveLength(1);
   expect(getAllByText('Neaptikta')).toHaveLength(3);
-  expect(getByText('4 karto dažniau')).toBeInTheDocument();
+  expect(getAllByText('4 kartus dažniau').length).toBeGreaterThan(0);
+  // The headline restates the strongest contrast with both sources named.
+  expect(getByText('4×')).toBeInTheDocument();
+  // The same sentence is the short screen-reader status, so the whole result is not read out.
+  const sentences = getAllByText(/^Šaltinyje „Karo žiniasklaida“ forma „karas“ pavartota 4 kartus dažniau nei šaltinyje „CCLL2“\.$/);
+  expect(sentences).toHaveLength(2);
+  expect(getByRole('status')).toHaveTextContent('Šaltinyje „Karo žiniasklaida“ forma „karas“ pavartota 4 kartus dažniau nei šaltinyje „CCLL2“.');
+  expect(getByRole('heading', { name: 'karas' }).closest('section')).not.toHaveAttribute('aria-live');
+  expect(getByRole('button', { name: 'Atsisiųsti CSV' })).toBeInTheDocument();
+  expect(getByRole('button', { name: 'Atsisiųsti JSON' })).toBeInTheDocument();
   expect(getByText('(+2 log₂)')).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
+});
+
+it('says the form was not observed in CCLL2 instead of comparing only the wartime sources', async () => {
+  vi.mocked(logRatioForPair).mockImplementation(() => null);
+  vi.mocked(lookupWarContrastWord).mockResolvedValueOnce({
+    word: 'DRONAS',
+    normalizedWord: 'DRONAS',
+    sourceRows: [3],
+    metrics: {
+      ccll2: { tokenCount: null, documentCount: null },
+      media: { tokenCount: 2548, documentCount: 900 },
+      social: { tokenCount: 3813, documentCount: 1200 }
+    }
+  });
+  try {
+    window.history.replaceState(null, '', '/karo-zodziu-palyginimas?q=dronas');
+    const { getByRole, getByText } = render(Page);
+
+    await waitFor(() => expect(getByRole('heading', { name: 'dronas' })).toBeInTheDocument());
+    expect(getByText('3813', { selector: '.headline-figure' })).toBeInTheDocument();
+    expect(getByRole('status')).toHaveTextContent('Šaltinyje „CCLL2“ forma „dronas“ neaptikta, o šaltinyje „Socialiniai tinklai“ – 3813 pavartojimų 100 mln. žodžių.');
+  } finally {
+    vi.mocked(logRatioForPair).mockImplementation(() => 2);
+  }
 });
 
 it('makes the absent-data state explicit instead of presenting it as zero', async () => {
@@ -81,7 +114,7 @@ it('runs the lookup from a shared ?q= link', async () => {
   window.history.replaceState(null, '', '/karo-zodziu-palyginimas?q=karas');
   const { getByLabelText, getByRole } = render(Page);
 
-  await waitFor(() => expect(getByRole('heading', { name: 'KARAS' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('heading', { name: 'karas' })).toBeInTheDocument());
   expect(lookupWarContrastWord).toHaveBeenLastCalledWith(profile, 'karas');
   expect(getByLabelText('Žodžio forma')).toHaveValue('karas');
 });

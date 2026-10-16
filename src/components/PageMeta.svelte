@@ -2,7 +2,7 @@
   import { site } from '$lib/site';
 
   let { title, description = site.description, url }: { title: string; description?: string; url: string } = $props();
-  const imageAlt = 'Lietuviški žodžiai – viešų lietuvių kalbos dažnumo sąrašų tyrinėjimas';
+  const imageAlt = 'dažniausi lietuviški žodžiai // dago – penki dažniausi žodžiai ir jų pavartojimai';
 </script>
 
 <svelte:head>

@@ -130,17 +130,20 @@ test('completes the production visitor journey without browser-health or respons
 
   await page.goto('.');
   await expect(page.getByLabel('Šaltinis')).toHaveValue(fixtureDataset.id);
-  await expect(page.getByText('Rodomi 1–50 iš 60')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'dažniausi žodžiai // dago' })).toBeVisible();
+  await expect(page.getByText('Rodomi 1–20 iš 60')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'dažniausi lietuviški žodžiai // dago' })).toBeVisible();
   await expect(page.getByRole('banner').getByRole('link', { name: '// dago' })).toHaveAttribute('href', 'https://dago.lt');
+  // The title is plain text; the menu is the way home and marks this page.
+  await expect(page.getByRole('banner').getByRole('link', { name: 'dažniausi lietuviški žodžiai' })).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Pagrindinė navigacija' }).getByRole('link', { name: 'Žodžiai' })).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', 'https://dago.lt/assets/img/dago-icon.png');
   await expect(page.locator('link[rel="stylesheet"][href^="https://dago.lt/assets/styles/"]')).toHaveCount(2);
 
   await page.getByRole('button', { name: 'Kitas' }).click();
-  await expect(page.getByText('2 iš 2')).toBeVisible();
-  await expect(page.getByText('Rodomi 51–60 iš 60')).toBeVisible();
+  await expect(page.getByText('2 iš 3')).toBeVisible();
+  await expect(page.getByText('Rodomi 21–40 iš 60')).toBeVisible();
   await page.getByRole('button', { name: 'Ankstesnis' }).click();
-  await expect(page.getByText('1 iš 2')).toBeVisible();
+  await expect(page.getByText('1 iš 3')).toBeVisible();
 
   const wordSort = page.getByRole('button', { name: 'Rikiuoti pagal Žodis: nerikiuota' });
   await wordSort.focus();
@@ -157,7 +160,7 @@ test('completes the production visitor journey without browser-health or respons
   await expect(page.getByText('Rodomi 1–10 iš 10')).toBeVisible();
   await expect(page.getByLabel('Ieškoti žodžių')).toHaveValue('bandomas-01');
   await page.getByRole('button', { name: 'Išvalyti paiešką' }).click();
-  await expect(page.getByText('Rodomi 1–50 iš 60')).toBeVisible();
+  await expect(page.getByText('Rodomi 1–20 iš 60')).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Daiktavardis (dkt)' })).not.toBeChecked();
 
   await page.getByLabel('Rodyti').selectOption('20');

@@ -1,7 +1,7 @@
 import type { Word } from './data';
 
 export type WordSortKey = 'word' | 'frequency' | 'type';
-export const RESULTS_PER_PAGE = 50;
+export const RESULTS_PER_PAGE = 20;
 
 export interface Page<T> {
   items: T[];
@@ -85,6 +85,14 @@ export function paginate<T>(items: T[], requestedPage: number, pageSize = RESULT
 /**
  * Picks the Lithuanian noun form for a count: 1 žodis, 2 žodžiai, 10 žodžių.
  */
+/**
+ * Lithuanian number formatting without thousands spaces ("41977", "39,5 %"):
+ * whole numbers read better in the monospace dago.lt type.
+ */
+export function formatNumber(value: number, options: Intl.NumberFormatOptions = {}): string {
+  return value.toLocaleString('lt-LT', { ...options, useGrouping: false });
+}
+
 export function pluralLt(count: number, forms: [one: string, few: string, many: string]): string {
   const lastDigit = count % 10;
   const lastTwoDigits = count % 100;

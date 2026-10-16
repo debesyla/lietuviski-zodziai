@@ -3,11 +3,13 @@
   import RateBars from './RateBars.svelte';
   import TableScroll from './TableScroll.svelte';
   import { analyseFrequency, sampleByRank } from '$lib/analysis';
-  import { pluralLt } from '$lib/utils';
+  import { formatNumber, pluralLt } from '$lib/utils';
   import { t } from '$lib/translations';
   import type { Word } from '$lib/data';
+  import type { Snippet } from 'svelte';
 
-  let { words, typeLabels = {} }: { words: Word[]; typeLabels?: Record<string, string> } = $props();
+  // `afterTopWords` lets the homepage place its research cards right below the top-words bars.
+  let { words, typeLabels = {}, afterTopWords }: { words: Word[]; typeLabels?: Record<string, string>; afterTopWords?: Snippet } = $props();
 
   const topNOptions = [10, 20, 50];
   const chartHeight = 260;
@@ -37,13 +39,9 @@
   let frequencyTicks = $derived(logTicks(maximumFrequency, minimumFrequency));
   let milestones = $derived([analysis.facts.halfCoverage, analysis.facts.ninetyCoverage].filter((milestone) => milestone !== null));
 
-  function formatNumber(value: number) {
-    return value.toLocaleString('lt-LT');
-  }
-
   function formatPercent(value: number) {
     if (value > 0 && value < 0.0005) return '<0,1 %';
-    return new Intl.NumberFormat('lt-LT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
+    return formatNumber(value, { style: 'percent', maximumFractionDigits: 1 });
   }
 
   function displayType(type: string) {
@@ -107,6 +105,8 @@
     <RateBars rows={topWords.map((word) => ({ label: word.word, value: word.frequency }))} unit={t('topWords')} format={(value) => formatNumber(value ?? 0)} />
   </section>
 
+  {@render afterTopWords?.()}
+
   <section class="stack" aria-labelledby="rank-frequency-title">
     <SectionHeading id="rank-frequency-title">{t('rankFrequency')}</SectionHeading>
     <p class="note">{t('rankFrequencyDescription')}</p>
@@ -131,7 +131,7 @@
       <summary>{t('tableEquivalent')}</summary>
       <TableScroll label={`${t('rankFrequency')}: ${t('tableEquivalent').toLowerCase()}`}>
         <table>
-          <thead><tr><th scope="col" class="number">{t('rank')}</th><th scope="col">{t('word')}</th><th scope="col" class="number">{t('frequency')}</th></tr></thead>
+          <thead><tr><th scope="col" class="number">{t('rank')}</th><th scope="col">{t('word')}</th><th scope="col" class="number">{t('frequencyColumn')}</th></tr></thead>
           <tbody>
             {#each rankFrequencySeries as word}
               <tr><td class="number">{formatNumber(word.rank)}</td><td>{word.word}</td><td class="number">{formatNumber(word.frequency)}</td></tr>
@@ -208,7 +208,7 @@
         <summary>{t('tableEquivalent')}</summary>
         <TableScroll label={`${t('posComposition')}: ${t('tableEquivalent').toLowerCase()}`}>
           <table>
-            <thead><tr><th scope="col">{t('type')}</th><th scope="col" class="number">{t('frequency')}</th><th scope="col" class="number">{t('entries')}</th><th scope="col" class="number">{t('tokenCoverage')}</th></tr></thead>
+            <thead><tr><th scope="col">{t('typeColumn')}</th><th scope="col" class="number">{t('frequencyColumn')}</th><th scope="col" class="number">{t('entries')}</th><th scope="col" class="number">{t('tokenCoverage')}</th></tr></thead>
             <tbody>
               {#each analysis.partOfSpeech as part}
                 <tr><td>{displayType(part.type)}</td><td class="number">{formatNumber(part.frequency)}</td><td class="number">{formatNumber(part.entries)}</td><td class="number">{formatPercent(part.share)}</td></tr>

@@ -138,7 +138,7 @@ it('submits from the keyboard and renders an accessible, denominator-aware resul
   expect(lookupBlktWordform).toHaveBeenCalledWith(profile, '  ŽODIS  ');
   // The whole-corpus figures are shown as facts; only sliced results need a table.
   expect(getAllByRole('table')).toHaveLength(1);
-  expect(getByText('Milijonui žodžių', { selector: 'dt' }).nextElementSibling).toHaveTextContent('111 111,11');
+  expect(getByText('Milijonui žodžių', { selector: 'dt' }).nextElementSibling).toHaveTextContent('111111,11');
   expect(getByText('Šio žodžio laikotarpių pjūvis neskelbiamas. Atskiros saugos ribos nepasiekusios reikšmės neatskleidžiamos.')).toBeInTheDocument();
   expect(getByRole('button', { name: 'Atsisiųsti JSON' })).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);

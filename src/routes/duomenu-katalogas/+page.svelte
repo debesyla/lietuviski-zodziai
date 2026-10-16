@@ -5,6 +5,7 @@
   import { datasetDescription, datasetTitle } from '$lib/dataset-labels';
   import { loadPublicDataProducts, type DataProductType, type PublicDataProduct } from '$lib/publication';
   import { site } from '$lib/site';
+  import { researchTools } from '$lib/research-tools';
 
   type PrimaryAction = { href: string; label: string } | null;
   const homeUrl = `${base}/`;
@@ -23,7 +24,10 @@
     { id: 'metadata', title: 'Tik šaltinių aprašai', products: products.filter(product => product.publication.status === 'metadata-only') }
   ].filter(group => group.products.length));
 
-  function displayTitle(product: PublicDataProduct) { return datasetTitle(product.id, product.title); }
+  // A product with its own research page is named by that page's question, as in the menu and the homepage cards.
+  function displayTitle(product: PublicDataProduct) {
+    return researchTools.find((tool) => tool.productId === product.id)?.question ?? datasetTitle(product.id, product.title);
+  }
   function description(product: PublicDataProduct) { return datasetDescription(product.id, product.publication.scope); }
   function explorerRank(product: PublicDataProduct) { const index = explorerOrder.indexOf(product.id); return index < 0 ? explorerOrder.length : index; }
 
@@ -31,7 +35,7 @@
     const sourceSpecificLimits: Record<string, string> = {
       'kapociute-dzikiene-2017-parliament-frequency-aggregates': 'Pateikiamos tik viso tekstyno suvestinės; tai nėra autorystės nustatymo, politikų reitingavimo, citatų ar kalendorinės analizės priemonė.',
       'vssa-2026-blkt-wordform-profile': 'BLKT nėra reprezentatyvus visos lietuvių kalbos portretas, nes jame vyrauja žiniasklaida ir dokumentai. Tokenizatoriaus raidžių sekos nėra taisyklingumo ar lietuviškumo įvertinimas. Ieškoma tik viena tiksli forma; neskelbiami reitingai, potipiai, sankirtos ar saugos slenksčio nepasiekusios pjūvių šeimos.',
-      'rimkute-morphemic-dictionary': 'Dažniai aprašo tik žodyno šaltinio tekstyną. PDF turi 61 eilute daugiau nei vėlesnei gyvai „Morfema“ bazei nurodomi 72 264 įrašai; gyvos bazės skaičius pateikiamas tik kontekstui, o ne kaip išgavimo tikslas. Tai nėra gyvos bazės eksportas.'
+      'rimkute-morphemic-dictionary': 'Dažniai aprašo tik žodyno šaltinio tekstyną. PDF turi 61 eilute daugiau nei vėlesnei gyvai „Morfema“ bazei nurodomi 72264 įrašai; gyvos bazės skaičius pateikiamas tik kontekstui, o ne kaip išgavimo tikslas. Tai nėra gyvos bazės eksportas.'
     };
     if (sourceSpecificLimits[product.id]) return sourceSpecificLimits[product.id];
     if (product.publication.reason) return product.publication.reason;
@@ -108,7 +112,7 @@
 </script>
 
 <PageMeta
-  title="duomenų rinkiniai // dažniausi žodžiai"
+  title="duomenų rinkiniai // dažniausi lietuviški žodžiai"
   description="Visi vieši lietuvių kalbos duomenų rinkiniai: šaltiniai, licencijos, prieiga ir interpretavimo ribos."
   url={site.catalogueUrl}
 />
@@ -127,7 +131,7 @@
   {:else}
     {#each groups as group}
       <section class="category" aria-label={group.title}>
-        {#if group.id !== 'explore'}<SectionHeading level={3}>{group.title}</SectionHeading>{/if}
+        <SectionHeading level={3}>{group.title}</SectionHeading>
         <div class="entries">
           {#each group.products as product (product.id)}
             {@const action = explorerAction(product)}
@@ -140,6 +144,8 @@
                   <span class="resource-link"><a href={product.manifestUrl}>JSON</a><span class="inline-separator" aria-hidden="true">//</span></span>
                 {/if}
                 <a href={product.provenance.sourceUrl} target="_blank" rel="noreferrer">Šaltinis</a>
+                <span class="inline-separator" aria-hidden="true">//</span>
+                <span>Licencija: {product.provenance.licence}</span>
                 <span class="inline-separator" aria-hidden="true">//</span>
                 <details class="entry-details">
                   <summary class="text-button">Apie rinkinį</summary>
@@ -171,7 +177,7 @@
 </main>
 
 <style>
-  .category { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
+  .category { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
   .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 2rem; }
   .entries { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
   .catalogue-entry { display: grid; gap: .25rem; grid-template-columns: minmax(0, 1fr); }

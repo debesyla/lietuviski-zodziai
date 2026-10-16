@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/translations';
   import TableScroll from './TableScroll.svelte';
-  import { sortWords } from '$lib/utils';
+  import { formatNumber, sortWords } from '$lib/utils';
   import type { WordSortKey } from '$lib/utils';
   interface Word {
     word: string;
@@ -37,7 +37,7 @@
   }
 
   function sortControlLabel(key: WordSortKey) {
-    const column = key === 'word' ? t('word') : key === 'frequency' ? t('frequency') : t('type');
+    const column = key === 'word' ? t('word') : key === 'frequency' ? t('frequencyColumn') : t('typeColumn');
     const direction = sortKey === key ? (sortAsc ? t('ascending') : t('descending')) : t('unsorted');
     return `${t('sortBy')} ${column}: ${direction}`;
   }
@@ -62,12 +62,12 @@
         </th>
         <th scope="col" class="number" aria-sort={sortState('frequency')}>
           <button type="button" class="sort-button" onclick={() => sortBy('frequency')} aria-label={sortControlLabel('frequency')}>
-            {t('frequency')} {#if sortKey === 'frequency'}<span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span>{/if}
+            {t('frequencyColumn')} {#if sortKey === 'frequency'}<span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span>{/if}
           </button>
         </th>
         <th scope="col" aria-sort={sortState('type')}>
           <button type="button" class="sort-button" onclick={() => sortBy('type')} aria-label={sortControlLabel('type')}>
-            {t('type')} {#if sortKey === 'type'}<span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span>{/if}
+            {t('typeColumn')} {#if sortKey === 'type'}<span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span>{/if}
           </button>
         </th>
       </tr>
@@ -75,9 +75,9 @@
     <tbody>
       {#each sortedWords as word}
         <tr>
-          <td class="number">{word.rank?.toLocaleString('lt-LT') ?? ''}</td>
+          <td class="number">{word.rank === undefined ? '' : formatNumber(word.rank)}</td>
           <td>{word.word}</td>
-          <td class="number">{word.frequency.toLocaleString('lt-LT')}</td>
+          <td class="number">{formatNumber(word.frequency)}</td>
           <td>{displayType(word.type)}</td>
         </tr>
       {/each}

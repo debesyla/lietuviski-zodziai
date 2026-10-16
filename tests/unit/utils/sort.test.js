@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { paginate, RESULTS_PER_PAGE, sortWords } from '../../../src/lib/utils.ts';
+import { formatNumber, paginate, RESULTS_PER_PAGE, sortWords } from '../../../src/lib/utils.ts';
 
 describe('sortWords', () => {
   const words = [
@@ -67,19 +67,29 @@ describe('sortWords', () => {
 });
 
 describe('paginate', () => {
-  it('keeps rendering bounded to 50 records even when many results match', () => {
+  it('keeps rendering bounded to one page of records even when many results match', () => {
     const matches = Array.from({ length: 50_001 }, (_, index) => `word-${index + 1}`);
     const page = paginate(matches, 1);
 
-    expect(RESULTS_PER_PAGE).toBe(50);
-    expect(page).toMatchObject({ start: 1, end: 50, currentPage: 1, totalPages: 1001 });
-    expect(page.items).toHaveLength(50);
+    expect(RESULTS_PER_PAGE).toBe(20);
+    expect(page).toMatchObject({ start: 1, end: 20, currentPage: 1, totalPages: 2501 });
+    expect(page.items).toHaveLength(20);
     expect(page.items[0]).toBe('word-1');
-    expect(page.items[49]).toBe('word-50');
+    expect(page.items[19]).toBe('word-20');
   });
 
   it('clamps out-of-range pages and represents an empty result set', () => {
     expect(paginate(['a', 'b'], 99)).toMatchObject({ currentPage: 1, totalPages: 1, start: 1, end: 2 });
     expect(paginate([], 4)).toMatchObject({ currentPage: 1, totalPages: 1, start: 0, end: 0, items: [] });
+  });
+});
+
+describe('formatNumber', () => {
+  it('keeps whole numbers ungrouped and Lithuanian decimals and percentages', () => {
+    expect(formatNumber(41977)).toBe('41977');
+    expect(formatNumber(1266854554)).toBe('1266854554');
+    expect(formatNumber(111111.114, { maximumFractionDigits: 2 })).toBe('111111,11');
+    expect(formatNumber(0.395, { style: 'percent', maximumFractionDigits: 1 })).toMatch(/^39,5\s%$/);
+    expect(formatNumber(12.5, { useGrouping: true })).toBe('12,5');
   });
 });

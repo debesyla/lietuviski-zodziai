@@ -12,7 +12,11 @@
     type Dml6CoverageProfile
   } from '$lib/dml6-coverage';
   import { saveFile } from '$lib/download';
+  import { formatNumber } from '$lib/utils';
   import { site } from '$lib/site';
+  import { researchTool } from '$lib/research-tools';
+
+  const tool = researchTool('zodyno-apreptis');
 
   type Band = Dml6CoverageProfile['summary']['bands'][number];
   type Measure = 'types' | 'tokens';
@@ -45,13 +49,9 @@
     : drilldown && selectedBand ? `Įkelta pavyzdžių: ${drilldown.records.length}. ${selectedCategoryLabel}, dažnumas ${bandLabel(selectedBand)}.`
     : '');
 
-  function formatNumber(value: number) {
-    return value.toLocaleString('lt-LT');
-  }
-
   function formatPercent(value: number) {
     if (value > 0 && value < 0.0005) return '<0,1 %';
-    return new Intl.NumberFormat('lt-LT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
+    return formatNumber(value, { style: 'percent', maximumFractionDigits: 1 });
   }
 
   function bandLabel(band: Band) {
@@ -134,15 +134,15 @@
 </script>
 
 <PageMeta
-  title="dml6 žodyno aprėptis // dažniausi žodžiai"
+  title={`${tool.pageTitle} // dažniausi lietuviški žodžiai`}
   description="Kuri Jungtinio lietuvių kalbos tekstyno žodžių formų dalis aptinkama Dabartinės lietuvių kalbos žodyne (DML6), pagal dažnumą."
   url={site.coverageProfileUrl}
 />
 
 <main>
   <header class="stack">
-    <SectionHeading>Žodyno aprėptis pagal dažnumą</SectionHeading>
-    <p>Kurios Jungtinio lietuvių kalbos tekstyno (JCL) žodžių formos yra Dabartinės lietuvių kalbos žodyne (DML6)? Kuo forma dažnesnė, tuo dažniau ji žodyne randama.</p>
+    <SectionHeading>{tool.question}</SectionHeading>
+    <p>Jungtinio lietuvių kalbos tekstyno (JCL) žodžių formos, sutikrintos su Dabartinės lietuvių kalbos žodynu (DML6). Kuo forma dažnesnė, tuo dažniau ji žodyne randama.</p>
   </header>
 
   {#if loading}
@@ -159,101 +159,103 @@
       <label><input type="radio" name="measure" value="tokens" bind:group={measure} /> visus pavartojimus</label>
     </fieldset>
 
-    <section class="stack" aria-labelledby="found-title">
-      <SectionHeading id="found-title">Rasta DML6 pagal dažnumą</SectionHeading>
-      <p class="note">Kiek {measure === 'types' ? 'formų' : 'pavartojimų'} kiekviename dažnumo intervale turi DML6 įrašą: pagrindinį, vietovardžio ar santrumpos.</p>
-      <RateBars
-        rows={profile.summary.bands.map((band) => ({ label: bandLabel(band), value: foundShare(band, measure) }))}
-        unit="Rasta DML6 pagal dažnumą"
-        max={1}
-        format={(value) => formatPercent(value ?? 0)}
-      />
-    </section>
+    <div class="sections">
+      <section class="stack" aria-labelledby="found-title">
+        <SectionHeading id="found-title">Rasta DML6 pagal dažnumą</SectionHeading>
+        <p class="note">Kiek {measure === 'types' ? 'formų' : 'pavartojimų'} kiekviename dažnumo intervale turi DML6 įrašą: pagrindinį, vietovardžio ar santrumpos.</p>
+        <RateBars
+          rows={profile.summary.bands.map((band) => ({ label: bandLabel(band), value: foundShare(band, measure) }))}
+          unit="Rasta DML6 pagal dažnumą"
+          max={1}
+          format={(value) => formatPercent(value ?? 0)}
+        />
+      </section>
 
-    <section class="stack" aria-labelledby="bands-title">
-      <div class="section-head">
-        <SectionHeading id="bands-title">Aprėptis dažnumo intervaluose</SectionHeading>
-        <button type="button" class="text-button" onclick={downloadSummary}>Atsisiųsti CSV</button>
-      </div>
-      <p class="note">Spustelėkite skaičių ir pamatysite dažniausias tos grupės formas.</p>
-      <TableScroll label="Aprėpties lentelė">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Dažnumas</th>
-              {#each categories as category}
-                <th scope="col" class="number">{category.label}</th>
-              {/each}
-            </tr>
-          </thead>
-          <tbody>
-            {#each profile.summary.bands as band (band.id)}
+      <section class="stack" aria-labelledby="bands-title">
+        <div class="section-head">
+          <SectionHeading id="bands-title">Aprėptis dažnumo intervaluose</SectionHeading>
+          <button type="button" class="text-button" onclick={downloadSummary}>Atsisiųsti CSV</button>
+        </div>
+        <p class="note">Spustelėkite skaičių ir pamatysite dažniausias tos grupės formas.</p>
+        <TableScroll label="Aprėpties lentelė">
+          <table>
+            <thead>
               <tr>
-                <th scope="row">{bandLabel(band)}<span class="cell-note">{formatNumber(count(band, measure))}</span></th>
+                <th scope="col">Dažnumas</th>
                 {#each categories as category}
-                  {@const summary = band.categories.find((item) => item.coverageCode === category.code)}
-                  <td class="number">
-                    {#if summary}
-                      <button
-                        type="button"
-                        class="text-button"
-                        aria-pressed={selection?.bandId === band.id && selection?.coverageCode === category.code}
-                        disabled={summary.drilldown.records === 0}
-                        onclick={() => showExamples(band.id, category.code)}
-                      >{formatNumber(count(summary, measure))}<span class="sr-only"> – {category.label}, dažnumas {bandLabel(band)}: pavyzdžiai</span></button>
-                      <span class="cell-note">{formatPercent(share(count(summary, measure), count(band, measure)))}</span>
-                    {:else}
-                      <span class="cell-note">–</span>
-                    {/if}
-                  </td>
+                  <th scope="col" class="number">{category.label}</th>
                 {/each}
               </tr>
-            {/each}
-          </tbody>
-        </table>
-      </TableScroll>
-    </section>
-
-    <p class="sr-only" role="status" aria-live="polite">{examplesStatus}</p>
-    {#if selectedBand && selectedCategory}
-      <section class="stack" aria-labelledby="examples-title">
-        <SectionHeading id="examples-title">Pavyzdžiai: {selectedCategoryLabel}, dažnumas {bandLabel(selectedBand)}</SectionHeading>
-        <p class="note">Iki {formatNumber(selectedCategory.drilldown.records)} formų nuo dažniausios; ne visa grupė. Skaičius – pavartojimai JCL.</p>
-        {#if drilldownLoading}
-          <p class="note" role="status">Kraunami pavyzdžiai…</p>
-        {:else if drilldownError}
-          <p class="notice error" role="alert">{drilldownError}</p>
-        {:else if drilldown}
-          <ol class="examples">
-            {#each drilldown.records as record}
-              <li>{record[0]} <span class="note">{formatNumber(record[1])}</span></li>
-            {/each}
-          </ol>
-        {/if}
+            </thead>
+            <tbody>
+              {#each profile.summary.bands as band (band.id)}
+                <tr>
+                  <th scope="row">{bandLabel(band)}<span class="cell-note">{formatNumber(count(band, measure))}</span></th>
+                  {#each categories as category}
+                    {@const summary = band.categories.find((item) => item.coverageCode === category.code)}
+                    <td class="number">
+                      {#if summary}
+                        <button
+                          type="button"
+                          class="text-button"
+                          aria-pressed={selection?.bandId === band.id && selection?.coverageCode === category.code}
+                          disabled={summary.drilldown.records === 0}
+                          onclick={() => showExamples(band.id, category.code)}
+                        >{formatNumber(count(summary, measure))}<span class="sr-only"> – {category.label}, dažnumas {bandLabel(band)}: pavyzdžiai</span></button>
+                        <span class="cell-note">{formatPercent(share(count(summary, measure), count(band, measure)))}</span>
+                      {:else}
+                        <span class="cell-note">–</span>
+                      {/if}
+                    </td>
+                  {/each}
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </TableScroll>
       </section>
-    {/if}
 
-    <div>
-      <details>
-        <summary>Kaip skaityti</summary>
-        <div class="details-body">
-          <p>{formatNumber(profile.summary.totalTypeCount)} žodžių formų ir {formatNumber(profile.summary.totalTokenCount)} JCL pavartojimų, suskirstytų į {profile.summary.bands.length} dažnumo intervalus.</p>
-          <ul>
-            <li>Formų dalis ir pavartojimų dalis skiriasi: daug retų formų gali sudaryti mažą tekstyno dalį.</li>
-            <li>Aprėpties kodas yra kategorija: jo negalima vidurkinti ar sudėti kaip balo.</li>
-            <li>Žodyne nerasta forma nebūtinai yra klaida, naujadaras ar nelietuviškas žodis.</li>
-            <li>Lyginamos vieno tekstyno žodžių formos; tai nėra visos lietuvių kalbos reitingas.</li>
-          </ul>
-        </div>
-      </details>
-      <details>
-        <summary>Šaltinis ir licencija</summary>
-        <div class="details-body">
-          <p>{profile.provenance.citation}</p>
-          <p>Licencija: {profile.provenance.licence}</p>
-          <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis CLARIN-LT įrašas</a></p>
-        </div>
-      </details>
+      <p class="sr-only" role="status" aria-live="polite">{examplesStatus}</p>
+      {#if selectedBand && selectedCategory}
+        <section class="stack" aria-labelledby="examples-title">
+          <SectionHeading id="examples-title">Pavyzdžiai: {selectedCategoryLabel}, dažnumas {bandLabel(selectedBand)}</SectionHeading>
+          <p class="note">Iki {formatNumber(selectedCategory.drilldown.records)} formų nuo dažniausios; ne visa grupė. Skaičius – pavartojimai JCL.</p>
+          {#if drilldownLoading}
+            <p class="note" role="status">Kraunami pavyzdžiai…</p>
+          {:else if drilldownError}
+            <p class="notice error" role="alert">{drilldownError}</p>
+          {:else if drilldown}
+            <ol class="examples">
+              {#each drilldown.records as record}
+                <li>{record[0]} <span class="note">{formatNumber(record[1])}</span></li>
+              {/each}
+            </ol>
+          {/if}
+        </section>
+      {/if}
+
+      <div>
+        <details>
+          <summary>Kaip skaityti</summary>
+          <div class="details-body">
+            <p>{formatNumber(profile.summary.totalTypeCount)} žodžių formų ir {formatNumber(profile.summary.totalTokenCount)} JCL pavartojimų, suskirstytų į {profile.summary.bands.length} dažnumo intervalus.</p>
+            <ul>
+              <li>Formų dalis ir pavartojimų dalis skiriasi: daug retų formų gali sudaryti mažą tekstyno dalį.</li>
+              <li>Aprėpties kodas yra kategorija: jo negalima vidurkinti ar sudėti kaip balo.</li>
+              <li>Žodyne nerasta forma nebūtinai yra klaida, naujadaras ar nelietuviškas žodis.</li>
+              <li>Lyginamos vieno tekstyno žodžių formos; tai nėra visos lietuvių kalbos reitingas.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Šaltinis ir licencija</summary>
+          <div class="details-body">
+            <p>{profile.provenance.citation}</p>
+            <p>Licencija: {profile.provenance.licence}</p>
+            <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis CLARIN-LT įrašas</a></p>
+          </div>
+        </details>
+      </div>
     </div>
   {/if}
 </main>
