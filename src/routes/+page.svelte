@@ -77,6 +77,6 @@
 </main>
 
 <style>
-  .explorer { display: grid; gap: 3rem; }
+  .explorer { display: grid; gap: 3rem; grid-template-columns: minmax(0, 1fr); }
   .research-tools li + li { margin-top: .75rem; }
 </style>

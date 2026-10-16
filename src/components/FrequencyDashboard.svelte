@@ -222,7 +222,7 @@
 </div>
 
 <style>
-  .dashboard { contain: inline-size; display: grid; gap: 3rem; min-width: 0; }
+  .dashboard { contain: inline-size; display: grid; gap: 3rem; grid-template-columns: minmax(0, 1fr); min-width: 0; }
   .coverage-facts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
   .top-n { align-items: center; display: flex; gap: .75rem; white-space: nowrap; }
   .line-chart { height: auto; overflow: visible; width: 100%; }

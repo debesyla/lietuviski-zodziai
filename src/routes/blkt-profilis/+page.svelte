@@ -237,5 +237,5 @@
 </main>
 
 <style>
-  .result { display: grid; gap: 2rem; }
+  .result { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
 </style>

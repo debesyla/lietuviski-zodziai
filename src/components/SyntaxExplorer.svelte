@@ -266,7 +266,7 @@
   .lemma-results li + li { margin-top: 0; }
   .lemma-results button { text-align: left; }
   .lemma-results button[aria-pressed="true"] { font-weight: 700; text-decoration: none; }
-  .context-list { display: grid; gap: 1.5rem; overflow-wrap: anywhere; }
+  .context-list { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); overflow-wrap: anywhere; }
   .context-list li + li { margin-top: 0; }
   .context-list li > * + * { margin-top: .25rem; }
   blockquote { border-left: 2px solid hsl(var(--theme) / .55); margin: .5rem 0; padding-left: .75rem; }

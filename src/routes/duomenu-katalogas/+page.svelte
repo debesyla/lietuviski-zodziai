@@ -144,7 +144,7 @@
                 <details class="entry-details">
                   <summary class="text-button">Apie rinkinį</summary>
                   <div class="entry-details-content">
-                    <dl class="facts">
+                    <dl class="entry-facts">
                       <div><dt>Šaltinio pavadinimas</dt><dd>{product.title}</dd></div>
                       <div><dt>Licencija</dt><dd>{product.provenance.licence}</dd></div>
                     </dl>
@@ -171,10 +171,10 @@
 </main>
 
 <style>
-  .category { display: grid; gap: 2rem; }
+  .category { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
   .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 2rem; }
-  .entries { display: grid; gap: 1.5rem; }
-  .catalogue-entry { display: grid; gap: .25rem; }
+  .entries { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
+  .catalogue-entry { display: grid; gap: .25rem; grid-template-columns: minmax(0, 1fr); }
   .catalogue-entry + .catalogue-entry { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 1.5rem; }
   .catalogue-entry > p { margin: 0; }
   .entry-actions { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .25rem; }
@@ -185,6 +185,10 @@
   .entry-details:not([open])::details-content { display: none; }
   .entry-details > summary { border: 0; font-weight: inherit; padding: 0; }
   .entry-details > summary:is(:hover, :focus-visible) { text-decoration-style: dashed; }
-  .entry-details-content { border-left: 1px solid hsl(var(--theme) / .35); display: grid; flex-basis: 100%; gap: 1rem; margin-top: .5rem; overflow-wrap: anywhere; padding-left: 1rem; }
-  .entry-details-content > * { margin: 0; }
+  /* Block layout and min-width: 0 keep WebKit from sizing the opened details wider than the column. */
+  .entry-details-content { border-left: 1px solid hsl(var(--theme) / .35); flex-basis: 100%; margin-top: .5rem; min-width: 0; overflow-wrap: anywhere; padding-left: 1rem; }
+  .entry-details-content > * + * { margin-top: 1rem; }
+  .entry-facts { display: grid; gap: .75rem; }
+  .entry-facts dt { color: hsl(var(--theme) / .7); font-size: .875rem; }
+  .entry-facts dd { margin: 0; }
 </style>
