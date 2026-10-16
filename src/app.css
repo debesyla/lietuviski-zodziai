@@ -103,7 +103,7 @@ main :where(section, article, header, form, details, div) {
 }
 
 /* Grid gaps own the spacing between blocks. */
-:is(main, .stack) > * {
+:is(main, .stack, .sections) > * {
   margin: 0;
 }
 
@@ -145,6 +145,13 @@ select {
 .stack {
   display: grid;
   gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* `//` sections sit 3rem apart, like the homepage explorer and dashboard. */
+.sections {
+  display: grid;
+  gap: 3rem;
   grid-template-columns: minmax(0, 1fr);
 }
 

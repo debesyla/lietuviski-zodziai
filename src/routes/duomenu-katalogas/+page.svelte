@@ -171,7 +171,7 @@
 </main>
 
 <style>
-  .category { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
+  .category { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
   .category + .category { border-top: 1px solid hsl(var(--theme) / .35); padding-top: 2rem; }
   .entries { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
   .catalogue-entry { display: grid; gap: .25rem; grid-template-columns: minmax(0, 1fr); }

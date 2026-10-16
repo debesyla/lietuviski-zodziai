@@ -137,71 +137,79 @@
       <p class="notice error" role="alert">{lookupError}</p>
     {:else if searched && !result}
       <p class="notice" role="status"><strong>Forma nerasta.</strong> Ji neaptikta šiuose žanruose. Tai nereiškia, kad jos nėra lietuvių kalboje ar kad jos dažnis lygus nuliui.</p>
-    {:else if result}
-      <section class="stack" aria-labelledby="result-title" aria-live="polite">
-        <div class="section-head">
-          <h2 id="result-title">{result.word}</h2>
-          <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti JSON</button>
-        </div>
-        {#if readout}<Headline figure={readout.figure} text={readout.text} />{/if}
-        <WordElsewhere word={result.word} current="zanru-profilis" />
-
-        <SectionHeading level={3}>Pavartojimai milijonui žodžių</SectionHeading>
-        <RateBars rows={profile.sources.map(source => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) }))} unit="Pavartojimai milijonui žodžių" />
-        <details>
-          <summary>Lentelė</summary>
-          <TableScroll label="Rezultatai pagal žanrą">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Žanras</th>
-                  <th scope="col" class="number">Pavartojimai</th>
-                  <th scope="col" class="number">Milijonui žodžių</th>
-                  <th scope="col" class="number">Žanro žodžiai</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each profile.sources as source}
-                  {@const rawCount = result.rawCounts[source.id]}
-                  <tr>
-                    <th scope="row">{source.label}</th>
-                    <td class="number">{rawCount === null ? 'Neaptikta' : formatNumber(rawCount)}</td>
-                    <td class="number">{formatRate(ratePerMillion(profile, result, source.id))}</td>
-                    <td class="number">{formatNumber(source.sourceTokens)}</td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </TableScroll>
-        </details>
-      </section>
     {/if}
 
-    <div>
-      <details>
-        <summary>Kaip skaityti</summary>
-        <div class="details-body">
-          <dl class="facts">
-            <div><dt>Paieškos formų</dt><dd>{formatNumber(profile.summary.joinedWordforms)}</dd></div>
-            <div><dt>Žanrų</dt><dd>{formatNumber(profile.sources.length)}</dd></div>
-            <div><dt>Rodiklis</dt><dd>Pavartojimai milijonui žodžių</dd></div>
-          </dl>
-          <ul>
-            <li>Rodomi tik penki pavadinti subkorpusai; bendras CCLL sąrašas ir jo abėcėlinis indeksas nėra žanrai.</li>
-            <li>„Neaptikta“ reiškia, kad žanre formos nėra, o ne nulinį dažnį.</li>
-            <li>Kiekvieno žanro rodiklis skaičiuojamas pagal to žanro žodžių skaičių. Tai nėra bendras žodžių populiarumo reitingas.</li>
-            <li>Skyrybos ženklai, didžiosios ir mažosios raidės išlaikomi taip, kaip šaltinio sąrašuose.</li>
-          </ul>
-        </div>
-      </details>
-      <details>
-        <summary>Šaltinis ir licencija</summary>
-        <div class="details-body">
-          <p>{profile.provenance.citation}</p>
-          <p>Licencija: {profile.provenance.licence}</p>
-          <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis CLARIN-LT įrašas</a></p>
-        </div>
-      </details>
+    <div class="sections">
+      {#if result}
+        <section class="sections" aria-labelledby="result-title" aria-live="polite">
+          <div class="stack">
+            <div class="section-head">
+              <h2 id="result-title">{result.word}</h2>
+              <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti JSON</button>
+            </div>
+            {#if readout}<Headline figure={readout.figure} text={readout.text} />{/if}
+            <WordElsewhere word={result.word} current="zanru-profilis" />
+          </div>
+
+          <section class="stack" aria-labelledby="rates-title">
+            <SectionHeading level={3} id="rates-title">Pavartojimai milijonui žodžių</SectionHeading>
+            <RateBars rows={profile.sources.map(source => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) }))} unit="Pavartojimai milijonui žodžių" />
+            <details>
+              <summary>Lentelė</summary>
+              <TableScroll label="Rezultatai pagal žanrą">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Žanras</th>
+                      <th scope="col" class="number">Pavartojimai</th>
+                      <th scope="col" class="number">Milijonui žodžių</th>
+                      <th scope="col" class="number">Žanro žodžiai</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {#each profile.sources as source}
+                      {@const rawCount = result.rawCounts[source.id]}
+                      <tr>
+                        <th scope="row">{source.label}</th>
+                        <td class="number">{rawCount === null ? 'Neaptikta' : formatNumber(rawCount)}</td>
+                        <td class="number">{formatRate(ratePerMillion(profile, result, source.id))}</td>
+                        <td class="number">{formatNumber(source.sourceTokens)}</td>
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </TableScroll>
+            </details>
+          </section>
+        </section>
+      {/if}
+
+      <div>
+        <details>
+          <summary>Kaip skaityti</summary>
+          <div class="details-body">
+            <dl class="facts">
+              <div><dt>Paieškos formų</dt><dd>{formatNumber(profile.summary.joinedWordforms)}</dd></div>
+              <div><dt>Žanrų</dt><dd>{formatNumber(profile.sources.length)}</dd></div>
+              <div><dt>Rodiklis</dt><dd>Pavartojimai milijonui žodžių</dd></div>
+            </dl>
+            <ul>
+              <li>Rodomi tik penki pavadinti subkorpusai; bendras CCLL sąrašas ir jo abėcėlinis indeksas nėra žanrai.</li>
+              <li>„Neaptikta“ reiškia, kad žanre formos nėra, o ne nulinį dažnį.</li>
+              <li>Kiekvieno žanro rodiklis skaičiuojamas pagal to žanro žodžių skaičių. Tai nėra bendras žodžių populiarumo reitingas.</li>
+              <li>Skyrybos ženklai, didžiosios ir mažosios raidės išlaikomi taip, kaip šaltinio sąrašuose.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>Šaltinis ir licencija</summary>
+          <div class="details-body">
+            <p>{profile.provenance.citation}</p>
+            <p>Licencija: {profile.provenance.licence}</p>
+            <p><a href={profile.provenance.sourceUrl} target="_blank" rel="noreferrer">Pirminis CLARIN-LT įrašas</a></p>
+          </div>
+        </details>
+      </div>
     </div>
   {/if}
 </main>

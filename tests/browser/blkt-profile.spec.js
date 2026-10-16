@@ -55,8 +55,9 @@ test('looks up one privacy-safe BLKT word profile with a bounded browser request
   await expect(page.getByRole('heading', { name: 'Visas tekstynas' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pagal teksto tipą' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pagal laikotarpį' })).toBeVisible();
-  await page.locator('.result details summary').nth(0).click();
-  await page.locator('.result details summary').nth(1).click();
+  const result = page.getByRole('article', { name: 'ir', exact: true });
+  await result.locator('details summary').nth(0).click();
+  await result.locator('details summary').nth(1).click();
   await expect(page.getByRole('table')).toHaveCount(2);
   expect(profileRequests.filter((url) => url.includes('/chunks/'))).toHaveLength(1);
   expect(profileRequests.filter((url) => url.includes('/routing/'))).toHaveLength(1);

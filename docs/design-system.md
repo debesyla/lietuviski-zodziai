@@ -37,8 +37,17 @@ Every page uses the same column, `min(100%, 75ch)`, and the same parts:
    (citation, licence, source link).
 6. Footer: the inline contact line and the AI badge.
 
-`main` is a grid with a 2rem gap; `.stack` groups a heading with its content
-at 1rem. Grid gaps own the spacing, so direct children have no margins.
+Vertical spacing has three steps, the same on the homepage and inner pages:
+
+- 1rem, `.stack`: a heading and its content, and the parts of one block, such
+  as the result word, its headline figure and the "kitur" links.
+- 2rem, the `main` grid: the page heading and intro, the main tool and the
+  first result.
+- 3rem, `.sections`: between `//` sections, and before the closing
+  `Kaip skaityti` and `Šaltinis ir licencija` disclosures, as in the homepage
+  explorer and dashboard.
+
+Grid gaps own the spacing, so direct children have no margins.
 
 ## Shared components
 
@@ -54,7 +63,7 @@ at 1rem. Grid gaps own the spacing, so direct children have no margins.
 Research pages keep the last lookup in `?q=` (`$lib/word-query`), so a copied
 link opens the same word. Only a `?q=` on load triggers a data request.
 
-Shared CSS classes: `.stack`, `.section-head` (heading plus an action on one
+Shared CSS classes: `.stack`, `.sections`, `.section-head` (heading plus an action on one
 line), `.note` (secondary text), `.notice` and `.notice.error` (left-ruled
 messages, as in the dago.lt tools), `.facts` (label and value grid),
 `.number` (right-aligned figures), `.details-body` (padding inside `details`).

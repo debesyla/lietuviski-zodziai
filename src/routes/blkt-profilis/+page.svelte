@@ -173,97 +173,98 @@
       <p class="notice" role="status"><strong>Žodis paskelbtame profilyje nerastas.</strong> Jis galėjo būti neaptiktas arba nepraeiti saugos slenksčio. Tai nereiškia, kad tokios raidžių sekos nėra BLKT.</p>
     {/if}
 
-    {#if result}
-      <article class="result" aria-labelledby="result-title">
-        <p class="sr-only" role="status" aria-live="polite">Rastas žodžio „{result.word}“ BLKT profilis.</p>
-        <div class="section-head">
-          <h2 id="result-title">{result.word}</h2>
-          <button type="button" class="text-button" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti JSON'}</button>
-        </div>
-        {#if downloadError}<p class="notice error" role="alert">{downloadError}</p>{/if}
-        {#if readout}<Headline figure={readout.figure} text={readout.text} note={readout.note} />{/if}
-        <WordElsewhere word={result.word} current="blkt-profilis" />
+    <div class="sections">
+      {#if result}
+        <article class="sections" aria-labelledby="result-title">
+          <p class="sr-only" role="status" aria-live="polite">Rastas žodžio „{result.word}“ BLKT profilis.</p>
+          <div class="stack">
+            <div class="section-head">
+              <h2 id="result-title">{result.word}</h2>
+              <button type="button" class="text-button" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti JSON'}</button>
+            </div>
+            {#if downloadError}<p class="notice error" role="alert">{downloadError}</p>{/if}
+            {#if readout}<Headline figure={readout.figure} text={readout.text} note={readout.note} />{/if}
+            <WordElsewhere word={result.word} current="blkt-profilis" />
+          </div>
 
-        <section class="stack" aria-labelledby="corpus-title">
-          <SectionHeading level={3} id="corpus-title">Visas tekstynas</SectionHeading>
-          <dl class="facts">
-            <div><dt>Pavartojimai</dt><dd>{formatInteger(result.corpus.tokenCount)}</dd></div>
-            <div><dt>Dokumentai su žodžiu</dt><dd>{formatInteger(result.corpus.documentCount)}</dd></div>
-            <div><dt>Milijonui žodžių</dt><dd>{formatRate(result.corpus.ratePerMillion)}</dd></div>
-          </dl>
-        </section>
-
-        {#each slices as slice (slice.id)}
-          <section class="stack" aria-labelledby={`${slice.id}-title`}>
-            <SectionHeading level={3} id={`${slice.id}-title`}>{slice.title}</SectionHeading>
-            {#if slice.items}
-              <p class="note">Pavartojimai milijonui žodžių</p>
-              <RateBars rows={slice.items.map(item => ({ label: item.label, value: item.ratePerMillion }))} unit="Pavartojimai milijonui žodžių" />
-              <details>
-                <summary>Lentelė</summary>
-                <TableScroll label={`Rezultatai ${slice.title.toLowerCase()}`}>
-                  <table>
-                    <thead><tr><th scope="col">{slice.column}</th><th scope="col" class="number">Pavartojimai</th><th scope="col" class="number">Dokumentai su žodžiu</th><th scope="col" class="number">Milijonui žodžių</th><th scope="col" class="number">Visi dokumentai</th><th scope="col" class="number">Visi žodžiai</th></tr></thead>
-                    <tbody>
-                      {#each slice.items as item (item.id)}
-                        <tr><th scope="row">{item.label}</th><td class="number">{formatInteger(item.tokenCount)}</td><td class="number">{formatInteger(item.documentCount)}</td><td class="number">{formatRate(item.ratePerMillion)}</td><td class="number">{formatInteger(item.documents)}</td><td class="number">{formatInteger(item.derivedTokens)}</td></tr>
-                      {/each}
-                    </tbody>
-                  </table>
-                </TableScroll>
-              </details>
-            {:else}
-              <p class="notice">{slice.withheld}</p>
-            {/if}
+          <section class="stack" aria-labelledby="corpus-title">
+            <SectionHeading level={3} id="corpus-title">Visas tekstynas</SectionHeading>
+            <dl class="facts">
+              <div><dt>Pavartojimai</dt><dd>{formatInteger(result.corpus.tokenCount)}</dd></div>
+              <div><dt>Dokumentai su žodžiu</dt><dd>{formatInteger(result.corpus.documentCount)}</dd></div>
+              <div><dt>Milijonui žodžių</dt><dd>{formatRate(result.corpus.ratePerMillion)}</dd></div>
+            </dl>
           </section>
-        {/each}
-      </article>
-    {/if}
 
-    <div>
-      <details>
-        <summary>Kaip skaityti</summary>
-        <div class="details-body">
-          <p><strong>Šaltinio riba:</strong> BLKT nėra reprezentatyvus visos lietuvių kalbos portretas, nes jame vyrauja žiniasklaida ir dokumentai. Rezultatai apibūdina tik šio tekstyno sudėtį.</p>
-          <p>Skaičiuojami projekto taisykle išskirti mažosiomis raidėmis sunorminti žodžiai. Dažnis milijonui skaičiuojamas pagal to paties pjūvio išvestinių žodžių vardiklį, o ne pagal šaltinio <code>alpha_word_count</code>.</p>
-          <p>Įrašai yra tokenizatoriaus aptiktos raidžių sekos, o ne patvirtinti lietuviški ar taisyklingi žodžiai. Iš dažnio negalima spręsti apie kalbinį taisyklingumą.</p>
-          <p>Žodis arba pjūvių šeima skelbiama tik tada, kai kiekviena teigiama reikšmė turi bent <strong>{profile.metadata.disclosure.minimumTokenCount}</strong> pavartojimų bent <strong>{profile.metadata.disclosure.minimumDocumentSupport}</strong> dokumentų. Potipiai, tekstai, pavadinimai, autoriai, nuorodos ir šaltinių identifikatoriai neskelbiami.</p>
-          <dl class="facts">
-            <div><dt>Dokumentų</dt><dd>{formatInteger(profile.metadata.corpus.documents)}</dd></div>
-            <div><dt>Išvestinių žodžių</dt><dd>{formatInteger(profile.metadata.corpus.derivedTokens)}</dd></div>
-            <div><dt>Paskelbtų žodžių formų</dt><dd>{formatInteger(profile.index.summary.recordCount)}</dd></div>
-          </dl>
-        </div>
-      </details>
+          {#each slices as slice (slice.id)}
+            <section class="stack" aria-labelledby={`${slice.id}-title`}>
+              <SectionHeading level={3} id={`${slice.id}-title`}>{slice.title}</SectionHeading>
+              {#if slice.items}
+                <p class="note">Pavartojimai milijonui žodžių</p>
+                <RateBars rows={slice.items.map(item => ({ label: item.label, value: item.ratePerMillion }))} unit="Pavartojimai milijonui žodžių" />
+                <details>
+                  <summary>Lentelė</summary>
+                  <TableScroll label={`Rezultatai ${slice.title.toLowerCase()}`}>
+                    <table>
+                      <thead><tr><th scope="col">{slice.column}</th><th scope="col" class="number">Pavartojimai</th><th scope="col" class="number">Dokumentai su žodžiu</th><th scope="col" class="number">Milijonui žodžių</th><th scope="col" class="number">Visi dokumentai</th><th scope="col" class="number">Visi žodžiai</th></tr></thead>
+                      <tbody>
+                        {#each slice.items as item (item.id)}
+                          <tr><th scope="row">{item.label}</th><td class="number">{formatInteger(item.tokenCount)}</td><td class="number">{formatInteger(item.documentCount)}</td><td class="number">{formatRate(item.ratePerMillion)}</td><td class="number">{formatInteger(item.documents)}</td><td class="number">{formatInteger(item.derivedTokens)}</td></tr>
+                        {/each}
+                      </tbody>
+                    </table>
+                  </TableScroll>
+                </details>
+              {:else}
+                <p class="notice">{slice.withheld}</p>
+              {/if}
+            </section>
+          {/each}
+        </article>
+      {/if}
 
-      <details>
-        <summary>Šaltinis ir licencija</summary>
-        <div class="details-body">
-          <p>{profile.manifest.provenance.citation}</p>
-          <p><a href={profile.manifest.provenance.sourceUrl}>Oficialus BLKT šaltinio įrašas</a></p>
-          <p>Taikomos abi šaltinio licencijos. Projekto savininkas patvirtino leidimą skelbti šio projekto išvestinius agregatus ir duomenų rinkinius.</p>
-          <ul>
-            {#each profile.metadata.rights.licences as licence}
-              <li><a href={licence.url}>{licence.name}</a> (<a href={`${base}/data-products/${profile.manifest.id}/${licence.file}`}>pilnas tekstas</a>)</li>
-            {/each}
-          </ul>
-          <p>{profile.metadata.rights.modificationNotice}</p>
-          <ul>
-            {#each profile.metadata.rights.attributionNotices as attribution}
-              <li>{attribution}</li>
-            {/each}
-          </ul>
-          <ul>
-            {#each profile.metadata.rights.downstreamRequirements as requirement}
-              <li>{requirement}</li>
-            {/each}
-          </ul>
-        </div>
-      </details>
+      <div>
+        <details>
+          <summary>Kaip skaityti</summary>
+          <div class="details-body">
+            <p><strong>Šaltinio riba:</strong> BLKT nėra reprezentatyvus visos lietuvių kalbos portretas, nes jame vyrauja žiniasklaida ir dokumentai. Rezultatai apibūdina tik šio tekstyno sudėtį.</p>
+            <p>Skaičiuojami projekto taisykle išskirti mažosiomis raidėmis sunorminti žodžiai. Dažnis milijonui skaičiuojamas pagal to paties pjūvio išvestinių žodžių vardiklį, o ne pagal šaltinio <code>alpha_word_count</code>.</p>
+            <p>Įrašai yra tokenizatoriaus aptiktos raidžių sekos, o ne patvirtinti lietuviški ar taisyklingi žodžiai. Iš dažnio negalima spręsti apie kalbinį taisyklingumą.</p>
+            <p>Žodis arba pjūvių šeima skelbiama tik tada, kai kiekviena teigiama reikšmė turi bent <strong>{profile.metadata.disclosure.minimumTokenCount}</strong> pavartojimų bent <strong>{profile.metadata.disclosure.minimumDocumentSupport}</strong> dokumentų. Potipiai, tekstai, pavadinimai, autoriai, nuorodos ir šaltinių identifikatoriai neskelbiami.</p>
+            <dl class="facts">
+              <div><dt>Dokumentų</dt><dd>{formatInteger(profile.metadata.corpus.documents)}</dd></div>
+              <div><dt>Išvestinių žodžių</dt><dd>{formatInteger(profile.metadata.corpus.derivedTokens)}</dd></div>
+              <div><dt>Paskelbtų žodžių formų</dt><dd>{formatInteger(profile.index.summary.recordCount)}</dd></div>
+            </dl>
+          </div>
+        </details>
+
+        <details>
+          <summary>Šaltinis ir licencija</summary>
+          <div class="details-body">
+            <p>{profile.manifest.provenance.citation}</p>
+            <p><a href={profile.manifest.provenance.sourceUrl}>Oficialus BLKT šaltinio įrašas</a></p>
+            <p>Taikomos abi šaltinio licencijos. Projekto savininkas patvirtino leidimą skelbti šio projekto išvestinius agregatus ir duomenų rinkinius.</p>
+            <ul>
+              {#each profile.metadata.rights.licences as licence}
+                <li><a href={licence.url}>{licence.name}</a> (<a href={`${base}/data-products/${profile.manifest.id}/${licence.file}`}>pilnas tekstas</a>)</li>
+              {/each}
+            </ul>
+            <p>{profile.metadata.rights.modificationNotice}</p>
+            <ul>
+              {#each profile.metadata.rights.attributionNotices as attribution}
+                <li>{attribution}</li>
+              {/each}
+            </ul>
+            <ul>
+              {#each profile.metadata.rights.downstreamRequirements as requirement}
+                <li>{requirement}</li>
+              {/each}
+            </ul>
+          </div>
+        </details>
+      </div>
     </div>
   {/if}
 </main>
 
-<style>
-  .result { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
-</style>
