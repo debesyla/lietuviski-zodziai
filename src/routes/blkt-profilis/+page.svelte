@@ -14,6 +14,7 @@
   } from '$lib/blkt-wordform-profile';
   import { saveJson } from '$lib/download';
   import { site } from '$lib/site';
+  import { readWordQuery, writeWordQuery } from '$lib/word-query';
 
   let profile = $state<LoadedBlktWordformProfile | null>(null);
   let loading = $state(true);
@@ -42,6 +43,7 @@
 
   async function search(value: string) {
     if (!profile || !value.trim()) return;
+    writeWordQuery(value);
     const request = ++requestNumber;
     searched = true;
     result = null;
@@ -99,6 +101,8 @@
       if (cancelled) return;
       profile = loaded;
       loading = false;
+      query = readWordQuery();
+      if (query) void search(query);
     }).catch((cause) => {
       if (cancelled) return;
       loadError = cause instanceof Error ? cause.message : String(cause);

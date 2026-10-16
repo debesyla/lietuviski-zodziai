@@ -210,3 +210,24 @@ it('explains a no-result response without presenting it as a zero', async () => 
   expect(getByText(/nereiškia, kad tokios raidžių sekos nėra BLKT/i)).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 });
+
+it('runs the lookup from a shared ?q= link', async () => {
+  window.history.replaceState(null, '', `/blkt-profilis?q=${encodeURIComponent('žodis')}`);
+  const { getByLabelText, getByRole } = render(Page);
+
+  await waitFor(() => expect(getByRole('heading', { name: 'žodis' })).toBeInTheDocument());
+  expect(lookupBlktWordform).toHaveBeenCalledOnce();
+  expect(lookupBlktWordform).toHaveBeenCalledWith(profile, 'žodis');
+  expect(getByLabelText('Viena žodžio forma')).toHaveValue('žodis');
+});
+
+it('keeps each lookup in ?q= so it can be shared', async () => {
+  const user = userEvent.setup();
+  const { getByLabelText, getByRole } = render(Page);
+
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
+  await user.type(getByLabelText('Viena žodžio forma'), 'Žodis');
+  await user.keyboard('{Enter}');
+
+  expect(window.location.search).toBe(`?q=${encodeURIComponent('Žodis')}`);
+});

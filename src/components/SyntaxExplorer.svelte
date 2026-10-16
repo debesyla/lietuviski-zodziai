@@ -9,6 +9,7 @@
     type SyntaxLemma,
     type SyntaxOverviewData
   } from '$lib/syntax-context';
+  import { readWordQuery, writeWordQuery } from '$lib/word-query';
 
   // Plain-language names for the most common ALKSNIS relation labels.
   const relationNames: Record<string, string> = {
@@ -83,6 +84,7 @@
       searchError = 'Įveskite bent vieną lemos raidę.';
       return;
     }
+    writeWordQuery(term);
     searched = true;
     searching = true;
     try {
@@ -125,6 +127,8 @@
       if (cancelled) return;
       overview = loaded;
       loading = false;
+      query = readWordQuery();
+      if (query) void search(query);
     }).catch((cause) => {
       if (cancelled) return;
       error = cause instanceof Error ? cause.message : String(cause);

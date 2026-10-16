@@ -72,3 +72,25 @@ it('opens contexts straight away when the query is an exact lemma', async () => 
   expect(getByText('kalba', { selector: 'mark' })).toBeInTheDocument();
   expect(container.querySelector('blockquote')).toHaveTextContent(/^Lietuvių kalba gyvuoja \(dar\)\.$/);
 });
+
+it('runs the lookup from a shared ?q= link and opens an exact lemma', async () => {
+  vi.mocked(loadSyntaxContexts).mockResolvedValueOnce([context('Lietuvių kalba gyvuoja .')]);
+  window.history.replaceState(null, '', '/sintakse?q=kalba');
+  const { getByRole } = render(SyntaxExplorer);
+
+  await waitFor(() => expect(getByRole('heading', { name: 'Sakinių kontekstai: kalba' })).toBeInTheDocument());
+  expect(searchSyntaxLemmas).toHaveBeenCalledOnce();
+  expect(searchSyntaxLemmas).toHaveBeenCalledWith(expect.anything(), 'kalba');
+  expect(getByRole('textbox', { name: 'Lemos pradžia' })).toHaveValue('kalba');
+});
+
+it('keeps each lookup in ?q= so it can be shared', async () => {
+  const user = userEvent.setup();
+  const { getByRole, getByLabelText } = render(SyntaxExplorer);
+
+  await waitFor(() => expect(getByRole('button', { name: 'Ieškoti' })).toBeInTheDocument());
+  await user.type(getByLabelText('Lemos pradžia'), 'kalb');
+  await user.click(getByRole('button', { name: 'Ieškoti' }));
+
+  expect(window.location.search).toBe('?q=kalb');
+});
