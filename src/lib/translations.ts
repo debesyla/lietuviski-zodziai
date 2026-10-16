@@ -76,6 +76,8 @@ export const translations = {
     
     // Main page
     pageTitle: 'Dažniausi lietuviški žodžiai',
+    documentTitle: 'Dažniausi lietuviški žodžiai · dago.lt',
+    pageSubtitle: 'Lietuvių kalbos dažninis žodynas: paieška, filtrai, grafikai ir CSV eksportas',
     selectDataset: 'Pasirinkite duomenis',
     loadingCatalog: 'Kraunamas duomenų katalogas...',
     errorLoadingCatalog: 'Klaida kraunant duomenų katalogą',

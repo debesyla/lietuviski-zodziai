@@ -36,11 +36,13 @@
 </script>
 
 <svelte:head>
-  <title>{t('pageTitle')}</title>
+  <title>{t('documentTitle')}</title>
+  <meta name="description" content={t('pageSubtitle')} />
 </svelte:head>
 
 <main>
   <h1>{t('pageTitle')}</h1>
+  <p class="subtitle">{t('pageSubtitle')}</p>
 
   {#if catalogLoading}
     <div class="loading" role="status" aria-live="polite">{t('loadingCatalog')}</div>
@@ -69,7 +71,12 @@
 
 <style>
   h1 {
+    margin-bottom: var(--xs);
+  }
+
+  .subtitle {
     margin-bottom: var(--lg);
+    opacity: 0.8;
   }
 
   .dataset-selector {
