@@ -15,7 +15,7 @@ export const datasetCopy: Record<string, { title: string; description: string }>
   'zemriete-2025-lithuanian-homoforms': { title: 'Lietuvių homoformos', description: 'Vienodai rašomų formų analizės.' },
   'raskinis-2025-foreign-name-transliterations': { title: 'Užsienio vardų atitikmenys', description: 'Vardų perteikimo poros ir atitikčių skaičiai.' },
   'birvinskaite-2026-lithuanian-basketball-slang': { title: 'Krepšinio žargonas', description: 'Lietuviški krepšinio žargono įrašai.' },
-  'rimkute-morphemic-dictionary': { title: 'Morfemikos žodynas', description: '72 325 įrašai iš trijų 2011 m. žodyno tomų.' }
+  'rimkute-morphemic-dictionary': { title: 'Morfemikos žodynas', description: '72325 įrašai iš trijų 2011 m. žodyno tomų.' }
 };
 
 export function datasetTitle(id: string, fallback: string) {

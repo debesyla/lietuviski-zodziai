@@ -63,6 +63,6 @@ describe('timesPhrase', () => {
     expect(timesPhrase(10)).toBe('10 kartų');
     expect(timesPhrase(15)).toBe('15 kartų');
     expect(timesPhrase(21)).toBe('21 kartą');
-    expect(timesPhrase(1068.4)).toBe(`${(1068).toLocaleString('lt-LT')} kartus`);
+    expect(timesPhrase(1068.4)).toBe('1068 kartus');
   });
 });

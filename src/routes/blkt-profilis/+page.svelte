@@ -19,6 +19,7 @@
   import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
   import { spreadReadout } from '$lib/readout';
+  import { formatNumber } from '$lib/utils';
 
   const tool = researchTool('blkt-profilis');
 
@@ -55,11 +56,11 @@
   });
 
   function formatInteger(value: number) {
-    return value.toLocaleString('lt-LT');
+    return formatNumber(value);
   }
 
   function formatRate(value: number) {
-    return value.toLocaleString('lt-LT', { maximumFractionDigits: 2 });
+    return formatNumber(value, { maximumFractionDigits: 2 });
   }
 
   async function search(value: string) {

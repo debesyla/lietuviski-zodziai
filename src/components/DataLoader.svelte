@@ -3,7 +3,7 @@
   import type { Snippet } from 'svelte';
   import { entriesToCoverage, rankWords } from '$lib/analysis';
   import { datasetDescription, datasetTitle } from '$lib/dataset-labels';
-  import { filterWords, paginate, pluralLt, sortWords } from '$lib/utils';
+  import { filterWords, formatNumber, paginate, pluralLt, sortWords } from '$lib/utils';
   import type { WordSortKey } from '$lib/utils';
   import { t } from '$lib/translations';
   import SectionHeading from './SectionHeading.svelte';
@@ -127,9 +127,9 @@
 <div class="headline-slot">
   {#if dataset && halfCoverageEntries !== null}
     <Headline
-      figure={halfCoverageEntries.toLocaleString('lt-LT')}
+      figure={formatNumber(halfCoverageEntries)}
       text={`${pluralLt(halfCoverageEntries, ['dažniausias žodis', 'dažniausi žodžiai', 'dažniausių žodžių'])} sudaro pusę pavartojimų.`}
-      note={`Iš ${rankedWords.length.toLocaleString('lt-LT')} žodžių šaltinyje „${datasetTitle(dataset.id, `${dataset.title} (${dataset.year})`)}“. Skaičiai aprašo tik šį šaltinį, ne visą lietuvių kalbą.`}
+      note={`Iš ${formatNumber(rankedWords.length)} žodžių šaltinyje „${datasetTitle(dataset.id, `${dataset.title} (${dataset.year})`)}“. Skaičiai aprašo tik šį šaltinį, ne visą lietuvių kalbą.`}
     />
   {/if}
 </div>
@@ -168,9 +168,9 @@
     <p class="note wide" role="status" aria-live="polite">{t('updatingResults')}</p>
   {:else if dataset}
     <p class="totals wide">
-      <span>{t('entries')}: <strong>{filteredWords.length.toLocaleString('lt-LT')}</strong></span>
+      <span>{t('entries')}: <strong>{formatNumber(filteredWords.length)}</strong></span>
       <span class="inline-separator" aria-hidden="true">//</span>
-      <span>{t('totalFrequency')}: <strong>{filteredFrequency.toLocaleString('lt-LT')}</strong></span>
+      <span>{t('totalFrequency')}: <strong>{formatNumber(filteredFrequency)}</strong></span>
     </p>
     {#if exactMatch}<div class="wide"><WordElsewhere word={exactMatch.word} /></div>{/if}
   {/if}
@@ -205,7 +205,7 @@
     {#if sortedFilteredWords.length === 0}
       <p class="notice empty-state" role="status" aria-live="polite">{t('noMatchingWords')}</p>
     {:else}
-      <p class="note" role="status" aria-live="polite">{t('showingResults', { start: resultPage.start.toLocaleString('lt-LT'), end: resultPage.end.toLocaleString('lt-LT'), total: sortedFilteredWords.length.toLocaleString('lt-LT') })}</p>
+      <p class="note" role="status" aria-live="polite">{t('showingResults', { start: formatNumber(resultPage.start), end: formatNumber(resultPage.end), total: formatNumber(sortedFilteredWords.length) })}</p>
       {#key filename}
         <DataTable words={resultPage.items} {typeLabels} bind:sortKey bind:sortAsc />
       {/key}

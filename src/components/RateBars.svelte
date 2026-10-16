@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { formatNumber } from '$lib/utils';
+
   type Row = { label: string; value: number | null };
 
   let {
@@ -15,7 +17,7 @@
   function formatRate(value: number | null) {
     if (value === null) return 'Neaptikta';
     if (value > 0 && value < 0.01) return '<0,01';
-    return value.toLocaleString('lt-LT', { maximumFractionDigits: 2 });
+    return formatNumber(value, { maximumFractionDigits: 2 });
   }
 </script>
 

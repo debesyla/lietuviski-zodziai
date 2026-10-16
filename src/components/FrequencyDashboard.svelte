@@ -3,7 +3,7 @@
   import RateBars from './RateBars.svelte';
   import TableScroll from './TableScroll.svelte';
   import { analyseFrequency, sampleByRank } from '$lib/analysis';
-  import { pluralLt } from '$lib/utils';
+  import { formatNumber, pluralLt } from '$lib/utils';
   import { t } from '$lib/translations';
   import type { Word } from '$lib/data';
   import type { Snippet } from 'svelte';
@@ -39,13 +39,9 @@
   let frequencyTicks = $derived(logTicks(maximumFrequency, minimumFrequency));
   let milestones = $derived([analysis.facts.halfCoverage, analysis.facts.ninetyCoverage].filter((milestone) => milestone !== null));
 
-  function formatNumber(value: number) {
-    return value.toLocaleString('lt-LT');
-  }
-
   function formatPercent(value: number) {
     if (value > 0 && value < 0.0005) return '<0,1 %';
-    return new Intl.NumberFormat('lt-LT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
+    return formatNumber(value, { style: 'percent', maximumFractionDigits: 1 });
   }
 
   function displayType(type: string) {

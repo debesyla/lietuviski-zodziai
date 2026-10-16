@@ -18,6 +18,7 @@
   import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
   import { spreadReadout } from '$lib/readout';
+  import { formatNumber } from '$lib/utils';
 
   const tool = researchTool('zanru-profilis');
 
@@ -35,12 +36,8 @@
     ? spreadReadout(result.word, profile.sources.map((source) => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) })), (label) => `žanre „${label}“`, 'vartojama')
     : null);
 
-  function formatNumber(value: number) {
-    return value.toLocaleString('lt-LT');
-  }
-
   function formatRate(value: number | null) {
-    return value === null ? 'Neaptikta' : value.toLocaleString('lt-LT', { maximumFractionDigits: 2 });
+    return value === null ? 'Neaptikta' : formatNumber(value, { maximumFractionDigits: 2 });
   }
 
   async function search(value: string) {

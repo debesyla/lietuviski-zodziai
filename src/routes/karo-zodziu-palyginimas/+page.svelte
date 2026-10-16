@@ -17,6 +17,7 @@
   import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
   import { pairReadout, timesPhrase } from '$lib/readout';
+  import { formatNumber } from '$lib/utils';
 
   const tool = researchTool('karo-zodziu-palyginimas');
 
@@ -45,16 +46,12 @@
     return pairReadout(result.word.toLocaleLowerCase('lt-LT'), label(strongest.pair.numeratorSource), label(strongest.pair.denominatorSource), strongest.logRatio);
   });
 
-  function formatNumber(value: number) {
-    return value.toLocaleString('lt-LT');
-  }
-
   function formatRate(value: number | null) {
     return value === null ? 'Neaptikta' : formatNumber(value);
   }
 
   function formatLogRatio(value: number) {
-    return `${value >= 0 ? '+' : ''}${value.toLocaleString('lt-LT', { maximumFractionDigits: 2 })} log₂`;
+    return `${value >= 0 ? '+' : ''}${formatNumber(value, { maximumFractionDigits: 2 })} log₂`;
   }
 
   function describeRatio(value: number) {

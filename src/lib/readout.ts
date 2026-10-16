@@ -1,16 +1,16 @@
 // One-sentence readouts for research results. They restate values already on
 // screen and name each source; they never add a measure or a combined score.
-import { pluralLt } from './utils';
+import { formatNumber, pluralLt } from './utils';
 
 export type Readout = { figure: string; text: string };
 export type RateRow = { label: string; value: number | null };
 
 function formatRate(value: number) {
-  return value.toLocaleString('lt-LT', { maximumFractionDigits: 2 });
+  return formatNumber(value, { maximumFractionDigits: 2 });
 }
 
 function formatRatio(ratio: number) {
-  return ratio.toLocaleString('lt-LT', { maximumFractionDigits: ratio >= 100 ? 0 : 1 });
+  return formatNumber(ratio, { maximumFractionDigits: ratio >= 100 ? 0 : 1 });
 }
 
 /** "16,1 karto", but "8 kartus" and "10 kartų": decimals take the genitive singular. */

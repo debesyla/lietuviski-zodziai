@@ -128,7 +128,7 @@ describe('Public data catalogue page', () => {
     expect(within(morphemicCard).getByText(/Leidžiama išgauti ir taisyti PDF duomenis/)).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/Rimkutė, Erika/)).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/MODIFIED FILE/)).toBeInTheDocument();
-    expect(within(morphemicCard).getByText(/72 325 įrašai/)).toBeInTheDocument();
+    expect(within(morphemicCard).getByText(/72325 įrašai/)).toBeInTheDocument();
     expect(within(morphemicCard).getByText(/61 eilute daugiau.*tik kontekstui.*ne kaip išgavimo tikslas/i)).toBeInTheDocument();
 
     const comparisonCard = getByRole('article', { name: 'DML6 žodyno aprėptis' });

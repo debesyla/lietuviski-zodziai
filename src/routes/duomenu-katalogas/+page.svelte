@@ -31,7 +31,7 @@
     const sourceSpecificLimits: Record<string, string> = {
       'kapociute-dzikiene-2017-parliament-frequency-aggregates': 'Pateikiamos tik viso tekstyno suvestinės; tai nėra autorystės nustatymo, politikų reitingavimo, citatų ar kalendorinės analizės priemonė.',
       'vssa-2026-blkt-wordform-profile': 'BLKT nėra reprezentatyvus visos lietuvių kalbos portretas, nes jame vyrauja žiniasklaida ir dokumentai. Tokenizatoriaus raidžių sekos nėra taisyklingumo ar lietuviškumo įvertinimas. Ieškoma tik viena tiksli forma; neskelbiami reitingai, potipiai, sankirtos ar saugos slenksčio nepasiekusios pjūvių šeimos.',
-      'rimkute-morphemic-dictionary': 'Dažniai aprašo tik žodyno šaltinio tekstyną. PDF turi 61 eilute daugiau nei vėlesnei gyvai „Morfema“ bazei nurodomi 72 264 įrašai; gyvos bazės skaičius pateikiamas tik kontekstui, o ne kaip išgavimo tikslas. Tai nėra gyvos bazės eksportas.'
+      'rimkute-morphemic-dictionary': 'Dažniai aprašo tik žodyno šaltinio tekstyną. PDF turi 61 eilute daugiau nei vėlesnei gyvai „Morfema“ bazei nurodomi 72264 įrašai; gyvos bazės skaičius pateikiamas tik kontekstui, o ne kaip išgavimo tikslas. Tai nėra gyvos bazės eksportas.'
     };
     if (sourceSpecificLimits[product.id]) return sourceSpecificLimits[product.id];
     if (product.publication.reason) return product.publication.reason;

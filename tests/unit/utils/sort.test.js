@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { paginate, RESULTS_PER_PAGE, sortWords } from '../../../src/lib/utils.ts';
+import { formatNumber, paginate, RESULTS_PER_PAGE, sortWords } from '../../../src/lib/utils.ts';
 
 describe('sortWords', () => {
   const words = [
@@ -81,5 +81,15 @@ describe('paginate', () => {
   it('clamps out-of-range pages and represents an empty result set', () => {
     expect(paginate(['a', 'b'], 99)).toMatchObject({ currentPage: 1, totalPages: 1, start: 1, end: 2 });
     expect(paginate([], 4)).toMatchObject({ currentPage: 1, totalPages: 1, start: 0, end: 0, items: [] });
+  });
+});
+
+describe('formatNumber', () => {
+  it('keeps whole numbers ungrouped and Lithuanian decimals and percentages', () => {
+    expect(formatNumber(41977)).toBe('41977');
+    expect(formatNumber(1266854554)).toBe('1266854554');
+    expect(formatNumber(111111.114, { maximumFractionDigits: 2 })).toBe('111111,11');
+    expect(formatNumber(0.395, { style: 'percent', maximumFractionDigits: 1 })).toMatch(/^39,5\s%$/);
+    expect(formatNumber(12.5, { useGrouping: true })).toBe('12,5');
   });
 });

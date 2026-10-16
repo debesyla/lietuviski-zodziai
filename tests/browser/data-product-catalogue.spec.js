@@ -43,7 +43,7 @@ test('makes every public data product discoverable with scope, limits, and a saf
   const morphemicDictionary = page.getByRole('article', { name: 'Morfemikos žodynas' });
   await morphemicDictionary.locator('summary').click();
   await expect(morphemicDictionary.getByText('Rightsholder permission')).toBeVisible();
-  await expect(morphemicDictionary.getByText(/72 325 įrašai/i)).toBeVisible();
+  await expect(morphemicDictionary.getByText(/72325 įrašai/i)).toBeVisible();
   await expect(morphemicDictionary.getByText(/61 eilute daugiau.*tik kontekstui.*ne kaip išgavimo tikslas/i)).toBeVisible();
   await expect(morphemicDictionary.getByRole('link', { name: 'Morfemikos žodynas' })).toHaveAttribute(
     'href',

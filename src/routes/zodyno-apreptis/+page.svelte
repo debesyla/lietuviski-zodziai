@@ -12,6 +12,7 @@
     type Dml6CoverageProfile
   } from '$lib/dml6-coverage';
   import { saveFile } from '$lib/download';
+  import { formatNumber } from '$lib/utils';
   import { site } from '$lib/site';
   import { researchTool } from '$lib/research-tools';
 
@@ -48,13 +49,9 @@
     : drilldown && selectedBand ? `Įkelta pavyzdžių: ${drilldown.records.length}. ${selectedCategoryLabel}, dažnumas ${bandLabel(selectedBand)}.`
     : '');
 
-  function formatNumber(value: number) {
-    return value.toLocaleString('lt-LT');
-  }
-
   function formatPercent(value: number) {
     if (value > 0 && value < 0.0005) return '<0,1 %';
-    return new Intl.NumberFormat('lt-LT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
+    return formatNumber(value, { style: 'percent', maximumFractionDigits: 1 });
   }
 
   function bandLabel(band: Band) {

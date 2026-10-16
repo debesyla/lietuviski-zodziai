@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/translations';
   import TableScroll from './TableScroll.svelte';
-  import { sortWords } from '$lib/utils';
+  import { formatNumber, sortWords } from '$lib/utils';
   import type { WordSortKey } from '$lib/utils';
   interface Word {
     word: string;
@@ -75,9 +75,9 @@
     <tbody>
       {#each sortedWords as word}
         <tr>
-          <td class="number">{word.rank?.toLocaleString('lt-LT') ?? ''}</td>
+          <td class="number">{word.rank === undefined ? '' : formatNumber(word.rank)}</td>
           <td>{word.word}</td>
-          <td class="number">{word.frequency.toLocaleString('lt-LT')}</td>
+          <td class="number">{formatNumber(word.frequency)}</td>
           <td>{displayType(word.type)}</td>
         </tr>
       {/each}
