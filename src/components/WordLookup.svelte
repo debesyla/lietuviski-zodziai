@@ -51,7 +51,7 @@
 </form>
 
 <style>
-  .lookup { display: grid; gap: .5rem; }
+  .lookup { display: grid; gap: .5rem; grid-template-columns: minmax(0, 1fr); }
   .lookup > * { margin: 0; }
   label { font-weight: 700; }
   .lookup-row { align-items: stretch; display: flex; gap: 1rem; }

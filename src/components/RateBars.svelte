@@ -30,7 +30,7 @@
 </div>
 
 <style>
-  .rates { display: grid; gap: .5rem; min-width: 0; }
+  .rates { display: grid; gap: .5rem; grid-template-columns: minmax(0, 1fr); min-width: 0; }
   .rate { align-items: center; display: grid; gap: 1rem; grid-template-columns: minmax(10ch, 22ch) minmax(0, 1fr) 10ch; }
   .short .rate { grid-template-columns: minmax(6ch, 14ch) minmax(0, 1fr) 10ch; }
   .label { overflow-wrap: anywhere; }

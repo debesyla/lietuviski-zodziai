@@ -93,16 +93,20 @@ input:is([type="text"], [type="search"], :not([type])) {
   opacity: 1;
 }
 
-/* Some engines ignore select padding; match the text input height (>= 44px). */
+/* WebKit ignores padding and min-height on native selects; an explicit height
+   keeps them as tall as text inputs (>= 44px) in every engine. */
 select {
+  height: calc(1.5em + 1.3rem + 2px);
   max-width: 100%;
-  min-height: calc(1.5em + 1.3rem + 2px);
 }
 
 /* Shared building blocks */
+/* Single-column grids pin their track to the container; an implicit auto
+   track lets WebKit widen it to the content's min-content size. */
 .stack {
   display: grid;
   gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .section-head {
@@ -172,6 +176,7 @@ table {
 .details-body {
   display: grid;
   gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
   overflow-wrap: anywhere;
   padding: 0.85rem;
 }
