@@ -3,6 +3,8 @@
   import RateBars from '../../components/RateBars.svelte';
   import WordLookup from '../../components/WordLookup.svelte';
   import PageMeta from '../../components/PageMeta.svelte';
+  import WordElsewhere from '../../components/WordElsewhere.svelte';
+  import Headline from '../../components/Headline.svelte';
   import TableScroll from '../../components/TableScroll.svelte';
   import {
     loadCcllGenreProfile,
@@ -13,7 +15,11 @@
   } from '$lib/ccll-genre-profile';
   import { saveJson } from '$lib/download';
   import { site } from '$lib/site';
+  import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
+  import { spreadReadout } from '$lib/readout';
+
+  const tool = researchTool('zanru-profilis');
 
   let profile = $state<CcllGenreProfile | null>(null);
   let loading = $state(true);
@@ -24,6 +30,10 @@
   let lookupLoading = $state(false);
   let searched = $state(false);
   let requestNumber = 0;
+
+  let readout = $derived(profile && result
+    ? spreadReadout(result.word, profile.sources.map((source) => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) })), (label) => `žanre „${label}“`, 'vartojama')
+    : null);
 
   function formatNumber(value: number) {
     return value.toLocaleString('lt-LT');
@@ -95,14 +105,14 @@
 </script>
 
 <PageMeta
-  title="ccll žanrų profilis // dažniausi žodžiai"
+  title={`${tool.pageTitle} // dažniausi lietuviški žodžiai`}
   description="Tikslios žodžio formos dažnis penkiuose CCLL žanruose: grožinėje ir negrožinėje literatūroje, administraciniuose tekstuose, periodikoje ir sakytinėje kalboje."
   url={site.genreProfileUrl}
 />
 
 <main>
   <header class="stack">
-    <SectionHeading>CCLL žanrų profilis</SectionHeading>
+    <SectionHeading>{tool.question}</SectionHeading>
     <p>Kaip dažnai tiksli žodžio forma vartojama penkiuose Dabartinės lietuvių kalbos tekstyno (CCLL) žanruose. Skaičiai perskaičiuoti milijonui žodžių.</p>
   </header>
 
@@ -136,6 +146,8 @@
           <h2 id="result-title">{result.word}</h2>
           <button type="button" class="text-button" onclick={downloadResult}>Atsisiųsti JSON</button>
         </div>
+        {#if readout}<Headline figure={readout.figure} text={readout.text} />{/if}
+        <WordElsewhere word={result.word} current="zanru-profilis" />
 
         <SectionHeading level={3}>Pavartojimai milijonui žodžių</SectionHeading>
         <RateBars rows={profile.sources.map(source => ({ label: source.label, value: ratePerMillion(profile!, result!, source.id) }))} unit="Pavartojimai milijonui žodžių" />

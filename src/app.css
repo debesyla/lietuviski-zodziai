@@ -39,14 +39,35 @@
 }
 
 .site-navigation {
+  align-items: baseline;
   display: flex;
   flex-wrap: wrap;
   font-size: 0.875rem;
   gap: 0.25rem 0.75rem;
 }
 
-.site-navigation [aria-current="page"] {
+/* The current section is filled amber, like the selected tab on dago.lt/irankiai/asmens-kodai.
+   A tight line height keeps the fill low; side shadows pad it without moving the text
+   off the column edge. */
+.site-navigation [aria-current] {
+  background: hsl(var(--theme));
+  box-shadow: -0.3em 0 0 hsl(var(--theme)), 0.3em 0 0 hsl(var(--theme));
+  color: hsl(var(--black));
   font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.site-navigation [aria-current]:is(:hover, :focus-visible) {
+  background: hsl(var(--theme) / 0.82);
+  box-shadow: -0.3em 0 0 hsl(var(--theme) / 0.82), 0.3em 0 0 hsl(var(--theme) / 0.82);
+}
+
+/* The shared focus ring uses currentColor, which is dark here; keep it amber and outside the fill. */
+.site-navigation [aria-current]:focus-visible {
+  outline-color: hsl(var(--theme));
+  outline-offset: 3px;
+  outline-style: solid;
 }
 
 .inline-separator {

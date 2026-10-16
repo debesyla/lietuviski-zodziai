@@ -35,7 +35,7 @@ const [home, methodology, robots, sitemap, socialImage] = await Promise.all([
   readBuildFile('apie.html'),
   readBuildFile('robots.txt'),
   readBuildFile('sitemap.xml'),
-  readFile(path.join(outputRoot, 'social-preview-v2.png'))
+  readFile(path.join(outputRoot, 'social-preview-v3.png'))
 ]);
 
 for (const expected of [
@@ -44,17 +44,17 @@ for (const expected of [
   '<link rel="icon" type="image/png" href="https://dago.lt/assets/img/dago-icon.png"/>',
   '<link rel="stylesheet" href="https://dago.lt/assets/styles/reset.css?v=20260808"/>',
   '<link rel="stylesheet" href="https://dago.lt/assets/styles/dago.css?v=20260901"/>',
-  '<title>dažniausi žodžiai // dago</title>',
+  '<title>dažniausi lietuviški žodžiai // dago</title>',
   `<link rel="canonical" href="${siteUrl}/"`,
   `<meta property="og:url" content="${siteUrl}/"`,
-  `<meta property="og:image" content="${siteUrl}/social-preview-v2.png"`,
+  `<meta property="og:image" content="${siteUrl}/social-preview-v3.png"`,
   '<meta name="twitter:card" content="summary_large_image"'
 ]) {
   expectIncludes(home, expected, 'index.html');
 }
 
 for (const expected of [
-  '<title>metodika ir šaltiniai // dažniausi žodžiai</title>',
+  '<title>metodika ir šaltiniai // dažniausi lietuviški žodžiai</title>',
   `<link rel="canonical" href="${siteUrl}/apie"`,
   `<meta property="og:url" content="${siteUrl}/apie"`
 ]) {
@@ -67,10 +67,10 @@ for (const route of publicRoutes) {
 }
 
 if (!socialImage.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) {
-  throw new Error('social-preview-v2.png is not a PNG file');
+  throw new Error('social-preview-v3.png is not a PNG file');
 }
 if (socialImage.readUInt32BE(16) !== 1200 || socialImage.readUInt32BE(20) !== 630) {
-  throw new Error('social-preview-v2.png must be 1200 by 630 pixels');
+  throw new Error('social-preview-v3.png must be 1200 by 630 pixels');
 }
 
 expectIncludes(home, 'href="./apie"', 'index.html');

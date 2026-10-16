@@ -1,7 +1,7 @@
 import type { Word } from './data';
 
 export type WordSortKey = 'word' | 'frequency' | 'type';
-export const RESULTS_PER_PAGE = 50;
+export const RESULTS_PER_PAGE = 20;
 
 export interface Page<T> {
   items: T[];

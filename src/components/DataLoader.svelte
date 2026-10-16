@@ -1,8 +1,9 @@
 <script lang="ts">
   import { loadDataset, type Dataset } from '$lib/data';
-  import { rankWords } from '$lib/analysis';
-  import { datasetTitle } from '$lib/dataset-labels';
-  import { filterWords, paginate, sortWords } from '$lib/utils';
+  import type { Snippet } from 'svelte';
+  import { entriesToCoverage, rankWords } from '$lib/analysis';
+  import { datasetDescription, datasetTitle } from '$lib/dataset-labels';
+  import { filterWords, paginate, pluralLt, sortWords } from '$lib/utils';
   import type { WordSortKey } from '$lib/utils';
   import { t } from '$lib/translations';
   import SectionHeading from './SectionHeading.svelte';
@@ -10,12 +11,15 @@
   import DataTable from './DataTable.svelte';
   import DownloadButton from './DownloadButton.svelte';
   import FrequencyDashboard from './FrequencyDashboard.svelte';
+  import WordElsewhere from './WordElsewhere.svelte';
+  import Headline from './Headline.svelte';
 
-  let { filename, datasets = [], selectedDatasetId = '', onselectDataset = () => {} } = $props<{
+  let { filename, datasets = [], selectedDatasetId = '', onselectDataset = () => {}, afterTopWords } = $props<{
     filename: string;
     datasets?: { id: string; title: string; year: number }[];
     selectedDatasetId?: string;
     onselectDataset?: (event: Event) => void;
+    afterTopWords?: Snippet;
   }>();
 
   let dataset = $state<Dataset | null>(null);
@@ -45,6 +49,15 @@
   let resultPage = $derived(paginate(sortedFilteredWords, currentPage));
 
   let filteredFrequency = $derived(filteredWords.reduce((sum, word) => sum + word.frequency, 0));
+
+  // The headline describes the whole source, so searching and filtering leave it alone.
+  let halfCoverageEntries = $derived(entriesToCoverage(rankedWords, 0.5));
+
+  // A whole-word match can be carried to the research pages; a partial query cannot.
+  let exactMatch = $derived.by(() => {
+    const query = appliedSearchQuery.trim().toLocaleLowerCase('lt-LT');
+    return query ? filteredWords.find((word) => word.word.toLocaleLowerCase('lt-LT') === query) : undefined;
+  });
 
   function clearFilters() {
     selectedTypes = [];
@@ -111,6 +124,16 @@
   });
 </script>
 
+<div class="headline-slot">
+  {#if dataset && halfCoverageEntries !== null}
+    <Headline
+      figure={halfCoverageEntries.toLocaleString('lt-LT')}
+      text={`${pluralLt(halfCoverageEntries, ['dažniausias žodis', 'dažniausi žodžiai', 'dažniausių žodžių'])} sudaro pusę pavartojimų.`}
+      note={`Iš ${rankedWords.length.toLocaleString('lt-LT')} žodžių šaltinyje „${datasetTitle(dataset.id, `${dataset.title} (${dataset.year})`)}“. Skaičiai aprašo tik šį šaltinį, ne visą lietuvių kalbą.`}
+    />
+  {/if}
+</div>
+
 <div class="controls">
   {#if datasets.length}
     <div class="source-control">
@@ -123,7 +146,7 @@
   <SearchBar bind:value={searchQuery} />
   {#if uniqueTypes.length > 0}
     <details class="type-filter">
-      <summary>Filtrai{#if selectedTypes.length > 0}{' '}({selectedTypes.length}){/if}</summary>
+      <summary>Kalbos dalis{#if selectedTypes.length > 0}{' '}({selectedTypes.length}){/if}</summary>
       <div class="type-options">
         {#each uniqueTypes as type}
           <label>
@@ -140,6 +163,7 @@
       </div>
     </details>
   {/if}
+  {#if dataset}<p class="note wide">{datasetDescription(dataset.id, dataset.title)}</p>{/if}
   {#if searchPending}
     <p class="note wide" role="status" aria-live="polite">{t('updatingResults')}</p>
   {:else if dataset}
@@ -148,6 +172,7 @@
       <span class="inline-separator" aria-hidden="true">//</span>
       <span>{t('totalFrequency')}: <strong>{filteredFrequency.toLocaleString('lt-LT')}</strong></span>
     </p>
+    {#if exactMatch}<div class="wide"><WordElsewhere word={exactMatch.word} /></div>{/if}
   {/if}
 </div>
 
@@ -158,9 +183,12 @@
     <p><strong>{t('errorLoadingData')}</strong></p>
     <p>{error}</p>
   </div>
+  {@render afterTopWords?.()}
 {:else if dataset}
   {#if sortedFilteredWords.length > 0}
-    <FrequencyDashboard words={filteredWords} {typeLabels} />
+    <FrequencyDashboard words={filteredWords} {typeLabels} {afterTopWords} />
+  {:else}
+    {@render afterTopWords?.()}
   {/if}
 
   <section class="table-container stack" aria-labelledby="word-list-title">
@@ -212,7 +240,9 @@
 {/if}
 
 <style>
-  .controls { align-items: end; display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto; }
+  /* Reserved height keeps the controls still while the dataset loads. */
+  .headline-slot { min-height: 8.5rem; }
+  .controls { align-items: end; display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; }
   .source-control label { display: block; font-size: .875rem; margin-bottom: .5rem; }
   .source-control select { width: 100%; }
   .wide { grid-column: 1 / -1; }

@@ -27,8 +27,8 @@ test('DataTable renders table with words', () => {
   expect(headers).toHaveLength(4);
   expect(headers[0]).toHaveTextContent('Rangas');
   expect(headers[1]).toHaveTextContent('Žodis');
-  expect(headers[2]).toHaveTextContent('Dažnumas ↓');
-  expect(headers[3]).toHaveTextContent('Tipas');
+  expect(headers[2]).toHaveTextContent('Pavartojimai ↓');
+  expect(headers[3]).toHaveTextContent('Kalbos dalis');
 });
 
 test('DataTable displays a source-specific POS label without losing the raw code', () => {
@@ -52,8 +52,8 @@ test('DataTable exposes sortable columns as labelled controls with aria-sort sta
   const { getByRole } = render(DataTable, { words: mockWords });
 
   const wordControl = getByRole('button', { name: 'Rikiuoti pagal Žodis: nerikiuota' });
-  const frequencyControl = getByRole('button', { name: 'Rikiuoti pagal Dažnumas: mažėjančia tvarka' });
-  const typeControl = getByRole('button', { name: 'Rikiuoti pagal Tipas: nerikiuota' });
+  const frequencyControl = getByRole('button', { name: 'Rikiuoti pagal Pavartojimai: mažėjančia tvarka' });
+  const typeControl = getByRole('button', { name: 'Rikiuoti pagal Kalbos dalis: nerikiuota' });
 
   expect(wordControl).toHaveClass('sort-button');
   expect(wordControl.closest('th')).toHaveAttribute('aria-sort', 'none');
@@ -85,11 +85,11 @@ test('DataTable allows manual sorting to ascending', async () => {
   const user = userEvent.setup();
   const { getByRole, getAllByRole } = render(DataTable, { words: mockWords });
 
-  const freqHeader = getByRole('button', { name: 'Rikiuoti pagal Dažnumas: mažėjančia tvarka' });
+  const freqHeader = getByRole('button', { name: 'Rikiuoti pagal Pavartojimai: mažėjančia tvarka' });
   await user.click(freqHeader);
 
   // Now, should be ↑, and order reversed to ascending
-  expect(freqHeader).toHaveTextContent('Dažnumas ↑');
+  expect(freqHeader).toHaveTextContent('Pavartojimai ↑');
   expect(freqHeader.closest('th')).toHaveAttribute('aria-sort', 'ascending');
 
   const rows = getAllByRole('row');
@@ -126,11 +126,11 @@ test('DataTable allows manual sorting by type', async () => {
   const user = userEvent.setup();
   const { getByRole, getAllByRole } = render(DataTable, { words: mockWords });
 
-  const typeHeader = getByRole('button', { name: 'Rikiuoti pagal Tipas: nerikiuota' });
+  const typeHeader = getByRole('button', { name: 'Rikiuoti pagal Kalbos dalis: nerikiuota' });
   await user.click(typeHeader);
 
   // First click, ascending
-  expect(typeHeader).toHaveTextContent('Tipas ↑');
+  expect(typeHeader).toHaveTextContent('Kalbos dalis ↑');
   expect(typeHeader.closest('th')).toHaveAttribute('aria-sort', 'ascending');
 
   let rows = getAllByRole('row');
@@ -139,7 +139,7 @@ test('DataTable allows manual sorting by type', async () => {
 
   // Second click, descending
   await user.click(typeHeader);
-  expect(typeHeader).toHaveTextContent('Tipas ↓');
+  expect(typeHeader).toHaveTextContent('Kalbos dalis ↓');
   expect(typeHeader.closest('th')).toHaveAttribute('aria-sort', 'descending');
 
   rows = getAllByRole('row');

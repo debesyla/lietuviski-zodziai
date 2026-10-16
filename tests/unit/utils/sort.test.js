@@ -67,15 +67,15 @@ describe('sortWords', () => {
 });
 
 describe('paginate', () => {
-  it('keeps rendering bounded to 50 records even when many results match', () => {
+  it('keeps rendering bounded to one page of records even when many results match', () => {
     const matches = Array.from({ length: 50_001 }, (_, index) => `word-${index + 1}`);
     const page = paginate(matches, 1);
 
-    expect(RESULTS_PER_PAGE).toBe(50);
-    expect(page).toMatchObject({ start: 1, end: 50, currentPage: 1, totalPages: 1001 });
-    expect(page.items).toHaveLength(50);
+    expect(RESULTS_PER_PAGE).toBe(20);
+    expect(page).toMatchObject({ start: 1, end: 20, currentPage: 1, totalPages: 2501 });
+    expect(page.items).toHaveLength(20);
     expect(page.items[0]).toBe('word-1');
-    expect(page.items[49]).toBe('word-50');
+    expect(page.items[19]).toBe('word-20');
   });
 
   it('clamps out-of-range pages and represents an empty result set', () => {

@@ -13,6 +13,9 @@
   } from '$lib/dml6-coverage';
   import { saveFile } from '$lib/download';
   import { site } from '$lib/site';
+  import { researchTool } from '$lib/research-tools';
+
+  const tool = researchTool('zodyno-apreptis');
 
   type Band = Dml6CoverageProfile['summary']['bands'][number];
   type Measure = 'types' | 'tokens';
@@ -134,15 +137,15 @@
 </script>
 
 <PageMeta
-  title="dml6 žodyno aprėptis // dažniausi žodžiai"
+  title={`${tool.pageTitle} // dažniausi lietuviški žodžiai`}
   description="Kuri Jungtinio lietuvių kalbos tekstyno žodžių formų dalis aptinkama Dabartinės lietuvių kalbos žodyne (DML6), pagal dažnumą."
   url={site.coverageProfileUrl}
 />
 
 <main>
   <header class="stack">
-    <SectionHeading>Žodyno aprėptis pagal dažnumą</SectionHeading>
-    <p>Kurios Jungtinio lietuvių kalbos tekstyno (JCL) žodžių formos yra Dabartinės lietuvių kalbos žodyne (DML6)? Kuo forma dažnesnė, tuo dažniau ji žodyne randama.</p>
+    <SectionHeading>{tool.question}</SectionHeading>
+    <p>Jungtinio lietuvių kalbos tekstyno (JCL) žodžių formos, sutikrintos su Dabartinės lietuvių kalbos žodynu (DML6). Kuo forma dažnesnė, tuo dažniau ji žodyne randama.</p>
   </header>
 
   {#if loading}

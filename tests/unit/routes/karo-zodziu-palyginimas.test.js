@@ -55,11 +55,14 @@ it('loads only the lookup profile initially and exposes a keyboard-operable comp
   await user.type(getByLabelText('Žodžio forma'), 'karas');
   await user.click(getByRole('button', { name: 'Palyginti' }));
 
-  await waitFor(() => expect(getByText('KARAS')).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('heading', { name: 'karas' })).toBeInTheDocument());
   expect(lookupWarContrastWord).toHaveBeenCalledWith(profile, 'karas');
   expect(getAllByRole('table')).toHaveLength(1);
   expect(getAllByText('Neaptikta')).toHaveLength(3);
-  expect(getByText('4 karto dažniau')).toBeInTheDocument();
+  expect(getAllByText('4 kartus dažniau').length).toBeGreaterThan(0);
+  // The headline restates the strongest contrast with both sources named.
+  expect(getByText('4×')).toBeInTheDocument();
+  expect(getByText(/^Šaltinyje „.+“ forma „karas“ pavartota 4 kartus dažniau nei šaltinyje „.+“\.$/)).toBeInTheDocument();
   expect(getByText('(+2 log₂)')).toBeInTheDocument();
   expect((await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual([]);
 });
@@ -81,7 +84,7 @@ it('runs the lookup from a shared ?q= link', async () => {
   window.history.replaceState(null, '', '/karo-zodziu-palyginimas?q=karas');
   const { getByLabelText, getByRole } = render(Page);
 
-  await waitFor(() => expect(getByRole('heading', { name: 'KARAS' })).toBeInTheDocument());
+  await waitFor(() => expect(getByRole('heading', { name: 'karas' })).toBeInTheDocument());
   expect(lookupWarContrastWord).toHaveBeenLastCalledWith(profile, 'karas');
   expect(getByLabelText('Žodžio forma')).toHaveValue('karas');
 });

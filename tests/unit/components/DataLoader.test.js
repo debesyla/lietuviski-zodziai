@@ -161,7 +161,7 @@ describe('DataLoader', () => {
     expect(queryByText('clearFilters')).not.toBeInTheDocument();
   });
 
-  it('shows bounded pagination when more than 50 words', async () => {
+  it('shows bounded pagination when there is more than one page of words', async () => {
     const largeDataset = {
       ...mockDataset,
       words: Array.from({ length: 51 }, (_, i) => ({ word: `word${i}`, frequency: 100 - i }))
@@ -175,10 +175,10 @@ describe('DataLoader', () => {
     });
 
     expect(getByText('nextPage')).toBeInTheDocument();
-    expect(getByText('pageOf:1/2')).toBeInTheDocument();
+    expect(getByText('pageOf:1/3')).toBeInTheDocument();
   });
 
-  it('does not show pagination when 50 or fewer words', async () => {
+  it('does not show pagination when the words fit on one page', async () => {
     loadDataset.mockResolvedValue(mockDataset); // 2 words
 
     const { queryByText } = render(DataLoader, { filename: 'test.json' });
@@ -219,7 +219,7 @@ describe('DataLoader', () => {
     nextButton.click();
 
     await waitFor(() => {
-      expect(getByText('pageOf:2/2')).toBeInTheDocument();
+      expect(getByText('pageOf:2/3')).toBeInTheDocument();
       expect(getByText('previousPage')).toBeInTheDocument();
     });
   });

@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { analyseFrequency, sampleByRank } from '../../src/lib/analysis';
+import { analyseFrequency, entriesToCoverage, sampleByRank } from '../../src/lib/analysis';
+
+describe('entriesToCoverage', () => {
+  it('matches the coverage milestones of the full analysis', () => {
+    const words = [
+      { word: 'a', frequency: 50 },
+      { word: 'b', frequency: 30 },
+      { word: 'c', frequency: 15 },
+      { word: 'd', frequency: 5 }
+    ];
+
+    expect(entriesToCoverage(words, 0.5)).toBe(1);
+    expect(entriesToCoverage(words, 0.9)).toBe(analyseFrequency(words).facts.ninetyCoverage?.entries);
+    expect(entriesToCoverage(words, 0.9)).toBe(3);
+  });
+
+  it('returns null when there is nothing to cover', () => {
+    expect(entriesToCoverage([], 0.5)).toBeNull();
+  });
+});
 
 describe('analyseFrequency', () => {
   const words = [

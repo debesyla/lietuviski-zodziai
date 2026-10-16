@@ -22,6 +22,9 @@ export const translations = {
     word: 'Žodis',
     type: 'Tipas',
     frequency: 'Dažnumas',
+    // On-screen column names. CSV exports keep `frequency` and `type`.
+    frequencyColumn: 'Pavartojimai',
+    typeColumn: 'Kalbos dalis',
     sortBy: 'Rikiuoti pagal',
     unsorted: 'nerikiuota',
     ascending: 'didėjančia tvarka',

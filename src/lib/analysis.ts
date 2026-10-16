@@ -121,6 +121,18 @@ export function analyseFrequency(words: Word[]): FrequencyAnalysis {
   };
 }
 
+/** How many top entries of a frequency-ranked list together reach `threshold` of all uses. */
+export function entriesToCoverage(rankedWords: Word[], threshold: number): number | null {
+  const totalFrequency = rankedWords.reduce((sum, word) => sum + word.frequency, 0);
+  if (totalFrequency === 0) return null;
+  let cumulativeFrequency = 0;
+  for (let index = 0; index < rankedWords.length; index += 1) {
+    cumulativeFrequency += rankedWords[index].frequency;
+    if (cumulativeFrequency / totalFrequency >= threshold) return index + 1;
+  }
+  return null;
+}
+
 /** Samples first, last, and logarithmically spaced ranks for SVGs with bounded DOM size. */
 export function sampleByRank<T extends { rank: number }>(points: T[], maximumPoints = 180): T[] {
   if (points.length <= maximumPoints) return points;

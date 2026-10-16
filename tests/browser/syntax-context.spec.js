@@ -11,7 +11,7 @@ test('loads ALKSNIS sentence contexts only after a visitor selects a source lemm
   });
 
   await page.goto('sintakse');
-  await expect(page.getByRole('heading', { name: 'ALKSNIS sintaksės kontekstai' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Su kuo žodis jungiasi sakinyje?' })).toBeVisible();
   await page.getByText('Kaip skaityti', { exact: true }).click();
   await expect(page.getByText('Sakiniai (pagal ID)')).toBeVisible();
   await expect(page.getByText(/3.?643 sakiniai/)).toBeVisible();

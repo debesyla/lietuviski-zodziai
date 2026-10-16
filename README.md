@@ -1,4 +1,4 @@
-# Lietuviški žodžiai
+# Dažniausi lietuviški žodžiai
 
 SvelteKit svetainė lietuvių kalbos žodžių dažniams ir rinkiniams tyrinėti.
 

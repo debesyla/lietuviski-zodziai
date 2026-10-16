@@ -32,6 +32,7 @@ vi.mock('../../../src/components/DataLoader.svelte', () => ({
 
 import Page from '../../../src/routes/+page.svelte';
 import DataLoader from '../../../src/components/DataLoader.svelte';
+import { loadCatalog } from '../../../src/lib/data';
 
 afterEach(() => window.history.replaceState(null, '', '/'));
 
@@ -49,9 +50,20 @@ describe('Page', () => {
     expect(explorerProps.selectedDatasetId).toBe('second');
     expect(explorerProps.datasets).toHaveLength(2);
     expect(explorerProps.datasets[0].title).toBe('First dataset');
-    expect(getByRole('link', { name: 'DML6 žodyno aprėptis' })).toHaveAttribute('href', '/zodyno-apreptis');
-    expect(getByRole('link', { name: 'Karo meto vartosena' })).toHaveAttribute('href', '/karo-zodziu-palyginimas');
-    expect(getByRole('link', { name: 'CCLL žanrų profilis' })).toHaveAttribute('href', '/zanru-profilis');
+    // The explorer places the research cards right after its top-words bars.
+    expect(explorerProps.afterTopWords).toEqual(expect.any(Function));
+  });
+
+  it('keeps the research cards reachable when the catalogue fails', async () => {
+    vi.mocked(loadCatalog).mockRejectedValueOnce(new Error('offline'));
+    const { getByRole } = render(Page);
+
+    await waitFor(() => expect(getByRole('alert')).toHaveTextContent('offline'));
+    expect(getByRole('link', { name: 'Ar visi dažni žodžiai yra žodyne?' })).toHaveAttribute('href', '/zodyno-apreptis');
+    expect(getByRole('link', { name: 'Ar žodis dažnesnis karo meto tekstuose?' })).toHaveAttribute('href', '/karo-zodziu-palyginimas');
+    expect(getByRole('link', { name: 'Kur žodis dažnesnis: romanuose ar laikraščiuose?' })).toHaveAttribute('href', '/zanru-profilis');
+    expect(getByRole('link', { name: 'dronas' })).toHaveAttribute('href', '/karo-zodziu-palyginimas?q=dronas');
+    expect(getByRole('link', { name: 'Kokie duomenys čia yra?' })).toHaveAttribute('href', '/duomenu-katalogas');
   });
 
   it.each([['first', 'first'], ['unknown', 'second']])('uses a catalogue source link with a valid default fallback (%s)', async (requested, expected) => {
@@ -63,10 +75,10 @@ describe('Page', () => {
   it('publishes a specific, canonical Lithuanian discovery preview', () => {
     render(Page);
 
-    expect(document.title).toBe('dažniausi žodžiai // dago');
+    expect(document.title).toBe('dažniausi lietuviški žodžiai // dago');
     expect(document.head.querySelector('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Naršykite viešus lietuvių kalbos lemų ir žodžių formų dažnumo sąrašus: ieškokite, filtruokite, analizuokite rodiklius ir atsisiųskite duomenis su jų šaltiniais.'
+      'Kurie lietuvių kalbos žodžiai vartojami dažniausiai, kaip jie keitėsi nuo 1922 m. ir kur jie dažnesni – romanuose ar spaudoje? Vieši tekstynų duomenys ir CSV.'
     );
     expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -78,7 +90,7 @@ describe('Page', () => {
     );
     expect(document.head.querySelector('meta[property="og:image"]')).toHaveAttribute(
       'content',
-      'http://127.0.0.1:4173/social-preview-v2.png'
+      'http://127.0.0.1:4173/social-preview-v3.png'
     );
     expect(document.head.querySelector('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
   });

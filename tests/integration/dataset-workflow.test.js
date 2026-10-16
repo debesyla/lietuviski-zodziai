@@ -97,7 +97,7 @@ describe('dataset workflow integration', () => {
     await user.click(getByRole('button', { name: 'Rikiuoti pagal Žodis: nerikiuota' }));
     await waitFor(() => expect(container.querySelector('.table-container tbody tr')).toHaveTextContent('alfa'));
 
-    await user.click(getByText('Filtrai', { exact: true }));
+    await user.click(getByText('Kalbos dalis', { selector: 'summary' }));
     await user.click(getByRole('checkbox', { name: /Noun/ }));
     await waitFor(() => {
       expect(getByRole('button', { name: 'Išvalyti filtrus' })).toBeInTheDocument();
@@ -139,9 +139,9 @@ describe('dataset workflow integration', () => {
 
     const { container, getByRole } = render(Page);
 
-    await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50), { timeout: 5_000 });
+    await waitFor(() => expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(20), { timeout: 5_000 });
     expect(getByRole('combobox', { name: 'Šaltinis' })).toHaveValue(utka.id);
-    expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(50);
+    expect(container.querySelectorAll('.table-container tbody tr')).toHaveLength(20);
     expect(container.querySelector('.totals')).toHaveTextContent(/Pavartojimai: 922\s+949/);
   });
 });

@@ -108,7 +108,7 @@
 </script>
 
 <PageMeta
-  title="duomenų rinkiniai // dažniausi žodžiai"
+  title="duomenų rinkiniai // dažniausi lietuviški žodžiai"
   description="Visi vieši lietuvių kalbos duomenų rinkiniai: šaltiniai, licencijos, prieiga ir interpretavimo ribos."
   url={site.catalogueUrl}
 />

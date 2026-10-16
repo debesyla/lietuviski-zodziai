@@ -8,13 +8,29 @@
 </script>
 
 <PageMeta
-  title="metodika ir šaltiniai // dažniausi žodžiai"
+  title="metodika ir šaltiniai // dažniausi lietuviški žodžiai"
   description="Kaip skaityti lietuvių kalbos tekstynų dažnius, kur rasti šaltinius ir kaip naudoti rinkinius."
   url={site.methodologyUrl}
 />
 
 <main>
-  <p>Lietuvių kalbos tekstynų duomenys, jų palyginimai ir sakinių pavyzdžiai.</p>
+  <p>Iš kur čia skaičiai, kam jie naudingi ir kaip juos skaityti.</p>
+
+  <section class="stack" aria-labelledby="corpus-title">
+    <SectionHeading id="corpus-title">Kas yra tekstynas?</SectionHeading>
+    <p>Tekstynas yra didelis, aprašytas tikrų tekstų rinkinys: knygos, spauda, dokumentai, internetas, kartais ir užrašyta sakytinė kalba. Jame suskaičiuotas kiekvienas žodis, todėl galima pamatyti, kurie žodžiai kartojasi dažniausiai ir kokiuose tekstuose.</p>
+    <p>Kiekvienas tekstynas sudarytas savaip, todėl čia rodomi skaičiai aprašo konkretų šaltinį, o ne visą lietuvių kalbą.</p>
+  </section>
+
+  <section class="stack" aria-labelledby="audience-title">
+    <SectionHeading id="audience-title">Kam tai naudinga?</SectionHeading>
+    <ul>
+      <li><strong>Besimokantiems lietuvių kalbos</strong> – vos keli šimtai dažniausių žodžių sudaro pusę visų tekstų, tad nuo jų verta pradėti.</li>
+      <li><strong>Mokytojams ir rašantiems</strong> – ar žodis knyginis, ar kasdienis, ir su kokiais žodžiais jis jungiasi sakinyje.</li>
+      <li><strong>Žurnalistams ir tyrėjams</strong> – kaip žodžio vartosena skiriasi laikotarpiais, žanrais ir karo meto tekstuose.</li>
+      <li><strong>Programuotojams ir kalbos technologijų komandoms</strong> – licencijuoti dažnumo sąrašai CSV ir JSON formatu, su šaltiniais.</li>
+    </ul>
+  </section>
 
   <section class="stack" aria-labelledby="reading-title">
     <SectionHeading id="reading-title">Kaip skaityti duomenis</SectionHeading>

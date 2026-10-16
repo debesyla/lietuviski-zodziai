@@ -3,6 +3,8 @@
   import RateBars from '../../components/RateBars.svelte';
   import WordLookup from '../../components/WordLookup.svelte';
   import PageMeta from '../../components/PageMeta.svelte';
+  import WordElsewhere from '../../components/WordElsewhere.svelte';
+  import Headline from '../../components/Headline.svelte';
   import TableScroll from '../../components/TableScroll.svelte';
   import { base } from '$app/paths';
   import {
@@ -14,7 +16,11 @@
   } from '$lib/blkt-wordform-profile';
   import { saveJson } from '$lib/download';
   import { site } from '$lib/site';
+  import { researchTool } from '$lib/research-tools';
   import { readWordQuery, writeWordQuery } from '$lib/word-query';
+  import { spreadReadout } from '$lib/readout';
+
+  const tool = researchTool('blkt-profilis');
 
   let profile = $state<LoadedBlktWordformProfile | null>(null);
   let loading = $state(true);
@@ -32,6 +38,21 @@
     { id: 'types', title: 'Pagal teksto tipą', column: 'Teksto tipas', items: result.documentTypes, withheld: 'Šio žodžio teksto tipų pjūvis neskelbiamas. Atskiros saugos ribos nepasiekusios reikšmės neatskleidžiamos.' },
     { id: 'periods', title: 'Pagal laikotarpį', column: 'Laikotarpis', items: result.periods, withheld: 'Šio žodžio laikotarpių pjūvis neskelbiamas. Atskiros saugos ribos nepasiekusios reikšmės neatskleidžiamos.' }
   ] : []);
+
+  // Periods answer this page's question; text types stand in when periods are withheld.
+  const readout = $derived.by(() => {
+    if (!result) return null;
+    const rows = (items: { label: string; ratePerMillion: number }[]) => items.map((item) => ({ label: item.label, value: item.ratePerMillion }));
+    if (result.periods) {
+      const byPeriod = spreadReadout(result.word, rows(result.periods), (label) => `${label} m.`, 'vartota');
+      if (byPeriod) return { ...byPeriod, note: 'Laikotarpių tekstų rinkiniai skiriasi, todėl skirtumas nebūtinai rodo kalbos pokytį.' };
+    }
+    if (result.documentTypes) {
+      const byType = spreadReadout(result.word, rows(result.documentTypes), (label) => `teksto tipe „${label}“`, 'vartojama');
+      if (byType) return { ...byType, note: '' };
+    }
+    return null;
+  });
 
   function formatInteger(value: number) {
     return value.toLocaleString('lt-LT');
@@ -113,14 +134,14 @@
 </script>
 
 <PageMeta
-  title="blkt žodžio profilis // dažniausi žodžiai"
+  title={`${tool.pageTitle} // dažniausi lietuviški žodžiai`}
   description="Žodžio formos dažnis Bendrajame lietuvių kalbos tekstyne pagal teksto tipą ir laikotarpį; skelbiami tik saugos slenksčius praėję suvestiniai duomenys."
   url={site.blktProfileUrl}
 />
 
 <main>
   <header class="stack">
-    <SectionHeading>BLKT žodžio profilis</SectionHeading>
+    <SectionHeading>{tool.question}</SectionHeading>
     <p>Kaip dažnai žodžio forma vartojama Bendrajame lietuvių kalbos tekstyne (BLKT) pagal teksto tipą ir laikotarpį nuo 1922 m. iki dabar.</p>
   </header>
 
@@ -159,6 +180,8 @@
           <button type="button" class="text-button" disabled={downloadLoading} onclick={() => void downloadResult()}>{downloadLoading ? 'Ruošiamas atsisiuntimas…' : 'Atsisiųsti JSON'}</button>
         </div>
         {#if downloadError}<p class="notice error" role="alert">{downloadError}</p>{/if}
+        {#if readout}<Headline figure={readout.figure} text={readout.text} note={readout.note} />{/if}
+        <WordElsewhere word={result.word} current="blkt-profilis" />
 
         <section class="stack" aria-labelledby="corpus-title">
           <SectionHeading level={3} id="corpus-title">Visas tekstynas</SectionHeading>

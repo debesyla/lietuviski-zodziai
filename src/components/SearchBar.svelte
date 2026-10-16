@@ -5,7 +5,7 @@
 
 <div class="search-bar">
   <label class="sr-only" for={inputId}>{t('searchWords')}</label>
-  <input id={inputId} bind:value type="text" placeholder="Žodis arba jo dalis" autocomplete="off" spellcheck="false" />
+  <input id={inputId} bind:value type="text" placeholder="pvz., namas" autocomplete="off" spellcheck="false" />
   {#if value}
     <button type="button" class="text-button" onclick={() => value = ''} aria-label={t('clearSearch')}>✕</button>
   {/if}

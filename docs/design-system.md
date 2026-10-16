@@ -19,9 +19,13 @@ not have its own visual style.
 
 Every page uses the same column, `min(100%, 75ch)`, and the same parts:
 
-1. Header: the lowercase title `dažniausi žodžiai`, the dimmed `// dago` link
-   and the `Žodžiai // Duomenys // Apie` navigation.
-2. Page heading: `SectionHeading`, the dimmed `// Heading` label, followed by
+1. Header: the lowercase title `dažniausi lietuviški žodžiai`, the dimmed `// dago` link
+   and the `Žodžiai // Duomenys // Apie` navigation. The title is plain text, as
+   on the dago.lt tools; `Žodžiai` in the menu is the way home. The current menu
+   section is filled amber, like the selected tab on asmens kodai, with a tight
+   line height so the fill stays low; research pages count as `Žodžiai`
+   (`aria-current="true"`).
+2. Page heading: `SectionHeading`, the `// Heading` label, followed by
    one plain sentence that says what the page answers.
 3. Main tool: the homepage explorer, or `WordLookup` on research pages.
 4. Results: the word as an `h2`, bars first, exact numbers in a `Lentelė`
@@ -38,7 +42,7 @@ at 1rem. Grid gaps own the spacing, so direct children have no margins.
 | Component | Use |
 | --- | --- |
 | `PageMeta` | Title, description, canonical URL and social tags for every route. |
-| `SectionHeading` | The `//` section label (`h2` or `h3`), 20% opacity. |
+| `SectionHeading` | The `//` section label (`h2` or `h3`). The text is full colour for contrast; only the decorative `//` is dimmed (35%). |
 | `WordLookup` | Label, text input, primary button, hint and clickable example words. |
 | `RateBars` | Every horizontal bar chart: labelled rows, value on the right, `Neaptikta` for missing data. |
 | `TableScroll` | Wraps wide tables; becomes a focusable, labelled region only when it overflows. |

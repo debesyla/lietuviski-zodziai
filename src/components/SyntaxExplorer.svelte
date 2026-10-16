@@ -1,6 +1,7 @@
 <script lang="ts">
   import SectionHeading from './SectionHeading.svelte';
   import WordLookup from './WordLookup.svelte';
+  import WordElsewhere from './WordElsewhere.svelte';
   import {
     loadSyntaxContexts,
     loadSyntaxOverview,
@@ -187,6 +188,7 @@
     <section class="stack" aria-labelledby="contexts-title">
       <SectionHeading id="contexts-title">Sakinių kontekstai: {selectedLemma.lemma}</SectionHeading>
       <p class="note">Iki {overview.manifest.syntaxContext.exampleSelection.maxExamplesPerLemma} pavyzdžių šaltinio tvarka. Pažymėti susiję žodžiai.</p>
+      <WordElsewhere word={selectedLemma.lemma} current="sintakse" />
       {#if contextLoading}
         <p class="note" role="status" aria-live="polite">Kraunami sakiniai…</p>
       {:else if contextError}

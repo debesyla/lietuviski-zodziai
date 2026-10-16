@@ -6,6 +6,9 @@ describe('Methodology page', () => {
   it('explains the data and links to the catalogue for per-source attribution and usage terms', () => {
     const { getByRole, getByText } = render(Page);
 
+    expect(getByRole('heading', { name: 'Kas yra tekstynas?' })).toBeInTheDocument();
+    expect(getByRole('heading', { name: 'Kam tai naudinga?' })).toBeInTheDocument();
+    expect(getByText(/skaičiai aprašo konkretų šaltinį, o ne visą lietuvių kalbą/)).toBeInTheDocument();
     expect(getByRole('heading', { name: 'Kaip skaityti duomenis' })).toBeInTheDocument();
     expect(getByText(/pavartojimų skaičius pasirinktame šaltinyje/)).toBeInTheDocument();
     expect(getByText(/pagrindinė žodžio forma/)).toBeInTheDocument();

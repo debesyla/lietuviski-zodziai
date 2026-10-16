@@ -26,7 +26,7 @@ function normalizePublicSiteUrl(value?: string) {
 export function createSite(publicSiteUrl?: string) {
   const url = normalizePublicSiteUrl(publicSiteUrl);
   return {
-    name: 'Lietuviški žodžiai',
+    name: 'Dažniausi lietuviški žodžiai',
     url,
     homeUrl: `${url}/`,
     methodologyUrl: `${url}/apie`,
@@ -36,8 +36,8 @@ export function createSite(publicSiteUrl?: string) {
     genreProfileUrl: `${url}/zanru-profilis`,
     blktProfileUrl: `${url}/blkt-profilis`,
     syntaxExplorerUrl: `${url}/sintakse`,
-    socialImageUrl: `${url}/social-preview-v2.png`,
-    description: 'Naršykite viešus lietuvių kalbos lemų ir žodžių formų dažnumo sąrašus: ieškokite, filtruokite, analizuokite rodiklius ir atsisiųskite duomenis su jų šaltiniais.'
+    socialImageUrl: `${url}/social-preview-v3.png`,
+    description: 'Kurie lietuvių kalbos žodžiai vartojami dažniausiai, kaip jie keitėsi nuo 1922 m. ir kur jie dažnesni – romanuose ar spaudoje? Vieši tekstynų duomenys ir CSV.'
   } as const;
 }
 
